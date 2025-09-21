@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://dtls4wy1frff1"
+path="res://.godot/imported/board game question right.wav-b6c7401d3203eaad28cb98d60a8716cd.sample"
+
+[deps]
+
+source_file="res://board game question right.wav"
+dest_files=["res://.godot/imported/board game question right.wav-b6c7401d3203eaad28cb98d60a8716cd.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2
