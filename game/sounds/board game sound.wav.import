@@ -3,12 +3,12 @@
 importer="wav"
 type="AudioStreamWAV"
 uid="uid://cggwvpjexbfy3"
-path="res://.godot/imported/board game sound.wav-e2d320fad01fcd08190b57e7fb04842c.sample"
+path="res://.godot/imported/board game sound.wav-548e4ced51df1aafb56939d9edb4c996.sample"
 
 [deps]
 
-source_file="res://board game sound.wav"
-dest_files=["res://.godot/imported/board game sound.wav-e2d320fad01fcd08190b57e7fb04842c.sample"]
+source_file="res://sounds/board game sound.wav"
+dest_files=["res://.godot/imported/board game sound.wav-548e4ced51df1aafb56939d9edb4c996.sample"]
 
 [params]
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://btwxyugg7iono"
-path="res://.godot/imported/pink piece.png-7f481071eda61f3a4fa221657895a724.ctex"
+uid="uid://j1uocwfk8eog"
+path="res://.godot/imported/dice.png-e5d359870d3fd9a3f63c876c162e5dc0.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://pink piece.png"
-dest_files=["res://.godot/imported/pink piece.png-7f481071eda61f3a4fa221657895a724.ctex"]
+source_file="res://assets/dice.png"
+dest_files=["res://.godot/imported/dice.png-e5d359870d3fd9a3f63c876c162e5dc0.ctex"]
 
 [params]
 

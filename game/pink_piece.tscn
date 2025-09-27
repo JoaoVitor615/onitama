@@ -1,8 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://heu1t1nef431"]
-
-[ext_resource type="Texture2D" uid="uid://btwxyugg7iono" path="res://pink piece.png" id="1_kcba3"]
-
-[node name="PinkPiece" type="Sprite2D"]
-texture_filter = 1
-position = Vector2(278, 187)
-texture = ExtResource("1_kcba3")
