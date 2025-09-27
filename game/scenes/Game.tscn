@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://ccih1cnv3kf3i"]
+
+[ext_resource type="Script" uid="uid://bxncimgp0rchs" path="res://scripts/game.gd" id="1_qbsmt"]
+[ext_resource type="Script" uid="uid://2jk5jlb4wcl0" path="res://scripts/board.gd" id="2_cpr0p"]
+
+[node name="Game" type="Node2D"]
+script = ExtResource("1_qbsmt")
+
+[node name="Board" type="Node2D" parent="."]
+script = ExtResource("2_cpr0p")
