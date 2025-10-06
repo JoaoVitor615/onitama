@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://buwx0xr20k3ad"
+path="res://.godot/imported/No Destination - Pix (youtube).mp3-26be769b74b880f3759c15b0c342173d.mp3str"
+
+[deps]
+
+source_file="res://assets/No Destination - Pix (youtube).mp3"
+dest_files=["res://.godot/imported/No Destination - Pix (youtube).mp3-26be769b74b880f3759c15b0c342173d.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4
