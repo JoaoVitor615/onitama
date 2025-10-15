@@ -1,0 +1,14 @@
+res://Background/Map.tscn
+res://GameBoard/unit_path_tileset.tres
+res://GameBoard/Cursor/Cursor.gd
+res://Main.tscn
+res://GameBoard/Grid.tres
+res://GameBoard/Grid.gd
+res://Units/Unit.tscn
+res://UnitOverlay/UnitOverlay.tscn
+res://UnitOverlay/UnitOverlay.gd
+res://GameBoard/UnitPath.gd
+res://GameBoard/Pathfinder.gd
+res://GameBoard/Cursor/Cursor.tscn
+res://Units/Unit.gd
+res://GameBoard/GameBoard.gd
