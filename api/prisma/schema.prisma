@@ -7,10 +7,23 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model usuario {
-  id        Int       @id
-  nome      String    @db.VarChar(150)
-  email     String    @unique @db.VarChar(255)
-  senha     String    @db.VarChar(255)
-  criado_em DateTime? @default(now()) @db.Timestamp(6)
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model TipoProduto {
+  id_tipo_produto BigInt @id @default(autoincrement())
+  nome            String @db.VarChar
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model Usuario {
+  id_usuario   Int      @id @default(autoincrement())
+  hash_id      String?  @db.VarChar
+  data_criacao DateTime @default(now()) @db.Timestamptz(6)
+  email        String?  @db.VarChar
+  senha        String?  @db.VarChar
+  xp           Int?
+  pontos       Int?
+  moedas       Int?
+  id_banner    Int?
+  id_titulo    Int?
+  apelido      String?  @db.VarChar
 }
