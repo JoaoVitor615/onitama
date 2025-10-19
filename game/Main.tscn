@@ -115,6 +115,7 @@ tile_set = SubResource("1")
 script = ExtResource("3")
 
 [node name="UnitOverlay" parent="GameBoard" instance=ExtResource("5")]
+modulate = Color(0, 1, 0, 0.5647059)
 
 [node name="UnitPath" parent="GameBoard" instance=ExtResource("6")]
 
