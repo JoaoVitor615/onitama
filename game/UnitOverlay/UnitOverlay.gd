@@ -23,10 +23,14 @@ extends TileMapLayer
 #}
 ## Fills the tilemap with the cells, giving a visual representation of the cells 
 ## a unit can walk.
+#func draw(cells: Array) -> void:
+	#clear()
+	#var test_card: Dictionary = { "Tiger" : { "name" : "Tiger", "movements" : [[0, -2], [0, 1]]}}
+	#for cell in cells:
+		#for card in test_card.values():
+			#for mov in card["movements"]:
+				#set_cell(cell, 0, Vector2i(mov[0], mov[1]))
 func draw(cells: Array) -> void:
 	clear()
-	var test_card: Dictionary = { "Tiger" : { "name" : "Tiger", "movements" : [[0, -2], [0, 1]]}}
 	for cell in cells:
-		for card in test_card.values():
-			for mov in card["movements"]:
-				set_cell(cell, 0, Vector2i(mov[0], mov[1]))
+		set_cell(cell, 0, Vector2i(0,0))

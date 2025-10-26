@@ -41,8 +41,9 @@ func is_occupied(cell: Vector2) -> bool:
 
 
 ## Returns an array of cells a given unit can walk using the flood fill algorithm.
-func get_walkable_cells(unit: Unit) -> Array:
-	return _flood_fill(unit.cell, unit.move_range)
+func get_walkable_cells(unit: Unit, selected_card: Card.CardType) -> PackedVector2Array:
+	
+	return Card.get_relative_position(unit, selected_card)
 
 
 ## Clears, and refills the `_units` dictionary with game objects that are on the board.
@@ -109,9 +110,9 @@ func _select_unit(cell: Vector2) -> void:
 
 	_active_unit = _units[cell]
 	_active_unit.is_selected = true
-	_walkable_cells = get_walkable_cells(_active_unit)
+	_walkable_cells = get_walkable_cells(_active_unit, Card.CardType.COBRA)
 	_unit_overlay.draw(_walkable_cells)
-	_unit_path.initialize(_walkable_cells)
+	#_unit_path.initialize(_walkable_cells)
 
 
 ## Deselects the active unit, clearing the cells overlay and interactive path drawing.

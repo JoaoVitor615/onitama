@@ -118,6 +118,7 @@ script = ExtResource("3")
 modulate = Color(0, 1, 0, 0.5647059)
 
 [node name="UnitPath" parent="GameBoard" instance=ExtResource("6")]
+grid = null
 
 [node name="Cursor" parent="GameBoard" instance=ExtResource("1")]
 
@@ -125,7 +126,6 @@ modulate = Color(0, 1, 0, 0.5647059)
 position = Vector2(56, 23)
 curve = SubResource("Curve2D_20pc6")
 move_range = 5
-invert_movement = true
 skin = ExtResource("10_wkp8b")
 skin_offset = Vector2(1, 1)
 
@@ -133,7 +133,6 @@ skin_offset = Vector2(1, 1)
 position = Vector2(23, 23)
 curve = SubResource("Curve2D_5vvyt")
 move_range = 5
-invert_movement = true
 skin = ExtResource("9_03owx")
 skin_offset = Vector2(1, 1)
 
@@ -141,7 +140,6 @@ skin_offset = Vector2(1, 1)
 position = Vector2(39, 23)
 curve = SubResource("Curve2D_c6i3y")
 move_range = 5
-invert_movement = true
 skin = ExtResource("9_03owx")
 skin_offset = Vector2(1, 1)
 
@@ -149,7 +147,6 @@ skin_offset = Vector2(1, 1)
 position = Vector2(71, 23)
 curve = SubResource("Curve2D_c2ibq")
 move_range = 5
-invert_movement = true
 skin = ExtResource("9_03owx")
 skin_offset = Vector2(1, 1)
 
@@ -157,7 +154,6 @@ skin_offset = Vector2(1, 1)
 position = Vector2(87, 23)
 curve = SubResource("Curve2D_j4qnp")
 move_range = 5
-invert_movement = true
 skin = ExtResource("9_03owx")
 skin_offset = Vector2(1, 1)
 
