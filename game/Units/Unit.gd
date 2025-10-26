@@ -1,7 +1,7 @@
 ## Represents a unit on the game board.
 ## The board manages its position inside the game grid.
 ## The unit itself holds stats and a visual representation that moves smoothly in the game world.
-@tool
+#@tool
 class_name Unit
 extends Path2D
 
@@ -14,6 +14,9 @@ signal walk_finished
 @export var move_range := 6
 ## The unit's move speed when it's moving along a path.
 @export var move_speed := 600.0
+
+@export var invert_movement : bool = false
+	
 ## Texture representing the unit.
 @export var skin: Texture:
 	set(value):
