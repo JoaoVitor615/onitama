@@ -126,7 +126,6 @@ position = Vector2(56, 23)
 curve = SubResource("Curve2D_20pc6")
 move_range = 5
 invert_movement = true
-skin = ExtResource("10_wkp8b")
 skin_offset = Vector2(1, 1)
 
 [node name="BlueStudent1" parent="GameBoard" instance=ExtResource("2")]

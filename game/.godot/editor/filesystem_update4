@@ -8,3 +8,4 @@ res://GameBoard/UnitPath.gd
 res://GameBoard/PathFinder.gd
 res://UnitOverlay/Card.gd
 res://Units/Unit.gd
+res://Units/Unit.tscn

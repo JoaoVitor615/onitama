@@ -1,7 +1,46 @@
-[gd_scene load_steps=6 format=3 uid="uid://d4mhjq651egt"]
+[gd_scene load_steps=10 format=3 uid="uid://d4mhjq651egt"]
 
 [ext_resource type="Script" uid="uid://djb50gow0p7wc" path="res://Units/Unit.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://b5ghlcxjxmmgw" path="res://Units/unit_shadow.svg" id="3"]
+[ext_resource type="Texture2D" uid="uid://he8fycg6xiji" path="res://Units/personagens.png" id="3_5rqvx"]
+
+[sub_resource type="Animation" id="Animation_d1yal"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [0]
+}
+
+[sub_resource type="Animation" id="Animation_amrl3"]
+resource_name = "walk"
+length = 0.8
+loop_mode = 1
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0.03333333, 0.2, 0.36666667, 0.53333336),
+"transitions": PackedFloat32Array(1, 1, 1, 1),
+"update": 1,
+"values": [0, 1, 2, 3]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_b5nw7"]
+_data = {
+&"RESET": SubResource("Animation_d1yal"),
+&"red_master_walk": SubResource("Animation_amrl3")
+}
 
 [sub_resource type="Animation" id="1"]
 length = 0.001
@@ -52,6 +91,14 @@ scale = Vector2(0.1, 0.1)
 texture = ExtResource("3")
 
 [node name="Sprite" type="Sprite2D" parent="PathFollow2D"]
+texture = ExtResource("3_5rqvx")
+hframes = 8
+vframes = 8
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="PathFollow2D/Sprite"]
+libraries = {
+&"": SubResource("AnimationLibrary_b5nw7")
+}
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
 libraries = {
