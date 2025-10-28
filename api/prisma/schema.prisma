@@ -9,21 +9,44 @@ datasource db {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model TipoProduto {
-  id_tipo_produto BigInt @id @default(autoincrement())
-  nome            String @db.VarChar
+  id_tipo_produto BigInt    @id @default(autoincrement())
+  nome            String    @db.VarChar
+  Produto         Produto[]
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model Usuario {
-  id_usuario   Int      @id @default(autoincrement())
-  hash_id      String?  @db.VarChar
-  data_criacao DateTime @default(now()) @db.Timestamptz(6)
-  email        String?  @db.VarChar
-  senha        String?  @db.VarChar
-  xp           Int?
-  pontos       Int?
-  moedas       Int?
-  id_banner    Int?
-  id_titulo    Int?
-  apelido      String?  @db.VarChar
+  id_usuario     Int              @id @default(autoincrement())
+  hash_id        String?          @db.VarChar
+  data_criacao   DateTime         @default(now()) @db.Timestamptz(6)
+  email          String?          @db.VarChar
+  senha          String?          @db.VarChar
+  xp             Int?
+  pontos         Int?
+  moedas         Int?
+  id_banner      Int?
+  id_titulo      Int?
+  apelido        String?          @db.VarChar
+  UsuarioProduto UsuarioProduto[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model Produto {
+  id_produto      Int              @id @default(autoincrement())
+  nome            String           @db.VarChar
+  preco           Int?
+  compravel       Boolean?
+  xp_min          Int?
+  id_tipo_produto BigInt?
+  TipoProduto     TipoProduto?     @relation(fields: [id_tipo_produto], references: [id_tipo_produto], onDelete: Cascade)
+  UsuarioProduto  UsuarioProduto[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model UsuarioProduto {
+  id_usuario_produto Int      @id @default(autoincrement())
+  id_usuario         Int?
+  id_produto         Int?
+  Produto            Produto? @relation(fields: [id_produto], references: [id_produto], onDelete: NoAction)
+  Usuario            Usuario? @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction)
 }
