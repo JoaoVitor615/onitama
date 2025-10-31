@@ -1,0 +1,151 @@
+.container {
+  min-height: 100vh;
+  background: #9b8e66;
+  padding: 20px;
+}
+
+.titulo {
+  color: #ffffff;
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.subtitulo {
+  color: #b0b0b0;
+  font-size: 1.2rem;
+}
+
+.gridSalas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.cardSala {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  padding: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.cardSala:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.nomeSala {
+  color: #ffffff;
+  font-size: 1.3rem;
+  margin: 0;
+}
+
+.dificuldade {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.facil {
+  background: #28a745;
+  color: white;
+}
+
+.medio {
+  background: #ffc107;
+  color: black;
+}
+
+.dificil {
+  background: #fd7e14;
+  color: white;
+}
+
+.expert {
+  background: #dc3545;
+  color: white;
+}
+
+.skins {
+  background: #6f42c1;
+  color: white;
+}
+
+.cardContent {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.lotacao {
+  color: #b0b0b0;
+  font-size: 0.9rem;
+}
+
+.botaoEntrar {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s ease;
+}
+
+.botaoEntrar:hover {
+  background: #0056b3;
+}
+
+.botaoEntrar:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.botaoLoja {
+  background: #6f42c1;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s ease;
+}
+
+.botaoLoja:hover {
+  background: #59359f;
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .gridSalas {
+    grid-template-columns: 1fr;
+  }
+
+  .cardContent {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .botaoEntrar,
+  .botaoLoja {
+    width: 100%;
+  }
+}
