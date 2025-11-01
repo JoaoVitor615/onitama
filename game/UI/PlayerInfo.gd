@@ -4,12 +4,27 @@ extends Control
 @onready var player_name_label: Label = $PlayerNameLabel
 
 func _ready() -> void:
-	# Conecta ao sinal do JavaScriptBridge
-	if JavaScriptBridge:
-		JavaScriptBridge.player_data_received.connect(_on_player_data_received)
-		# Se já tiver dados, atualiza imediatamente
-		if not JavaScriptBridge.player_name.is_empty():
-			_update_player_name(JavaScriptBridge.player_name)
+	# Espera um frame para garantir que o autoload está carregado
+	await get_tree().process_frame
+	_connect_to_bridge()
+
+func _connect_to_bridge() -> void:
+	# Acessa o autoload JavaScriptBridge
+	var bridge = get_node_or_null("/root/JavaScriptBridge")
+	if not bridge:
+		# Tenta novamente depois
+		get_tree().create_timer(0.1).timeout.connect(_connect_to_bridge)
+		return
+	
+	# Conecta ao sinal
+	if bridge.has_signal("player_data_received"):
+		if not bridge.player_data_received.is_connected(_on_player_data_received):
+			bridge.player_data_received.connect(_on_player_data_received)
+	
+	# Verifica se já tem dados
+	var current_name = bridge.get("player_name")
+	if current_name and str(current_name) != "":
+		_update_player_name(str(current_name))
 
 func _on_player_data_received(data: Dictionary) -> void:
 	if data.has("player_name"):
