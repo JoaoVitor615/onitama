@@ -49,13 +49,12 @@ func get_walkable_cells(unit: Unit, selected_card: Card.CardType) -> PackedVecto
 ## Clears, and refills the `_units` dictionary with game objects that are on the board.
 func _reinitialize() -> void:
 	_units.clear()
-
 	for child in get_children():
 		var unit := child as Unit
 		if not unit:
 			continue
-		_units[unit.cell] = unit
 
+		_units[unit.cell] = unit
 
 ## Returns an array with all the coordinates of walkable cells based on the `max_distance`.
 func _flood_fill(cell: Vector2, max_distance: int) -> Array:

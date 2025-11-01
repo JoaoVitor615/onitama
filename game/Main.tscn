@@ -1,4 +1,4 @@
-[gd_scene load_steps=28 format=4 uid="uid://30jb4kc5kf5p"]
+[gd_scene load_steps=26 format=4 uid="uid://30jb4kc5kf5p"]
 
 [ext_resource type="PackedScene" uid="uid://bv1ul1qynrdwd" path="res://GameBoard/Cursor/Cursor.tscn" id="1"]
 [ext_resource type="Texture2D" uid="uid://cocms0prufyqi" path="res://Background/grasslands.png" id="1_5vvyt"]
@@ -9,8 +9,6 @@
 [ext_resource type="Texture2D" uid="uid://cansjd7oqbysh" path="res://icon.png" id="4_j4qnp"]
 [ext_resource type="PackedScene" uid="uid://dogbk12p1cm4d" path="res://UnitOverlay/UnitOverlay.tscn" id="5"]
 [ext_resource type="PackedScene" uid="uid://d1likmlo5i2ck" path="res://GameBoard/UnitPath.tscn" id="6"]
-[ext_resource type="Texture2D" uid="uid://b1o4kg22rw4mc" path="res://Units/assets/estudante_azul/estudante_azul_mov.png" id="9_03owx"]
-[ext_resource type="Texture2D" uid="uid://c0uhka6oprgyn" path="res://Units/assets/mestre_azul/mestre_azul1.png" id="10_wkp8b"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_5tkph"]
 texture = ExtResource("1_5vvyt")
@@ -74,6 +72,12 @@ sources/2 = SubResource("TileSetAtlasSource_cat8j")
 sources/3 = SubResource("TileSetAtlasSource_tlhoj")
 sources/4 = SubResource("TileSetAtlasSource_w16gf")
 
+[sub_resource type="Curve2D" id="Curve2D_03owx"]
+resource_local_to_scene = true
+
+[sub_resource type="Curve2D" id="Curve2D_wkp8b"]
+resource_local_to_scene = true
+
 [sub_resource type="Curve2D" id="Curve2D_20pc6"]
 resource_local_to_scene = true
 
@@ -98,12 +102,6 @@ resource_local_to_scene = true
 [sub_resource type="Curve2D" id="Curve2D_kjvhd"]
 resource_local_to_scene = true
 
-[sub_resource type="Curve2D" id="Curve2D_5tuhn"]
-resource_local_to_scene = true
-
-[sub_resource type="Curve2D" id="Curve2D_2gh4u"]
-resource_local_to_scene = true
-
 [node name="Main" type="Node2D"]
 
 [node name="Board" type="TileMapLayer" parent="."]
@@ -123,76 +121,67 @@ modulate = Color(0, 1, 0, 0.5647059)
 
 [node name="BlueMaster" parent="GameBoard" instance=ExtResource("2")]
 position = Vector2(56, 23)
+curve = SubResource("Curve2D_03owx")
+move_range = 5
+frame = 16
+skin_offset = Vector2(1, 1)
+
+[node name="BlueStudent1" parent="GameBoard" instance=ExtResource("2")]
+position = Vector2(23, 23)
+curve = SubResource("Curve2D_wkp8b")
+move_range = 5
+invert_movement = true
+skin_offset = Vector2(1, 1)
+
+[node name="BlueStudent2" parent="GameBoard" instance=ExtResource("2")]
+position = Vector2(39, 23)
 curve = SubResource("Curve2D_20pc6")
 move_range = 5
 invert_movement = true
 skin_offset = Vector2(1, 1)
 
-[node name="BlueStudent1" parent="GameBoard" instance=ExtResource("2")]
-position = Vector2(23, 23)
+[node name="BlueStudent3" parent="GameBoard" instance=ExtResource("2")]
+position = Vector2(71, 23)
 curve = SubResource("Curve2D_5vvyt")
 move_range = 5
 invert_movement = true
-skin = ExtResource("9_03owx")
-skin_offset = Vector2(1, 1)
-
-[node name="BlueStudent2" parent="GameBoard" instance=ExtResource("2")]
-position = Vector2(39, 23)
-curve = SubResource("Curve2D_c6i3y")
-move_range = 5
-invert_movement = true
-skin = ExtResource("9_03owx")
-skin_offset = Vector2(1, 1)
-
-[node name="BlueStudent3" parent="GameBoard" instance=ExtResource("2")]
-position = Vector2(71, 23)
-curve = SubResource("Curve2D_c2ibq")
-move_range = 5
-invert_movement = true
-skin = ExtResource("9_03owx")
 skin_offset = Vector2(1, 1)
 
 [node name="BlueStudent4" parent="GameBoard" instance=ExtResource("2")]
 position = Vector2(87, 23)
-curve = SubResource("Curve2D_j4qnp")
+curve = SubResource("Curve2D_c6i3y")
 move_range = 5
 invert_movement = true
-skin = ExtResource("9_03owx")
 skin_offset = Vector2(1, 1)
 
 [node name="RedMaster" parent="GameBoard" instance=ExtResource("2")]
 position = Vector2(56, 87)
-curve = SubResource("Curve2D_fpfj3")
+curve = SubResource("Curve2D_c2ibq")
 move_range = 5
-skin = ExtResource("10_wkp8b")
 skin_offset = Vector2(1, 1)
 
 [node name="RedStudent1" parent="GameBoard" instance=ExtResource("2")]
 position = Vector2(23, 87)
-curve = SubResource("Curve2D_sc1dx")
+curve = SubResource("Curve2D_j4qnp")
 move_range = 5
-skin = ExtResource("9_03owx")
 skin_offset = Vector2(1, 1)
 
 [node name="RedStudent2" parent="GameBoard" instance=ExtResource("2")]
 position = Vector2(39, 87)
-curve = SubResource("Curve2D_kjvhd")
+curve = SubResource("Curve2D_fpfj3")
 move_range = 5
-skin = ExtResource("9_03owx")
 skin_offset = Vector2(1, 1)
 
 [node name="RedStudent3" parent="GameBoard" instance=ExtResource("2")]
 position = Vector2(71, 87)
-curve = SubResource("Curve2D_5tuhn")
+curve = SubResource("Curve2D_sc1dx")
 move_range = 5
-skin = ExtResource("9_03owx")
 skin_offset = Vector2(1, 1)
 
 [node name="RedStudent4" parent="GameBoard" instance=ExtResource("2")]
 position = Vector2(87, 87)
-curve = SubResource("Curve2D_2gh4u")
+curve = SubResource("Curve2D_kjvhd")
 move_range = 5
-skin = ExtResource("9_03owx")
 skin_offset = Vector2(1, 1)
 
 [connection signal="accept_pressed" from="GameBoard/Cursor" to="GameBoard" method="_on_Cursor_accept_pressed"]
