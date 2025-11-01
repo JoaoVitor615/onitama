@@ -17,8 +17,6 @@ signal walk_finished
 
 @export var invert_movement : bool = false
 
-@export var frame: int = 0
-
 ## Texture representing the unit.
 @export var skin: Texture:
 	set(value):
@@ -34,7 +32,15 @@ signal walk_finished
 		if not _sprite:
 			await ready
 		_sprite.position = value
-
+		
+## The frame index to display from the sprite sheet
+@export var frame: int = 0:
+	set(value):
+		frame = value
+		if not _sprite:
+			await ready
+		_sprite.frame = value
+		
 ## Coordinates of the current cell the cursor moved to.
 var cell := Vector2.ZERO:
 	set(value):

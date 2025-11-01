@@ -123,8 +123,8 @@ modulate = Color(0, 1, 0, 0.5647059)
 position = Vector2(56, 23)
 curve = SubResource("Curve2D_03owx")
 move_range = 5
-frame = 16
 skin_offset = Vector2(1, 1)
+frame = 32
 
 [node name="BlueStudent1" parent="GameBoard" instance=ExtResource("2")]
 position = Vector2(23, 23)
@@ -132,6 +132,7 @@ curve = SubResource("Curve2D_wkp8b")
 move_range = 5
 invert_movement = true
 skin_offset = Vector2(1, 1)
+frame = 48
 
 [node name="BlueStudent2" parent="GameBoard" instance=ExtResource("2")]
 position = Vector2(39, 23)
@@ -139,6 +140,7 @@ curve = SubResource("Curve2D_20pc6")
 move_range = 5
 invert_movement = true
 skin_offset = Vector2(1, 1)
+frame = 48
 
 [node name="BlueStudent3" parent="GameBoard" instance=ExtResource("2")]
 position = Vector2(71, 23)
@@ -146,6 +148,7 @@ curve = SubResource("Curve2D_5vvyt")
 move_range = 5
 invert_movement = true
 skin_offset = Vector2(1, 1)
+frame = 48
 
 [node name="BlueStudent4" parent="GameBoard" instance=ExtResource("2")]
 position = Vector2(87, 23)
@@ -153,6 +156,7 @@ curve = SubResource("Curve2D_c6i3y")
 move_range = 5
 invert_movement = true
 skin_offset = Vector2(1, 1)
+frame = 48
 
 [node name="RedMaster" parent="GameBoard" instance=ExtResource("2")]
 position = Vector2(56, 87)
@@ -165,24 +169,28 @@ position = Vector2(23, 87)
 curve = SubResource("Curve2D_j4qnp")
 move_range = 5
 skin_offset = Vector2(1, 1)
+frame = 16
 
 [node name="RedStudent2" parent="GameBoard" instance=ExtResource("2")]
 position = Vector2(39, 87)
 curve = SubResource("Curve2D_fpfj3")
 move_range = 5
 skin_offset = Vector2(1, 1)
+frame = 16
 
 [node name="RedStudent3" parent="GameBoard" instance=ExtResource("2")]
 position = Vector2(71, 87)
 curve = SubResource("Curve2D_sc1dx")
 move_range = 5
 skin_offset = Vector2(1, 1)
+frame = 16
 
 [node name="RedStudent4" parent="GameBoard" instance=ExtResource("2")]
 position = Vector2(87, 87)
 curve = SubResource("Curve2D_kjvhd")
 move_range = 5
 skin_offset = Vector2(1, 1)
+frame = 16
 
 [connection signal="accept_pressed" from="GameBoard/Cursor" to="GameBoard" method="_on_Cursor_accept_pressed"]
 [connection signal="moved" from="GameBoard/Cursor" to="GameBoard" method="_on_Cursor_moved"]
