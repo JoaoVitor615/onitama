@@ -2,6 +2,7 @@
 extends Control
 
 @onready var player_name_label: Label = $PlayerNameLabel
+@onready var username_label: Label = $UsernameLabel
 
 func _ready() -> void:
 	# Espera um frame para garantir que o autoload está carregado
@@ -36,6 +37,8 @@ func _update_player_name(name: String) -> void:
 	if player_name_label:
 		var display_text = "Jogador: " + name
 		player_name_label.text = display_text
-		var username = $UsernameLabel
-		username.text = name
 		print("[PlayerInfo] Nome do jogador atualizado: ", display_text)
+	
+	# Atualiza também o UsernameLabel se existir
+	if username_label:
+		username_label.text = name
