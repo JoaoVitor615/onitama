@@ -16,7 +16,7 @@ signal walk_finished
 @export var move_speed := 600.0
 
 @export var invert_movement : bool = false
-	
+
 ## Texture representing the unit.
 @export var skin: Texture:
 	set(value):
@@ -32,7 +32,15 @@ signal walk_finished
 		if not _sprite:
 			await ready
 		_sprite.position = value
-
+		
+## The frame index to display from the sprite sheet
+@export var frame: int = 0:
+	set(value):
+		frame = value
+		if not _sprite:
+			await ready
+		_sprite.frame = value
+		
 ## Coordinates of the current cell the cursor moved to.
 var cell := Vector2.ZERO:
 	set(value):
@@ -61,7 +69,6 @@ var _is_walking := false:
 func _ready() -> void:
 	set_process(false)
 	_path_follow.rotates = false
-
 	cell = grid.calculate_grid_coordinates(position)
 	position = grid.calculate_map_position(cell)
 
