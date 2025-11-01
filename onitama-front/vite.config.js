@@ -1,21 +1,49 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import fs from "fs";
+import path from "path";
 
 export default defineConfig({
   plugins: [
     react(),
-    // Plugin customizado para garantir que arquivos HTML do Godot sejam servidos corretamente
+    // Plugin customizado para servir arquivos do Godot como estáticos
+    // Deve executar ANTES de qualquer outro middleware do Vite
     {
-      name: "godot-html-fix",
+      name: "godot-static-files",
       configureServer(server) {
+        // Adicionar middleware ANTES do Vite processar
         server.middlewares.use((req, res, next) => {
-          // Garantir que arquivos HTML na pasta godot-onitama sejam servidos corretamente
-          if (req.url && req.url.startsWith("/godot-onitama/") && req.url.endsWith(".html")) {
-            res.setHeader("Content-Type", "text/html");
+          // Se for um arquivo do Godot, servir diretamente sem processamento
+          if (req.url && req.url.startsWith("/godot-onitama/")) {
+            const filePath = path.join(__dirname, "public", req.url);
+            
+            // Verificar se o arquivo existe
+            if (fs.existsSync(filePath)) {
+              const ext = path.extname(filePath);
+              let contentType = "application/octet-stream";
+              
+              // Definir Content-Type apropriado
+              if (ext === ".html") contentType = "text/html; charset=utf-8";
+              else if (ext === ".js") contentType = "application/javascript; charset=utf-8";
+              else if (ext === ".wasm") contentType = "application/wasm";
+              else if (ext === ".pck") contentType = "application/octet-stream";
+              else if (ext === ".png") contentType = "image/png";
+              
+              res.setHeader("Content-Type", contentType);
+              res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
+              res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+              
+              // Ler e servir o arquivo diretamente
+              const fileContent = fs.readFileSync(filePath);
+              res.end(fileContent);
+              return;
+            }
           }
           next();
         });
       },
+      // Garantir que este plugin execute primeiro
+      enforce: "pre",
     },
   ],
   server: {
@@ -25,15 +53,19 @@ export default defineConfig({
       "Cross-Origin-Opener-Policy": "same-origin",
       "Cross-Origin-Resource-Policy": "cross-origin",
     },
-    // Garantir que arquivos estáticos sejam servidos corretamente
     fs: {
       strict: false,
     },
   },
   build: {
     assetsDir: "assets",
+    rollupOptions: {
+      // Não processar arquivos do Godot no build
+      external: (id) => {
+        return id.includes("/godot-onitama/");
+      },
+    },
   },
   publicDir: "public",
-  // Garantir que os arquivos do Godot sejam servidos corretamente
-  assetsInclude: ["**/*.js", "**/*.wasm", "**/*.pck", "**/*.html"],
+  assetsInclude: ["**/*.wasm", "**/*.pck"],
 });
