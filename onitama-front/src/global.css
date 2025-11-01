@@ -1,0 +1,31 @@
+:root {
+  --font-main: Helvetica, sans-serif;
+  --cor-principal: rgb(184, 150, 81);
+  --background-color: rgb(255, 255, 255);
+  --cor-texto: rgb(0, 0, 0);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:focus {
+  outline: transparent;
+  box-shadow: 0 0 0 2px var(--cor-principal);
+}
+
+body,
+input,
+textarea,
+p,
+label, a {
+  font-size: 1.7dvh;
+  font-family: var(--font-main);
+  color: var(--cor-texto);
+}
+
+a{
+   margin-top: 4%;
+}
