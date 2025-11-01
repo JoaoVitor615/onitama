@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { UsuarioService } from './usuarios.service';
 import UsuarioDTO from './dto/usuario.dto';
 
@@ -13,12 +13,13 @@ export class UsuariosController {
 
   @Post('gravar')
   async Criar(@Body() data: UsuarioDTO) {
+    console.log(data)
     return await this.usuariosService.Gravar(data);
   }
 
-  @Get('deletar/:id')
-  async Deletar(@Param('id') id: number) {
-    return await this.usuariosService.Deletar(id);
+  @Delete('deletar/:id')
+  async Deletar(@Param('id') id: string) {
+    return await this.usuariosService.Deletar(+id);
   }
 
   @Get('carregar-por-hash/:hash')

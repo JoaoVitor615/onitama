@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, Injectable } from "@nestjs/common";
+import { BadRequestException, HttpException, Injectable, NotFoundException } from "@nestjs/common";
 import { UsuarioRepository } from "./repository/usuario.repository";
 import UsuarioDTO from "./dto/usuario.dto";
 import Utilitarios from "../../classes/Utilitarios";
@@ -40,7 +40,11 @@ export class UsuarioService {
     }
 
     async CarregarPorHash(hash: string) {
-        return await this.usuarioRepository.CarregarPorHash(hash);
+        const usuario = await this.usuarioRepository.CarregarPorHash(hash);
+
+        if (!usuario) throw new NotFoundException("Usuário não encontrado");
+
+        return usuario;
     }
 
 }
