@@ -9,23 +9,22 @@ function GameIframe({ playerData = null }) {
     // Usar caminho absoluto baseado na localização atual
     const htmlPath = window.location.origin + "/godot-onitama/Onitama.html";
     
-    if (iframeRef.current) {
-      // Definir src diretamente - o Vite servirá o arquivo da pasta public
-      iframeRef.current.src = htmlPath;
-      
-      // Verificar se o arquivo existe após um pequeno delay
-      setTimeout(async () => {
-        try {
-          const response = await fetch(htmlPath, { method: 'HEAD' });
-          if (!response.ok) {
-            throw new Error("Arquivo HTML não encontrado");
+    // Verificar primeiro se o arquivo está disponível
+    fetch(htmlPath, { method: 'HEAD' })
+      .then((response) => {
+        if (response.ok && response.headers.get("content-type")?.includes("text/html")) {
+          if (iframeRef.current) {
+            iframeRef.current.src = htmlPath;
           }
-        } catch (err) {
-          setError("Arquivo HTML não encontrado: " + htmlPath);
-          setIsLoading(false);
+        } else {
+          throw new Error(`Content-Type incorreto: ${response.headers.get("content-type")}`);
         }
-      }, 100);
-    }
+      })
+      .catch((err) => {
+        console.error("Erro ao carregar jogo Godot:", err);
+        setError("Erro ao carregar o jogo: " + err.message);
+        setIsLoading(false);
+      });
   }, []);
 
   // Envia dados para o Godot quando disponível
