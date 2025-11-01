@@ -37,5 +37,5 @@ func _update_player_name(name: String) -> void:
 		var display_text = "Jogador: " + name
 		player_name_label.text = display_text
 		var username = $UsernameLabel
-		username.text = display_text
+		username.text = name
 		print("[PlayerInfo] Nome do jogador atualizado: ", display_text)
