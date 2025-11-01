@@ -1,5 +1,7 @@
-res://Units/Unit.tscn
+res://UnitOverlay/Card.gd
+res://GameBoard/GameBoard.gd
+res://GameBoard/Grid.gd
+res://Main.tscn
 res://GameBoard/unit_path_tileset.tres
 res://UnitOverlay/unit_overlay_tileset.tres
 res://Units/Unit.gd
-res://Main.tscn

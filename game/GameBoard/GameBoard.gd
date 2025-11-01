@@ -1,18 +1,28 @@
-## Represents and manages the game board. Stores references to entities that are in each cell and
-## tells whether cells are occupied or not.
-## Units can only move around the grid one at a time.
 class_name GameBoard
 extends Node2D
 
 const DIRECTIONS = [Vector2.LEFT, Vector2.RIGHT, Vector2.UP, Vector2.DOWN]
 
 ## Resource of type Grid.
-@export var grid: Resource = preload("res://GameBoard/Grid.tres")
+@onready var grid: Resource = preload("res://GameBoard/Grid.tres")
+
+# --- NOVO CÓDIGO ---
+@export var blue_card_1: TextureButton
+@export var blue_card_2: TextureButton
+@export var win_label: Label
+
+# Esta variável vai guardar qual carta o jogador selecionou
+# Começa como -1 (que significa "nenhuma carta selecionada")
+var _selected_card = -1
 
 ## Mapping of coordinates of a cell to a reference to the unit it contains.
 var _units := {}
 var _active_unit: Unit
 var _walkable_cells := []
+
+#TURNO
+enum PlayerTurn { BLUE, RED } # BLUE = Top, RED = Bottom
+var current_turn: PlayerTurn = PlayerTurn.RED
 
 @onready var _unit_overlay: UnitOverlay = $UnitOverlay
 @onready var _unit_path: UnitPath = $UnitPath
@@ -20,6 +30,11 @@ var _walkable_cells := []
 
 func _ready() -> void:
 	_reinitialize()
+
+
+	# Conecta os sinais dos botões a novas funções que criaremos
+	blue_card_1.pressed.connect(_on_blue_card_1_pressed)
+	blue_card_2.pressed.connect(_on_blue_card_2_pressed)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -43,61 +58,85 @@ func is_occupied(cell: Vector2) -> bool:
 ## Returns an array of cells a given unit can walk using the flood fill algorithm.
 func get_walkable_cells(unit: Unit, selected_card: Card.CardType) -> PackedVector2Array:
 	
-	return Card.get_relative_position(unit, selected_card)
+	# 1. Pega todos os movimentos POSSÍVEIS da carta
+	var potential_moves = Card.get_relative_position(unit, selected_card)
+	
+	# 2. Cria uma lista vazia para os movimentos VÁLIDOS
+	var valid_moves := PackedVector2Array() 
+	
+	# 3. Filtra a lista
+	for move in potential_moves:
+		
+		if grid.is_within_bounds(move): 
+			valid_moves.append(move)
+	
+	# 4. Retorna APENAS os movimentos que estão dentro do tabuleiro
+	return valid_moves
 
 
 ## Clears, and refills the `_units` dictionary with game objects that are on the board.
 func _reinitialize() -> void:
 	_units.clear()
+
 	for child in get_children():
 		var unit := child as Unit
 		if not unit:
 			continue
-
 		_units[unit.cell] = unit
 
-## Returns an array with all the coordinates of walkable cells based on the `max_distance`.
-func _flood_fill(cell: Vector2, max_distance: int) -> Array:
-	var array := []
-	var stack := [cell]
-	while not stack.size() == 0:
-		var current = stack.pop_back()
-		if not grid.is_within_bounds(current):
-			continue
-		if current in array:
-			continue
-
-		var difference: Vector2 = (current - cell).abs()
-		var distance := int(difference.x + difference.y)
-		if distance > max_distance:
-			continue
-
-		array.append(current)
-		for direction in DIRECTIONS:
-			var coordinates: Vector2 = current + direction
-			if is_occupied(coordinates):
-				continue
-			if coordinates in array:
-				continue
-			# Minor optimization: If this neighbor is already queued
-			#	to be checked, we don't need to queue it again
-			if coordinates in stack:
-				continue
-
-			stack.append(coordinates)
-	return array
 
 
 ## Updates the _units dictionary with the target position for the unit and asks the _active_unit to walk to it.
 func _move_active_unit(new_cell: Vector2) -> void:
-	if is_occupied(new_cell) or not new_cell in _walkable_cells:
+	if not new_cell in _walkable_cells:
 		return
-	# warning-ignore:return_value_discarded
+
+	var captured_master = false 
+
+	# 1. Lógica de Captura
+	if is_occupied(new_cell):
+		var target_unit = _units[new_cell]
+		
+		if target_unit.invert_movement == _active_unit.invert_movement:
+			return
+		else:
+			if target_unit.is_master_piece:
+				captured_master = true
+
+			_units.erase(new_cell) 
+			target_unit.queue_free()
+	
+	# 2. Lógica de Movimento
 	_units.erase(_active_unit.cell)
 	_units[new_cell] = _active_unit
+	
 	_deselect_active_unit()
 	_active_unit.walk_along(_unit_path.current_path)
-	await _active_unit.walk_finished
+	
+	await _active_unit.walk_finished 
+	
+	# 3. Checa a Vitória por Captura
+	if captured_master:
+		_game_over(_active_unit) 
+		return 
+
+	# 4. VERIFICAÇÃO DE VITÓRIA 2: CAMINHO DO RIO (CORRIGIDA)
+	if _active_unit.is_master_piece:
+		var target_cell = Vector2i.ZERO
+		
+		if _active_unit.invert_movement: # Mestre AZUL (Top, true)
+			# Templo Vermelho (Bottom, centro, 2, 4)
+			target_cell = Vector2i(grid.size.x / 2, grid.size.y - 1) 
+		else: # Mestre VERMELHO (Bottom, false)
+			# Templo Azul (Top, centro, 2, 0)
+			target_cell = Vector2i(grid.size.x / 2, 0) 
+		
+		if Vector2i(_active_unit.cell) == target_cell:
+			_game_over(_active_unit)
+			return
+
+	# 5. Se ninguém venceu, troca o turno
+	_switch_turn()
 	_clear_active_unit()
 
 
@@ -106,12 +145,11 @@ func _move_active_unit(new_cell: Vector2) -> void:
 func _select_unit(cell: Vector2) -> void:
 	if not _units.has(cell):
 		return
-
 	_active_unit = _units[cell]
 	_active_unit.is_selected = true
-	_walkable_cells = get_walkable_cells(_active_unit, Card.CardType.COBRA)
+	_walkable_cells = get_walkable_cells(_active_unit, _selected_card) 
 	_unit_overlay.draw(_walkable_cells)
-	#_unit_path.initialize(_walkable_cells)
+	
 
 
 ## Deselects the active unit, clearing the cells overlay and interactive path drawing.
@@ -126,16 +164,108 @@ func _clear_active_unit() -> void:
 	_active_unit = null
 	_walkable_cells.clear()
 
+	# --- NOVO CÓDIGO ---
+	# Reseta a seleção da carta
+	_selected_card = -1
+	
 
-## Selects or moves a unit based on where the cursor is.
 func _on_Cursor_accept_pressed(cell: Vector2) -> void:
+	var unit_at_cell = _units.get(cell, null)
+	
 	if not _active_unit:
-		_select_unit(cell)
+		# 1. NENHUMA UNIDADE SELECIONADA
+		if _selected_card == -1:
+			print("Por favor, selecione uma CARTA primeiro!")
+			return
+			
+		if unit_at_cell:
+			
+			# --- VERIFICAÇÃO DE TURNO (CORRIGIDA) ---
+			# É o turno do VERMELHO (Bottom, false), mas a peça é AZUL (Top, true)?
+			if current_turn == PlayerTurn.RED and unit_at_cell.invert_movement:
+				print("Não é seu turno! (É a vez do VERMELHO)")
+				return
+			
+			# É o turno do AZUL (Top, true), mas a peça é VERMELHA (Bottom, false)?
+			elif current_turn == PlayerTurn.BLUE and not unit_at_cell.invert_movement:
+				print("Não é seu turno! (É a vez do AZUL)")
+				return
+			# -----------------------------
+
+			_select_unit(cell)
+			
 	elif _active_unit.is_selected:
-		_move_active_unit(cell)
+		# 2. UMA UNIDADE JÁ ESTÁ SELECIONADA
+		
+		if unit_at_cell:
+			# 2a. Clicou em uma célula OCUPADA
+			
+			if unit_at_cell == _active_unit:
+				# Clicou na MESMA unidade -> Cancela tudo
+				_deselect_active_unit()
+				_clear_active_unit()
+			
+			# Clicou em OUTRA unidade "amiga"?
+			elif unit_at_cell.invert_movement == _active_unit.invert_movement:
+				# Troca a seleção (NÃO limpa a carta)
+				_deselect_active_unit()
+				_select_unit(cell)
+			else:
+				# Clicou em uma unidade "inimiga" -> Tenta mover/capturar
+				_move_active_unit(cell)
+		else:
+			# 2b. Clicou em uma célula VAZIA
+			
+			if cell in _walkable_cells:
+				# Célula vazia válida -> Move
+				_move_active_unit(cell)
+			else:
+				# Célula vazia inválida -> Cancela tudo
+				_deselect_active_unit()
+				_clear_active_unit()
 
 
 ## Updates the interactive path's drawing if there's an active and selected unit.
 func _on_Cursor_moved(new_cell: Vector2) -> void:
 	if _active_unit and _active_unit.is_selected:
 		_unit_path.draw(_active_unit.cell, new_cell)
+		
+		
+func _switch_turn() -> void:
+	if current_turn == PlayerTurn.RED: # Se era o VERMELHO (Bottom)
+		current_turn = PlayerTurn.BLUE # Agora é o AZUL (Top)
+		print("--- TURNO: JOGADOR AZUL ---")
+	else: # Se era o AZUL (Top)
+		current_turn = PlayerTurn.RED # Agora é o VERMELHO (Bottom)
+		print("--- TURNO: JOGADOR VERMELHO ---")
+	
+# Chamada quando o botão 1 é clicado
+func _on_blue_card_1_pressed():
+	# ATENÇÃO: Mude "TIGER" para a carta que você colocou na textura!
+	_selected_card = Card.CardType.TIGER 
+	print("Carta TIGER selecionada!")
+	
+
+# Chamada quando o botão 2 é clicado
+func _on_blue_card_2_pressed():
+	# ATENÇÃO: Mude "CRAB" para a carta que você colocou na textura!
+	_selected_card = Card.CardType.CRAB
+	print("Carta CRAB selecionada!")
+
+func _game_over(winning_unit: Unit):
+	set_process_unhandled_input(false) 
+
+	# 1. Descobre quem venceu (CORRIGIDO)
+	var winner_color = "VERMELHO" # Assume VERMELHO (Bottom, false) venceu
+	if winning_unit.invert_movement: # Se a peça vencedora for AZUL (Top, true)
+		winner_color = "AZUL"
+		
+	# 2. Mostra a mensagem de vitória
+	if win_label:
+		win_label.text = "FIM DE JOGO!\nO Jogador %s VENCEU!" % winner_color
+		win_label.visible = true
+	else:
+		print("FIM DE JOGO! Jogador %s VENCEU!" % winner_color)
+		
+	for unit in _units.values():
+		unit.set_process(false)

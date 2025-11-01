@@ -12,7 +12,7 @@ static func get_relative_position(unit: Unit, card: CardType) -> Array[Vector2]:
 	
 static var cards: Dictionary[CardType, PackedVector2Array] = { # movement: [[x, y], [x, y]] - piece is [0, 0]
 	CardType.TIGER    : [Vector2i(0, -2), Vector2i(0, 1)],
-	CardType.CRAB     : [Vector2i(-2, 0), Vector2i(2, 0), Vector2i(0, 1)],
+	CardType.CRAB     : [Vector2i(-2, 0), Vector2i(2, 0), Vector2i(0, -1)],
 	CardType.MONKEY   : [Vector2i(-1,-1), Vector2i(1, 1), Vector2i(1, -1), Vector2i(-1, 1)],
 	CardType.CRANE    : [Vector2i(-1, 1), Vector2i(1, 1), Vector2i(0, -1)],
 	CardType.DRAGON   : [Vector2i(-2, -1), Vector2i(-1, 1), Vector2i(1, 1), Vector2i(2, -1)],
@@ -46,4 +46,3 @@ enum CardType {
 	OX,
 	COBRA
 }
-	
