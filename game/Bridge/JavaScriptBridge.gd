@@ -161,4 +161,3 @@ func _setup_postmessage_listener() -> void:
 	};
 	"""
 	_eval_js(direct_call_code)
-
