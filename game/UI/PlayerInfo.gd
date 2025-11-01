@@ -19,6 +19,7 @@ func _on_player_data_received(data: Dictionary) -> void:
 
 func _update_player_name(name: String) -> void:
 	if player_name_label:
-		player_name_label.text = "Jogador: " + name
-		print("[PlayerInfo] Nome do jogador atualizado: ", name)
+		var display_text = "Jogador: " + name
+		player_name_label.text = display_text
+		print("[PlayerInfo] Nome do jogador atualizado: ", display_text)
 

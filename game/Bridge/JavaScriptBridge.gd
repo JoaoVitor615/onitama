@@ -8,6 +8,7 @@ signal game_data_updated(data: Dictionary)
 var player_name: String = ""
 var player_data: Dictionary = {}
 var is_javascript_ready: bool = false
+var _polling_timer: Timer
 
 ## Recebe dados do JavaScript via função global (pode receber JSON string ou Dictionary)
 func receive_from_javascript(data) -> void:
@@ -56,8 +57,16 @@ func _ready() -> void:
 		await get_tree().process_frame  # Espera um frame para garantir que tudo está carregado
 		_setup_javascript_interface()
 		_setup_postmessage_listener()
+		_setup_polling_timer()
 	else:
 		print("[JavaScriptBridge] Não está rodando na web, bridge JavaScript desabilitado")
+
+func _setup_polling_timer() -> void:
+	_polling_timer = Timer.new()
+	_polling_timer.wait_time = 0.1
+	_polling_timer.autostart = true
+	_polling_timer.timeout.connect(_check_for_data)
+	add_child(_polling_timer)
 
 func _setup_javascript_interface() -> void:
 	# Usa uma abordagem simples: armazena dados em uma variável global
@@ -78,9 +87,6 @@ func _setup_javascript_interface() -> void:
 	is_javascript_ready = true
 	print("[JavaScriptBridge] Interface JavaScript configurada")
 	
-	# Inicia polling para verificar novos dados
-	_check_for_data()
-
 func _check_for_data() -> void:
 	if not OS.has_feature("web"):
 		return
@@ -96,12 +102,10 @@ func _check_for_data() -> void:
 	"""
 	
 	var result = JavaScriptBridge.eval(js_code, true)
-	if result != null and result != "":
-		receive_from_javascript(str(result))
-	
-	# Continua verificando periodicamente
-	await get_tree().create_timer(0.1).timeout
-	_check_for_data()
+	if result != null:
+		var result_str = str(result)
+		if result_str != "" and result_str != "null":
+			receive_from_javascript(result_str)
 
 func _setup_postmessage_listener() -> void:
 	# Configura listener para postMessage (usado quando o Godot está em iframe)
