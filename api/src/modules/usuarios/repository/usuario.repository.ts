@@ -9,13 +9,39 @@ export class UsuarioRepository {
     ) {}
 
     async CarregarTodos() {
-        return await this.prisma.usuario.findFirst({
-            where: {
-                email: "nicolaslongo18@gmail.com"
-            }
-        });
+        return await this.prisma.usuario.findMany();
     }
 
-    
+    async Criar(data: UsuarioDTO) {
+        return await this.prisma.usuario.create({
+            data
+        })
+    }
+
+    async Atualizar(data: UsuarioDTO) {
+        return await this.prisma.usuario.update({
+            where: {
+                id_usuario: data.id_usuario
+            },
+            data
+        })
+    }
+
+    async Deletar(id: number) {
+        return await this.prisma.usuario.delete({
+            where: {
+                id_usuario: id
+            }
+        })
+    }
+
+    async CarregarPorHash(hash: string) {
+        return await this.prisma.usuario.findFirst({
+            where: {
+                hash_id: hash
+            }
+        })
+    }
+
 
 }
