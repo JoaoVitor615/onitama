@@ -108,15 +108,16 @@ resource_local_to_scene = true
 [node name="Main" type="Node2D"]
 
 [node name="PlayerInfo" parent="." instance=ExtResource("11")]
-anchors_preset = 3
-anchor_left = 1.0
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_left = 10.0
-offset_top = -60.0
-offset_right = 630.0
-offset_bottom = 0.0
-grow_horizontal = 0
+z_index = 1
+anchors_preset = 0
+anchor_left = 0.0
+anchor_right = 0.0
+offset_left = 13.0
+offset_top = -22.0
+offset_right = 111.0
+offset_bottom = 11.0
+grow_horizontal = 1
+grow_vertical = 1
 
 [node name="Board" type="TileMapLayer" parent="."]
 use_parent_material = true
@@ -206,14 +207,6 @@ curve = SubResource("Curve2D_devvj")
 move_range = 5
 skin = ExtResource("9_03owx")
 skin_offset = Vector2(1, 1)
-
-[node name="UsernameLabel" type="Label" parent="."]
-offset_left = 27.0
-offset_top = 96.0
-offset_right = 106.0
-offset_bottom = 119.0
-theme_override_colors/font_color = Color(1, 0.33333334, 0.14901961, 1)
-text = "username"
 
 [connection signal="accept_pressed" from="GameBoard/Cursor" to="GameBoard" method="_on_Cursor_accept_pressed"]
 [connection signal="moved" from="GameBoard/Cursor" to="GameBoard" method="_on_Cursor_moved"]

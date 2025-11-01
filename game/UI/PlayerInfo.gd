@@ -38,7 +38,8 @@ func _update_player_name(name: String) -> void:
 		var display_text = "Jogador: " + name
 		player_name_label.text = display_text
 		print("[PlayerInfo] Nome do jogador atualizado: ", display_text)
-	
+	else:
+		print("[PlayerInfo] player_name_label não definido!")
 	# Atualiza também o UsernameLabel se existir
 	if username_label:
 		username_label.text = name
