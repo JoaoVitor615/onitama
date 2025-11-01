@@ -9,8 +9,8 @@ func _ready() -> void:
 	_connect_to_bridge()
 
 func _connect_to_bridge() -> void:
-	# Acessa o autoload JavaScriptBridge
-	var bridge = get_node_or_null("/root/JavaScriptBridge")
+	# Acessa o autoload WebBridge (renomeado para evitar conflito com singleton do Godot)
+	var bridge = get_node_or_null("/root/WebBridge")
 	if not bridge:
 		# Tenta novamente depois
 		get_tree().create_timer(0.1).timeout.connect(_connect_to_bridge)

@@ -69,14 +69,23 @@ func _setup_polling_timer() -> void:
 	add_child(_polling_timer)
 
 ## Função auxiliar para executar código JavaScript
+## Agora podemos usar JavaScriptBridge diretamente pois não há mais conflito de nomes
 func _eval_js(js_code: String) -> Variant:
 	if not OS.has_feature("web"):
 		return null
 	
-	if JavaScript.get_interface() == null:
-		return null
+	# Agora que renomeamos o autoload, podemos usar JavaScriptBridge diretamente
+	# que é o singleton do Godot para comunicação JavaScript
+	if Engine.has_singleton("JavaScriptBridge"):
+		var js_singleton = Engine.get_singleton("JavaScriptBridge")
+		if js_singleton != null:
+			# Tenta chamar eval diretamente ou via call
+			if js_singleton.has_method("eval"):
+				return js_singleton.call("eval", js_code, true)
+			else:
+				print("[WebBridge] Método eval não encontrado no singleton JavaScriptBridge")
 	
-	return JavaScript.get_interface().eval(js_code, true)
+	return null
 
 func _setup_javascript_interface() -> void:
 	# Usa uma abordagem simples: armazena dados em uma variável global
