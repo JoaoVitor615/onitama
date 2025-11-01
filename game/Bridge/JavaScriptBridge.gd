@@ -49,7 +49,7 @@ func send_to_javascript(data: Dictionary) -> void:
 		return
 	
 	var js_code = "if (window.receiveFromGodot) { window.receiveFromGodot(%s); }" % JSON.stringify(data)
-	JavaScriptBridge.eval(js_code, true)
+	_eval_js(js_code)
 
 func _ready() -> void:
 	# Configura a função global para receber dados do JavaScript
@@ -68,6 +68,16 @@ func _setup_polling_timer() -> void:
 	_polling_timer.timeout.connect(_check_for_data)
 	add_child(_polling_timer)
 
+## Função auxiliar para executar código JavaScript
+func _eval_js(js_code: String) -> Variant:
+	if not OS.has_feature("web"):
+		return null
+	
+	if JavaScript.get_interface() == null:
+		return null
+	
+	return JavaScript.get_interface().eval(js_code, true)
+
 func _setup_javascript_interface() -> void:
 	# Usa uma abordagem simples: armazena dados em uma variável global
 	# e o Godot faz polling para verificar novos dados
@@ -83,7 +93,7 @@ func _setup_javascript_interface() -> void:
 		console.log('Godot bridge ready');
 	})();
 	"""
-	JavaScriptBridge.eval(js_code, true)
+	_eval_js(js_code)
 	is_javascript_ready = true
 	print("[JavaScriptBridge] Interface JavaScript configurada")
 	
@@ -101,7 +111,7 @@ func _check_for_data() -> void:
 	})();
 	"""
 	
-	var result = JavaScriptBridge.eval(js_code, true)
+	var result = _eval_js(js_code)
 	if result != null:
 		var result_str = str(result)
 		if result_str != "" and result_str != "null":
@@ -130,7 +140,7 @@ func _setup_postmessage_listener() -> void:
 	console.log('PostMessage listener configurado');
 	"""
 	
-	JavaScriptBridge.eval(js_code, true)
+	_eval_js(js_code)
 	
 	# Também expõe uma função que pode ser chamada diretamente do React
 	# Esta função será registrada para ser chamada via call_deferred do Godot
@@ -141,5 +151,5 @@ func _setup_postmessage_listener() -> void:
 		}
 	};
 	"""
-	JavaScriptBridge.eval(direct_call_code, true)
+	_eval_js(direct_call_code)
 
