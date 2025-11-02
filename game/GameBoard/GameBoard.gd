@@ -6,14 +6,24 @@ const DIRECTIONS = [Vector2.LEFT, Vector2.RIGHT, Vector2.UP, Vector2.DOWN]
 ## Resource of type Grid.
 @onready var grid: Resource = preload("res://GameBoard/Grid.tres")
 
-# --- NOVO CÓDIGO ---
-@export var blue_card_1: TextureButton
-@export var blue_card_2: TextureButton
+@export var red_card_button_1: TextureButton
+@export var red_card_button_2: TextureButton
+@export var blue_card_button_1: TextureButton
+@export var blue_card_button_2: TextureButton
+@export var neutral_card_button: TextureButton
 @export var win_label: Label
 
-# Esta variável vai guardar qual carta o jogador selecionou
-# Começa como -1 (que significa "nenhuma carta selecionada")
-var _selected_card = -1
+# Variáveis para guardar os DADOS das cartas em cada slot
+var _red_card_1: Card.CardType
+var _red_card_2: Card.CardType
+var _blue_card_1: Card.CardType
+var _blue_card_2: Card.CardType
+var _neutral_card: Card.CardType
+
+# O tipo da carta selecionada (null = nenhuma)
+var _selected_card: Variant = null
+# Qual slot foi usado (1=R1, 2=R2, 3=B1, 4=B2)
+var _card_used_slot: int = 0
 
 ## Mapping of coordinates of a cell to a reference to the unit it contains.
 var _units := {}
@@ -30,11 +40,17 @@ var current_turn: PlayerTurn = PlayerTurn.RED
 
 func _ready() -> void:
 	_reinitialize()
-
-
-	# Conecta os sinais dos botões a novas funções que criaremos
-	blue_card_1.pressed.connect(_on_blue_card_1_pressed)
-	blue_card_2.pressed.connect(_on_blue_card_2_pressed)
+	
+	# --- NOVO CÓDIGO DE CARTAS ---
+	_deal_cards() # Sorteia e distribui as 5 cartas
+	_update_card_visuals() # Define as texturas dos botões
+	_update_button_interactivity() # Desabilita botões do jogador 2
+	
+	# Conecta os NOVOS sinais
+	red_card_button_1.pressed.connect(_on_red_card_1_pressed)
+	red_card_button_2.pressed.connect(_on_red_card_2_pressed)
+	blue_card_button_1.pressed.connect(_on_blue_card_1_pressed)
+	blue_card_button_2.pressed.connect(_on_blue_card_2_pressed)
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -115,6 +131,8 @@ func _move_active_unit(new_cell: Vector2) -> void:
 	
 	await _active_unit.walk_finished 
 	
+	_swap_cards()
+	
 	# 3. Checa a Vitória por Captura
 	if captured_master:
 		_game_over(_active_unit) 
@@ -163,10 +181,8 @@ func _deselect_active_unit() -> void:
 func _clear_active_unit() -> void:
 	_active_unit = null
 	_walkable_cells.clear()
-
-	# --- NOVO CÓDIGO ---
-	# Reseta a seleção da carta
-	_selected_card = -1
+	_selected_card = null
+	_card_used_slot = 0
 	
 
 func _on_Cursor_accept_pressed(cell: Vector2) -> void:
@@ -174,7 +190,7 @@ func _on_Cursor_accept_pressed(cell: Vector2) -> void:
 	
 	if not _active_unit:
 		# 1. NENHUMA UNIDADE SELECIONADA
-		if _selected_card == -1:
+		if _selected_card == null:
 			print("Por favor, selecione uma CARTA primeiro!")
 			return
 			
@@ -238,19 +254,33 @@ func _switch_turn() -> void:
 	else: # Se era o AZUL (Top)
 		current_turn = PlayerTurn.RED # Agora é o VERMELHO (Bottom)
 		print("--- TURNO: JOGADOR VERMELHO ---")
-	
-# Chamada quando o botão 1 é clicado
-func _on_blue_card_1_pressed():
-	# ATENÇÃO: Mude "TIGER" para a carta que você colocou na textura!
-	_selected_card = Card.CardType.TIGER 
-	print("Carta TIGER selecionada!")
+	_update_button_interactivity() # Atualiza quais botões podem ser clicados
 	
 
-# Chamada quando o botão 2 é clicado
+func _on_red_card_1_pressed():
+	if current_turn != PlayerTurn.RED: return
+	_selected_card = _red_card_1
+	_card_used_slot = 1 # Lembra qual slot foi usado
+	print("Carta selecionada: ", _red_card_1)
+	# TODO: Adicionar um brilho/feedback visual
+
+func _on_red_card_2_pressed():
+	if current_turn != PlayerTurn.RED: return
+	_selected_card = _red_card_2
+	_card_used_slot = 2
+	print("Carta selecionada: ", _red_card_2)
+
+func _on_blue_card_1_pressed():
+	if current_turn != PlayerTurn.BLUE: return
+	_selected_card = _blue_card_1
+	_card_used_slot = 3
+	print("Carta selecionada: ", _blue_card_1)
+
 func _on_blue_card_2_pressed():
-	# ATENÇÃO: Mude "CRAB" para a carta que você colocou na textura!
-	_selected_card = Card.CardType.CRAB
-	print("Carta CRAB selecionada!")
+	if current_turn != PlayerTurn.BLUE: return
+	_selected_card = _blue_card_2
+	_card_used_slot = 4
+	print("Carta selecionada: ", _blue_card_2)
 
 func _game_over(winning_unit: Unit):
 	set_process_unhandled_input(false) 
@@ -269,3 +299,59 @@ func _game_over(winning_unit: Unit):
 		
 	for unit in _units.values():
 		unit.set_process(false)
+
+
+# Sorteia as 5 cartas da partida
+func _deal_cards():
+	var all_cards = Card.cards.keys()
+	all_cards.shuffle() # Embaralha a lista de 16 cartas
+
+	# Distribui as 5 primeiras
+	# Lembre-se: Vermelho = Bottom = false | Azul = Top = true
+	_red_card_1 = all_cards[0]
+	_red_card_2 = all_cards[1]
+	_blue_card_1 = all_cards[2]
+	_blue_card_2 = all_cards[3]
+	_neutral_card = all_cards[4]
+
+# Atualiza as texturas dos botões
+func _update_card_visuals():
+	red_card_button_1.texture_normal = Card.get_card_texture(_red_card_1)
+	red_card_button_2.texture_normal = Card.get_card_texture(_red_card_2)
+	blue_card_button_1.texture_normal = Card.get_card_texture(_blue_card_1)
+	blue_card_button_2.texture_normal = Card.get_card_texture(_blue_card_2)
+	neutral_card_button.texture_normal = Card.get_card_texture(_neutral_card)
+
+# Habilita/Desabilita os botões de acordo com o turno
+func _update_button_interactivity():
+	# Lembre-se: Vermelho = Bottom | Azul = Top
+	if current_turn == PlayerTurn.RED:
+		red_card_button_1.disabled = false
+		red_card_button_2.disabled = false
+		blue_card_button_1.disabled = true
+		blue_card_button_2.disabled = true
+	else: # PlayerTurn.BLUE
+		red_card_button_1.disabled = true
+		red_card_button_2.disabled = true
+		blue_card_button_1.disabled = false
+		blue_card_button_2.disabled = false
+
+# Troca a carta usada com a carta neutra
+func _swap_cards():
+	var old_neutral_card = _neutral_card
+	
+	match _card_used_slot:
+		1: # Vermelho 1 usou
+			_neutral_card = _red_card_1
+			_red_card_1 = old_neutral_card
+		2: # Vermelho 2 usou
+			_neutral_card = _red_card_2
+			_red_card_2 = old_neutral_card
+		3: # Azul 1 usou
+			_neutral_card = _blue_card_1
+			_blue_card_1 = old_neutral_card
+		4: # Azul 2 usou
+			_neutral_card = _blue_card_2
+			_blue_card_2 = old_neutral_card
+	
+	_update_card_visuals() # Atualiza as texturas imediatamente

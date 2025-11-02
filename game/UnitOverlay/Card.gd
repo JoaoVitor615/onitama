@@ -46,3 +46,27 @@ enum CardType {
 	OX,
 	COBRA
 }
+
+static var card_textures: Dictionary[CardType, String] = {
+	CardType.TIGER    : "res://GameBoard/Cards/tiger.png",
+	CardType.CRAB     : "res://GameBoard/Cards/crab.png",
+	CardType.MONKEY   : "res://GameBoard/Cards/monkey.png",
+	CardType.CRANE    : "res://GameBoard/Cards/crane.png",
+	CardType.DRAGON   : "res://GameBoard/Cards/dragon.png",
+	CardType.ELEPHANT : "res://GameBoard/Cards/elephant.png",
+	CardType.MANTIS   : "res://GameBoard/Cards/mantis.png",
+	CardType.BOAR     : "res://GameBoard/Cards/boar.png",
+	CardType.FROG     : "res://GameBoard/Cards/frog.png",
+	CardType.GOOSE    : "res://GameBoard/Cards/goose.png",
+	CardType.HORSE    : "res://GameBoard/Cards/horse.png",
+	CardType.EEL      : "res://GameBoard/Cards/eel.png",
+	CardType.RABBIT   : "res://GameBoard/Cards/rabbit.png",
+	CardType.ROOSTER  : "res://GameBoard/Cards/rooster.png",
+	CardType.OX       : "res://GameBoard/Cards/ox.png",
+	CardType.COBRA    : "res://GameBoard/Cards/cobra.png"
+}
+
+static func get_card_texture(card: CardType) -> Texture2D:
+	if card_textures.has(card):
+		return load(card_textures[card])
+	return null # Retorna nulo se a carta não for encontrada

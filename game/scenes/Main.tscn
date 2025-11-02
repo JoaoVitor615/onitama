@@ -1,18 +1,17 @@
-[gd_scene load_steps=27 format=4 uid="uid://30jb4kc5kf5p"]
+[gd_scene load_steps=26 format=4 uid="uid://30jb4kc5kf5p"]
 
-[ext_resource type="PackedScene" uid="uid://bv1ul1qynrdwd" path="res://GameBoard/Cursor/Cursor.tscn" id="1"]
-[ext_resource type="Texture2D" uid="uid://cocms0prufyqi" path="res://Background/grasslands.png" id="1_5vvyt"]
-[ext_resource type="PackedScene" uid="uid://d4mhjq651egt" path="res://Units/Unit.tscn" id="2"]
-[ext_resource type="Texture2D" uid="uid://c84i8sfky8bs5" path="res://Background/tiles/wooden_tile.png" id="2_c6i3y"]
-[ext_resource type="Script" uid="uid://deywyrxxsvfph" path="res://GameBoard/GameBoard.gd" id="3"]
-[ext_resource type="Texture2D" uid="uid://b56x3o62iwkfq" path="res://Background/tiles/wooden_mod_tile.png" id="3_c2ibq"]
-[ext_resource type="Texture2D" uid="uid://cansjd7oqbysh" path="res://icon.png" id="4_j4qnp"]
-[ext_resource type="PackedScene" uid="uid://dogbk12p1cm4d" path="res://UnitOverlay/UnitOverlay.tscn" id="5"]
-[ext_resource type="PackedScene" uid="uid://d1likmlo5i2ck" path="res://GameBoard/UnitPath.tscn" id="6"]
-[ext_resource type="Texture2D" uid="uid://7gx46jy2uik3" path="res://GameBoard/movements/cards_icons_framed.png" id="10_wkp8b"]
+[ext_resource type="Texture2D" uid="uid://cocms0prufyqi" path="res://Background/grasslands.png" id="1_q8u5g"]
+[ext_resource type="Texture2D" uid="uid://c84i8sfky8bs5" path="res://Background/tiles/wooden_tile.png" id="2_lhr70"]
+[ext_resource type="Texture2D" uid="uid://b56x3o62iwkfq" path="res://Background/tiles/wooden_mod_tile.png" id="3_wp0k4"]
+[ext_resource type="Texture2D" uid="uid://cansjd7oqbysh" path="res://icon.png" id="4_bjd11"]
+[ext_resource type="Script" uid="uid://deywyrxxsvfph" path="res://GameBoard/GameBoard.gd" id="5_qmy6f"]
+[ext_resource type="PackedScene" uid="uid://dogbk12p1cm4d" path="res://UnitOverlay/UnitOverlay.tscn" id="6_mwfav"]
+[ext_resource type="PackedScene" uid="uid://d1likmlo5i2ck" path="res://GameBoard/UnitPath.tscn" id="7_3p2gp"]
+[ext_resource type="PackedScene" uid="uid://bv1ul1qynrdwd" path="res://GameBoard/Cursor/Cursor.tscn" id="8_cvmbd"]
+[ext_resource type="PackedScene" uid="uid://d4mhjq651egt" path="res://Units/Unit.tscn" id="9_ft6cd"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_5tkph"]
-texture = ExtResource("1_5vvyt")
+texture = ExtResource("1_q8u5g")
 texture_region_size = Vector2i(80, 80)
 0:0/next_alternative_id = 8
 0:0/0 = 0
@@ -37,18 +36,18 @@ texture_region_size = Vector2i(80, 80)
 0:0/7/transpose = true
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_c308a"]
-texture = ExtResource("1_5vvyt")
+texture = ExtResource("1_q8u5g")
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_cat8j"]
-texture = ExtResource("2_c6i3y")
+texture = ExtResource("2_lhr70")
 0:0/0 = 0
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_tlhoj"]
-texture = ExtResource("3_c2ibq")
+texture = ExtResource("3_wp0k4")
 0:0/0 = 0
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_w16gf"]
-texture = ExtResource("4_j4qnp")
+texture = ExtResource("4_bjd11")
 0:0/0 = 0
 1:0/0 = 0
 2:0/0 = 0
@@ -72,6 +71,12 @@ sources/1 = SubResource("TileSetAtlasSource_c308a")
 sources/2 = SubResource("TileSetAtlasSource_cat8j")
 sources/3 = SubResource("TileSetAtlasSource_tlhoj")
 sources/4 = SubResource("TileSetAtlasSource_w16gf")
+
+[sub_resource type="Curve2D" id="Curve2D_03owx"]
+resource_local_to_scene = true
+
+[sub_resource type="Curve2D" id="Curve2D_wkp8b"]
+resource_local_to_scene = true
 
 [sub_resource type="Curve2D" id="Curve2D_20pc6"]
 resource_local_to_scene = true
@@ -97,12 +102,6 @@ resource_local_to_scene = true
 [sub_resource type="Curve2D" id="Curve2D_kjvhd"]
 resource_local_to_scene = true
 
-[sub_resource type="Curve2D" id="Curve2D_5tuhn"]
-resource_local_to_scene = true
-
-[sub_resource type="Curve2D" id="Curve2D_2gh4u"]
-resource_local_to_scene = true
-
 [node name="Main" type="Node2D"]
 
 [node name="Board" type="TileMapLayer" parent="."]
@@ -110,94 +109,128 @@ use_parent_material = true
 tile_map_data = PackedByteArray("AAABAAIAAgAAAAAAAAABAAMAAgAAAAAAAAABAAQAAgAAAAAAAAACAAEAAgAAAAAAAAACAAIAAgAAAAAAAAACAAMAAgAAAAAAAAACAAQAAwAAAAAAAAADAAEAAgAAAAAAAAADAAIAAgAAAAAAAAADAAMAAgAAAAAAAAADAAQAAgAAAAAAAAAEAAEAAgAAAAAAAAAEAAIAAgAAAAAAAAAEAAMAAgAAAAAAAAAEAAQAAgAAAAAAAAAAAAAAAgAAAAAAAAAAAAEAAgAAAAAAAAAAAAIAAgAAAAAAAAAAAAMAAgAAAAAAAAAAAAQAAgAAAAAAAAABAAAAAgAAAAAAAAACAAAAAwAAAAAAAAADAAAAAgAAAAAAAAAEAAAAAgAAAAAAAAABAAEAAgAAAAAAAAA=")
 tile_set = SubResource("1")
 
-[node name="GameBoard" type="Node2D" parent="." node_paths=PackedStringArray("blue_card_1", "blue_card_2", "win_label")]
-script = ExtResource("3")
-blue_card_1 = NodePath("BlueCardButton1")
-blue_card_2 = NodePath("BlueCardButton2")
+[node name="GameBoard" type="Node2D" parent="." node_paths=PackedStringArray("red_card_button_1", "red_card_button_2", "blue_card_button_1", "blue_card_button_2", "neutral_card_button", "win_label")]
+script = ExtResource("5_qmy6f")
+red_card_button_1 = NodePath("RedCardButton1")
+red_card_button_2 = NodePath("RedCardButton2")
+blue_card_button_1 = NodePath("BlueCardButton1")
+blue_card_button_2 = NodePath("BlueCardButton2")
+neutral_card_button = NodePath("NeutralCardButton")
 win_label = NodePath("WinLabel")
 
-[node name="UnitOverlay" parent="GameBoard" instance=ExtResource("5")]
+[node name="UnitOverlay" parent="GameBoard" instance=ExtResource("6_mwfav")]
 modulate = Color(0, 1, 0, 0.5647059)
 
-[node name="UnitPath" parent="GameBoard" instance=ExtResource("6")]
+[node name="UnitPath" parent="GameBoard" instance=ExtResource("7_3p2gp")]
 
-[node name="Cursor" parent="GameBoard" instance=ExtResource("1")]
+[node name="Cursor" parent="GameBoard" instance=ExtResource("8_cvmbd")]
 
-[node name="BlueMaster" parent="GameBoard" instance=ExtResource("2")]
+[node name="BlueMaster" parent="GameBoard" instance=ExtResource("9_ft6cd")]
 position = Vector2(40, 8)
-curve = SubResource("Curve2D_20pc6")
+curve = SubResource("Curve2D_03owx")
 move_range = 5
 invert_movement = true
 is_master_piece = true
 skin_offset = Vector2(1, 1)
 frame = 32
 
-[node name="BlueStudent1" parent="GameBoard" instance=ExtResource("2")]
+[node name="BlueStudent1" parent="GameBoard" instance=ExtResource("9_ft6cd")]
 position = Vector2(8, 8)
+curve = SubResource("Curve2D_wkp8b")
+move_range = 5
+invert_movement = true
+skin_offset = Vector2(1, 1)
+frame = 48
+
+[node name="BlueStudent2" parent="GameBoard" instance=ExtResource("9_ft6cd")]
+position = Vector2(24, 8)
+curve = SubResource("Curve2D_20pc6")
+move_range = 5
+invert_movement = true
+skin_offset = Vector2(1, 1)
+frame = 48
+
+[node name="BlueStudent3" parent="GameBoard" instance=ExtResource("9_ft6cd")]
+position = Vector2(56, 8)
 curve = SubResource("Curve2D_5vvyt")
 move_range = 5
 invert_movement = true
 skin_offset = Vector2(1, 1)
 frame = 48
 
-[node name="BlueStudent2" parent="GameBoard" instance=ExtResource("2")]
-position = Vector2(24, 8)
+[node name="BlueStudent4" parent="GameBoard" instance=ExtResource("9_ft6cd")]
+position = Vector2(72, 8)
 curve = SubResource("Curve2D_c6i3y")
 move_range = 5
 invert_movement = true
 skin_offset = Vector2(1, 1)
 frame = 48
 
-[node name="BlueStudent3" parent="GameBoard" instance=ExtResource("2")]
-position = Vector2(56, 8)
-curve = SubResource("Curve2D_c2ibq")
-move_range = 5
-invert_movement = true
-skin_offset = Vector2(1, 1)
-frame = 48
-
-[node name="BlueStudent4" parent="GameBoard" instance=ExtResource("2")]
-position = Vector2(72, 8)
-curve = SubResource("Curve2D_j4qnp")
-move_range = 5
-invert_movement = true
-skin_offset = Vector2(1, 1)
-frame = 48
-
-[node name="RedMaster" parent="GameBoard" instance=ExtResource("2")]
+[node name="RedMaster" parent="GameBoard" instance=ExtResource("9_ft6cd")]
 position = Vector2(40, 72)
-curve = SubResource("Curve2D_fpfj3")
+curve = SubResource("Curve2D_c2ibq")
 move_range = 5
 is_master_piece = true
 skin_offset = Vector2(1, 1)
 
-[node name="RedStudent1" parent="GameBoard" instance=ExtResource("2")]
+[node name="RedStudent1" parent="GameBoard" instance=ExtResource("9_ft6cd")]
 position = Vector2(8, 72)
+curve = SubResource("Curve2D_j4qnp")
+move_range = 5
+skin_offset = Vector2(1, 1)
+frame = 16
+
+[node name="RedStudent2" parent="GameBoard" instance=ExtResource("9_ft6cd")]
+position = Vector2(24, 72)
+curve = SubResource("Curve2D_fpfj3")
+move_range = 5
+skin_offset = Vector2(1, 1)
+frame = 16
+
+[node name="RedStudent3" parent="GameBoard" instance=ExtResource("9_ft6cd")]
+position = Vector2(56, 72)
 curve = SubResource("Curve2D_sc1dx")
 move_range = 5
 skin_offset = Vector2(1, 1)
 frame = 16
 
-[node name="RedStudent2" parent="GameBoard" instance=ExtResource("2")]
-position = Vector2(24, 72)
+[node name="RedStudent4" parent="GameBoard" instance=ExtResource("9_ft6cd")]
+position = Vector2(72, 72)
 curve = SubResource("Curve2D_kjvhd")
 move_range = 5
 skin_offset = Vector2(1, 1)
 frame = 16
 
-[node name="RedStudent3" parent="GameBoard" instance=ExtResource("2")]
-position = Vector2(56, 72)
-curve = SubResource("Curve2D_5tuhn")
-move_range = 5
-skin_offset = Vector2(1, 1)
-frame = 16
+[node name="RedCardButton1" type="TextureButton" parent="GameBoard"]
+offset_left = 56.0
+offset_top = 88.0
+offset_right = 76.0
+offset_bottom = 106.0
 
-[node name="RedStudent4" parent="GameBoard" instance=ExtResource("2")]
-position = Vector2(72, 72)
-curve = SubResource("Curve2D_2gh4u")
-move_range = 5
-skin_offset = Vector2(1, 1)
-frame = 16
+[node name="RedCardButton2" type="TextureButton" parent="GameBoard"]
+offset_left = 16.0
+offset_top = 88.0
+offset_right = 26.0
+offset_bottom = 99.0
+
+[node name="BlueCardButton1" type="TextureButton" parent="GameBoard"]
+offset_left = 24.0
+offset_top = -6.0
+offset_right = 37.0
+offset_bottom = 5.0
+
+[node name="BlueCardButton2" type="TextureButton" parent="GameBoard"]
+offset_left = 60.0
+offset_top = -6.0
+offset_right = 71.0
+offset_bottom = 4.0
+
+[node name="NeutralCardButton" type="TextureButton" parent="GameBoard"]
+offset_left = 88.0
+offset_top = 40.0
+offset_right = 99.0
+offset_bottom = 51.0
+disabled = true
 
 [node name="WinLabel" type="Label" parent="GameBoard"]
 visible = false
@@ -210,34 +243,6 @@ text = "FIM DE JOGO!
 O Jogador AZUL VENCEU!"
 horizontal_alignment = 1
 vertical_alignment = 1
-
-[node name="BlueCardButton1" type="TextureButton" parent="GameBoard"]
-custom_minimum_size = Vector2(10, 10)
-offset_left = 8.0
-offset_top = 88.0
-offset_right = 32.0
-offset_bottom = 112.0
-size_flags_horizontal = 4
-
-[node name="Sprite2D" type="Sprite2D" parent="GameBoard/BlueCardButton1"]
-scale = Vector2(3.4285715, 3.4285705)
-texture = ExtResource("10_wkp8b")
-centered = false
-region_enabled = true
-region_rect = Rect2(-0.0014724731, -0.01793164, 7.2907953, 7.309022)
-
-[node name="BlueCardButton2" type="TextureButton" parent="GameBoard"]
-offset_left = 48.0
-offset_top = 88.0
-offset_right = 72.0
-offset_bottom = 112.0
-
-[node name="Sprite2D" type="Sprite2D" parent="GameBoard/BlueCardButton2"]
-scale = Vector2(3.4285712, 3.4285722)
-texture = ExtResource("10_wkp8b")
-centered = false
-region_enabled = true
-region_rect = Rect2(0.020635605, 8.020784, 7.0100455, 7.1863766)
 
 [connection signal="accept_pressed" from="GameBoard/Cursor" to="GameBoard" method="_on_Cursor_accept_pressed"]
 [connection signal="moved" from="GameBoard/Cursor" to="GameBoard" method="_on_Cursor_moved"]

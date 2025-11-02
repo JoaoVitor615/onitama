@@ -1,5 +1,7 @@
+Camera2D
+Node2D
+TextureButton
 Label
 Sprite2D
-TextureButton
 AnimationPlayer
 AnimatedSprite2D
