@@ -5,22 +5,22 @@ class_name Grid
 extends Resource
 
 ## The grid's rows and columns.
-@export var size := Vector2(8, 8)
+@export var size := Vector2(5, 5)
 ## The size of a cell in pixels.
 @export var cell_size := Vector2(16, 16)
 
-## Half of ``cell_size``
-var _half_cell_size = cell_size / 2
+@export var grid_origin := Vector2.ZERO
 
 
 ## Returns the position of a cell's center in pixels.
 func calculate_map_position(grid_position: Vector2) -> Vector2:
-	return grid_position * cell_size + _half_cell_size
+	var half_cell = cell_size / 2.0 
+	return (grid_position * cell_size) + half_cell + grid_origin
 
 
 ## Returns the coordinates of the cell on the grid given a position on the map.
 func calculate_grid_coordinates(map_position: Vector2) -> Vector2:
-	return (map_position / cell_size).floor()
+	return ((map_position - grid_origin) / cell_size).floor()
 
 
 ## Returns true if the `cell_coordinates` are within the grid.
