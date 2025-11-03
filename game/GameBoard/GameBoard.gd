@@ -13,6 +13,7 @@ const DIRECTIONS = [Vector2.LEFT, Vector2.RIGHT, Vector2.UP, Vector2.DOWN]
 @export var neutral_card_button: TextureButton
 @export var win_label: Label
 
+
 # Variáveis para guardar os DADOS das cartas em cada slot
 var _red_card_1: Card.CardType
 var _red_card_2: Card.CardType
@@ -36,6 +37,7 @@ var current_turn: PlayerTurn = PlayerTurn.RED
 
 @onready var _unit_overlay: UnitOverlay = $UnitOverlay
 @onready var _unit_path: UnitPath = $UnitPath
+@onready var _cursor: Cursor = $Cursor
 
 
 func _ready() -> void:
@@ -45,6 +47,8 @@ func _ready() -> void:
 	_deal_cards() # Sorteia e distribui as 5 cartas
 	_update_card_visuals() # Define as texturas dos botões
 	_update_button_interactivity() # Desabilita botões do jogador 2
+	_cursor.hide() # Esconde o cursor
+	
 	
 	# Conecta os NOVOS sinais
 	red_card_button_1.pressed.connect(_on_red_card_1_pressed)
@@ -52,8 +56,18 @@ func _ready() -> void:
 	blue_card_button_1.pressed.connect(_on_blue_card_1_pressed)
 	blue_card_button_2.pressed.connect(_on_blue_card_2_pressed)
 
-
+func _process(delta: float) -> void:
+	if Input.is_action_just_pressed("ui_select_red1"):
+		red_card_button_1.pressed.emit()
+	if Input.is_action_just_pressed("ui_select_red2"):
+		red_card_button_2.pressed.emit()
+	if Input.is_action_just_pressed("ui_select_blue1"):
+		blue_card_button_1.pressed.emit()
+	if Input.is_action_just_pressed("ui_select_blue2"):
+		blue_card_button_2.pressed.emit()
+	
 func _unhandled_input(event: InputEvent) -> void:
+	
 	if _active_unit and event.is_action_pressed("ui_cancel"):
 		_deselect_active_unit()
 		_clear_active_unit()
@@ -185,6 +199,15 @@ func _clear_active_unit() -> void:
 	_card_used_slot = 0
 	
 
+func _show_Cursor():
+	_cursor.show()
+	if Input.is_action_just_pressed("ui_select_red1") or Input.is_action_just_pressed("ui_select_red2"):
+		_cursor.cell = $RedMaster.cell
+	if Input.is_action_just_pressed("ui_select_blue1") or Input.is_action_just_pressed("ui_select_blue2"):
+		_cursor.cell = $BlueMaster.cell
+		
+	
+	
 func _on_Cursor_accept_pressed(cell: Vector2) -> void:
 	var unit_at_cell = _units.get(cell, null)
 	
@@ -207,8 +230,9 @@ func _on_Cursor_accept_pressed(cell: Vector2) -> void:
 				print("Não é seu turno! (É a vez do AZUL)")
 				return
 			# -----------------------------
-
+		
 			_select_unit(cell)
+			
 			
 	elif _active_unit.is_selected:
 		# 2. UMA UNIDADE JÁ ESTÁ SELECIONADA
@@ -240,7 +264,6 @@ func _on_Cursor_accept_pressed(cell: Vector2) -> void:
 				_deselect_active_unit()
 				_clear_active_unit()
 
-
 ## Updates the interactive path's drawing if there's an active and selected unit.
 func _on_Cursor_moved(new_cell: Vector2) -> void:
 	if _active_unit and _active_unit.is_selected:
@@ -257,31 +280,34 @@ func _switch_turn() -> void:
 	_update_button_interactivity() # Atualiza quais botões podem ser clicados
 	
 
+
 func _on_red_card_1_pressed():
 	if current_turn != PlayerTurn.RED: return
 	_selected_card = _red_card_1
 	_card_used_slot = 1 # Lembra qual slot foi usado
 	print("Carta selecionada: ", _red_card_1)
-	# TODO: Adicionar um brilho/feedback visual
-
+	_show_Cursor()
+	
 func _on_red_card_2_pressed():
 	if current_turn != PlayerTurn.RED: return
 	_selected_card = _red_card_2
 	_card_used_slot = 2
 	print("Carta selecionada: ", _red_card_2)
+	_show_Cursor()
 
 func _on_blue_card_1_pressed():
 	if current_turn != PlayerTurn.BLUE: return
 	_selected_card = _blue_card_1
 	_card_used_slot = 3
 	print("Carta selecionada: ", _blue_card_1)
-
+	_show_Cursor()
 func _on_blue_card_2_pressed():
 	if current_turn != PlayerTurn.BLUE: return
 	_selected_card = _blue_card_2
 	_card_used_slot = 4
 	print("Carta selecionada: ", _blue_card_2)
-
+	_show_Cursor()
+	
 func _game_over(winning_unit: Unit):
 	set_process_unhandled_input(false) 
 
