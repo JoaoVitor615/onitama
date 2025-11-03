@@ -16,6 +16,7 @@ signal walk_finished
 @export var move_speed := 600.0
 
 @export var invert_movement : bool = false
+@export var is_master_piece : bool = false
 
 ## Texture representing the unit.
 @export var skin: Texture:
