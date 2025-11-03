@@ -72,34 +72,34 @@ sources/2 = SubResource("TileSetAtlasSource_cat8j")
 sources/3 = SubResource("TileSetAtlasSource_tlhoj")
 sources/4 = SubResource("TileSetAtlasSource_w16gf")
 
-[sub_resource type="Curve2D" id="Curve2D_03owx"]
+[sub_resource type="Curve2D" id="Curve2D_q8u5g"]
 resource_local_to_scene = true
 
-[sub_resource type="Curve2D" id="Curve2D_wkp8b"]
+[sub_resource type="Curve2D" id="Curve2D_lhr70"]
 resource_local_to_scene = true
 
-[sub_resource type="Curve2D" id="Curve2D_20pc6"]
+[sub_resource type="Curve2D" id="Curve2D_wp0k4"]
 resource_local_to_scene = true
 
-[sub_resource type="Curve2D" id="Curve2D_5vvyt"]
+[sub_resource type="Curve2D" id="Curve2D_bjd11"]
 resource_local_to_scene = true
 
-[sub_resource type="Curve2D" id="Curve2D_c6i3y"]
+[sub_resource type="Curve2D" id="Curve2D_qmy6f"]
 resource_local_to_scene = true
 
-[sub_resource type="Curve2D" id="Curve2D_c2ibq"]
+[sub_resource type="Curve2D" id="Curve2D_mwfav"]
 resource_local_to_scene = true
 
-[sub_resource type="Curve2D" id="Curve2D_j4qnp"]
+[sub_resource type="Curve2D" id="Curve2D_3p2gp"]
 resource_local_to_scene = true
 
-[sub_resource type="Curve2D" id="Curve2D_fpfj3"]
+[sub_resource type="Curve2D" id="Curve2D_cvmbd"]
 resource_local_to_scene = true
 
-[sub_resource type="Curve2D" id="Curve2D_sc1dx"]
+[sub_resource type="Curve2D" id="Curve2D_ft6cd"]
 resource_local_to_scene = true
 
-[sub_resource type="Curve2D" id="Curve2D_kjvhd"]
+[sub_resource type="Curve2D" id="Curve2D_bb450"]
 resource_local_to_scene = true
 
 [node name="Main" type="Node2D"]
@@ -127,7 +127,7 @@ modulate = Color(0, 1, 0, 0.5647059)
 
 [node name="BlueMaster" parent="GameBoard" instance=ExtResource("9_ft6cd")]
 position = Vector2(40, 8)
-curve = SubResource("Curve2D_03owx")
+curve = SubResource("Curve2D_q8u5g")
 move_range = 5
 invert_movement = true
 is_master_piece = true
@@ -136,7 +136,7 @@ frame = 32
 
 [node name="BlueStudent1" parent="GameBoard" instance=ExtResource("9_ft6cd")]
 position = Vector2(8, 8)
-curve = SubResource("Curve2D_wkp8b")
+curve = SubResource("Curve2D_lhr70")
 move_range = 5
 invert_movement = true
 skin_offset = Vector2(1, 1)
@@ -144,7 +144,7 @@ frame = 48
 
 [node name="BlueStudent2" parent="GameBoard" instance=ExtResource("9_ft6cd")]
 position = Vector2(24, 8)
-curve = SubResource("Curve2D_20pc6")
+curve = SubResource("Curve2D_wp0k4")
 move_range = 5
 invert_movement = true
 skin_offset = Vector2(1, 1)
@@ -152,7 +152,7 @@ frame = 48
 
 [node name="BlueStudent3" parent="GameBoard" instance=ExtResource("9_ft6cd")]
 position = Vector2(56, 8)
-curve = SubResource("Curve2D_5vvyt")
+curve = SubResource("Curve2D_bjd11")
 move_range = 5
 invert_movement = true
 skin_offset = Vector2(1, 1)
@@ -160,7 +160,7 @@ frame = 48
 
 [node name="BlueStudent4" parent="GameBoard" instance=ExtResource("9_ft6cd")]
 position = Vector2(72, 8)
-curve = SubResource("Curve2D_c6i3y")
+curve = SubResource("Curve2D_qmy6f")
 move_range = 5
 invert_movement = true
 skin_offset = Vector2(1, 1)
@@ -168,35 +168,35 @@ frame = 48
 
 [node name="RedMaster" parent="GameBoard" instance=ExtResource("9_ft6cd")]
 position = Vector2(40, 72)
-curve = SubResource("Curve2D_c2ibq")
+curve = SubResource("Curve2D_mwfav")
 move_range = 5
 is_master_piece = true
 skin_offset = Vector2(1, 1)
 
 [node name="RedStudent1" parent="GameBoard" instance=ExtResource("9_ft6cd")]
 position = Vector2(8, 72)
-curve = SubResource("Curve2D_j4qnp")
+curve = SubResource("Curve2D_3p2gp")
 move_range = 5
 skin_offset = Vector2(1, 1)
 frame = 16
 
 [node name="RedStudent2" parent="GameBoard" instance=ExtResource("9_ft6cd")]
 position = Vector2(24, 72)
-curve = SubResource("Curve2D_fpfj3")
+curve = SubResource("Curve2D_cvmbd")
 move_range = 5
 skin_offset = Vector2(1, 1)
 frame = 16
 
 [node name="RedStudent3" parent="GameBoard" instance=ExtResource("9_ft6cd")]
 position = Vector2(56, 72)
-curve = SubResource("Curve2D_sc1dx")
+curve = SubResource("Curve2D_ft6cd")
 move_range = 5
 skin_offset = Vector2(1, 1)
 frame = 16
 
 [node name="RedStudent4" parent="GameBoard" instance=ExtResource("9_ft6cd")]
 position = Vector2(72, 72)
-curve = SubResource("Curve2D_kjvhd")
+curve = SubResource("Curve2D_bb450")
 move_range = 5
 skin_offset = Vector2(1, 1)
 frame = 16
