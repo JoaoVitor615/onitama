@@ -34,11 +34,9 @@ var cell := Vector2.ZERO:
 
 @onready var _timer: Timer = $Timer
 
-
 func _ready() -> void:
 	_timer.wait_time = ui_cooldown
 	position = grid.calculate_map_position(cell)
-
 
 func _unhandled_input(event: InputEvent) -> void:
 	# Navigating cells with the mouse.
@@ -68,4 +66,4 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _draw() -> void:
-	draw_rect(Rect2(-grid.cell_size / 2, grid.cell_size), Color.ALICE_BLUE, false, 2.0)
+	draw_rect(Rect2(-grid.cell_size / 2, grid.cell_size), Color.ALICE_BLUE, false, 1.0)

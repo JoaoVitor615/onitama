@@ -1,4 +1,9 @@
-res://scenes/Main.tscn
+res://Background/Board.tscn
 res://GameBoard/unit_path_tileset.tres
 res://UnitOverlay/unit_overlay_tileset.tres
+res://scenes/Main.tscn
+res://GameBoard/Cursor/Cursor.gd
+res://GameBoard/Grid.gd
+res://GameBoard/UnitPath.gd
+res://GameBoard/GameBoard.gd
 res://UnitOverlay/Card.gd
