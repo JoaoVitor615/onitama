@@ -23,7 +23,7 @@ static var cards: Dictionary[CardType, PackedVector2Array] = {
 	CardType.FROG     : [Vector2i(-2, 0), Vector2i(-1, -1), Vector2i(1, 1)],
 	CardType.GOOSE    : [Vector2i(-1, 0), Vector2i(1, 0), Vector2i(-1, -1), Vector2i(1, 1)],
 	CardType.HORSE    : [Vector2i(0, -1), Vector2i(-1, 0), Vector2i(0, 1)],
-	CardType.EEL      : [Vector2i(-1, 0), Vector2i(-1, -1), Vector2i(1, 1)],
+	CardType.EEL      : [Vector2i(-1, 1), Vector2i(-1, -1), Vector2i(1, 0)],
 	CardType.RABBIT   : [Vector2i(2, 0), Vector2i(1, -1), Vector2i(-1, 1)],
 	CardType.ROOSTER  : [Vector2i(-1, 0), Vector2i(1, 0), Vector2i(1, -1), Vector2i(-1, 1)],
 	CardType.OX       : [Vector2i(0, -1), Vector2i(1, 0), Vector2i(0, 1)]
