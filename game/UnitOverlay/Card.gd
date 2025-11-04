@@ -9,7 +9,26 @@ static func get_relative_position(unit: Unit, card: CardType) -> Array[Vector2]:
 		else:
 			result.append(mov + unit.cell)
 	return result
-	
+
+enum CardType {
+	TIGER, 
+	CRAB, 
+	MONKEY, 
+	CRANE,
+	DRAGON, 
+	ELEPHANT, 
+	MANTIS, 
+	BOAR, 
+	FROG, 
+	GOOSE,
+	HORSE, 
+	EEL, 
+	RABBIT, 
+	ROOSTER, 
+	OX,
+	COBRA
+}
+
 static var cards: Dictionary[CardType, PackedVector2Array] = { 
 	CardType.TIGER    : [Vector2i(0, -2), Vector2i(0, 1)],
 	CardType.COBRA    : [Vector2i(-1, 0), Vector2i(1, -1), Vector2i(1, 1)],
@@ -28,23 +47,24 @@ static var cards: Dictionary[CardType, PackedVector2Array] = {
 	CardType.ROOSTER  : [Vector2i(-1, 0), Vector2i(1, 0), Vector2i(1, -1), Vector2i(-1, 1)],
 	CardType.OX       : [Vector2i(0, -1), Vector2i(1, 0), Vector2i(0, 1)]
 }
-enum CardType {
-	TIGER, 
-	CRAB, 
-	MONKEY, 
-	CRANE,
-	DRAGON, 
-	ELEPHANT, 
-	MANTIS, 
-	BOAR, 
-	FROG, 
-	GOOSE,
-	HORSE, 
-	EEL, 
-	RABBIT, 
-	ROOSTER, 
-	OX,
-	COBRA
+
+static var card_names: Dictionary[CardType, String] = {
+	CardType.TIGER    : "TIGER",
+	CardType.CRAB     : "CRAB",
+	CardType.MONKEY   : "MONKEY",
+	CardType.CRANE    : "CRANE",
+	CardType.DRAGON   : "DRAGON",
+	CardType.ELEPHANT : "ELEPHANT", 
+	CardType.MANTIS   : "MANTIS",
+	CardType.BOAR     : "BOAR",
+	CardType.FROG     : "FROG",
+	CardType.GOOSE    : "GOOSE",
+	CardType.HORSE    : "HORSE",
+	CardType.EEL      : "EEL",
+	CardType.RABBIT   : "RABBIT",
+	CardType.ROOSTER  : "ROOSTER",
+	CardType.OX       : "OX",
+	CardType.COBRA    : "COBRA"
 }
 
 static var card_textures: Dictionary[CardType, String] = {

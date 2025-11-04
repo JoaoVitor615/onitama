@@ -1,7 +1,10 @@
 Label
+<<<<<<< HEAD
+=======
 Camera2D
 Node2D
 TextureButton
 Sprite2D
+>>>>>>> main
 AnimationPlayer
 AnimatedSprite2D
