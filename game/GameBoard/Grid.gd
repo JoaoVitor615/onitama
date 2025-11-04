@@ -9,7 +9,7 @@ extends Resource
 ## The size of a cell in pixels.
 @export var cell_size := Vector2(16, 16)
 
-@export var grid_origin := Vector2(16,16)
+@export var grid_origin := Vector2(8,24)
 
 
 ## Returns the position of a cell's center in pixels.

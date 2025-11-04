@@ -11,7 +11,7 @@ const DIRECTIONS = [Vector2.LEFT, Vector2.RIGHT, Vector2.UP, Vector2.DOWN]
 @export var blue_card_button_1: TextureButton
 @export var blue_card_button_2: TextureButton
 @export var neutral_card_button: TextureButton
-@export var win_label: Label
+
 
 
 # Variáveis para guardar os DADOS das cartas em cada slot
@@ -38,7 +38,7 @@ var current_turn: PlayerTurn = PlayerTurn.RED
 @onready var _unit_overlay: UnitOverlay = $UnitOverlay
 @onready var _unit_path: UnitPath = $UnitPath
 @onready var _cursor: Cursor = $Cursor
-
+@onready var game_label: Label = $GameLabel
 
 func _ready() -> void:
 	_reinitialize()
@@ -214,7 +214,7 @@ func _on_Cursor_accept_pressed(cell: Vector2) -> void:
 	if not _active_unit:
 		# 1. NENHUMA UNIDADE SELECIONADA
 		if _selected_card == null:
-			print("Por favor, selecione uma CARTA primeiro!")
+			game_label.text = "Selecione uma CARTA primeiro!"
 			return
 			
 		if unit_at_cell:
@@ -222,12 +222,12 @@ func _on_Cursor_accept_pressed(cell: Vector2) -> void:
 			# --- VERIFICAÇÃO DE TURNO (CORRIGIDA) ---
 			# É o turno do VERMELHO (Bottom, false), mas a peça é AZUL (Top, true)?
 			if current_turn == PlayerTurn.RED and unit_at_cell.invert_movement:
-				print("Não é seu turno! (É a vez do VERMELHO)")
+				game_label.text = "É a vez do VERMELHO"
 				return
 			
 			# É o turno do AZUL (Top, true), mas a peça é VERMELHA (Bottom, false)?
 			elif current_turn == PlayerTurn.BLUE and not unit_at_cell.invert_movement:
-				print("Não é seu turno! (É a vez do AZUL)")
+				game_label.text = "É a vez do AZUL"
 				return
 			# -----------------------------
 		
@@ -273,10 +273,14 @@ func _on_Cursor_moved(new_cell: Vector2) -> void:
 func _switch_turn() -> void:
 	if current_turn == PlayerTurn.RED: # Se era o VERMELHO (Bottom)
 		current_turn = PlayerTurn.BLUE # Agora é o AZUL (Top)
-		print("--- TURNO: JOGADOR AZUL ---")
-	else: # Se era o AZUL (Top)
+		game_label.label_settings.font_color = 0x0080ffff
+		
+		game_label.text = "--- TURNO: JOGADOR AZUL ---"
+	elif current_turn == PlayerTurn.BLUE: # Se era o AZUL (Top)
 		current_turn = PlayerTurn.RED # Agora é o VERMELHO (Bottom)
-		print("--- TURNO: JOGADOR VERMELHO ---")
+		game_label.label_settings.font_color = 0xffff0000
+		
+		game_label.text = "--- TURNO: JOGADOR VERMELHO ---"
 	_update_button_interactivity() # Atualiza quais botões podem ser clicados
 	
 
@@ -285,27 +289,27 @@ func _on_red_card_1_pressed():
 	if current_turn != PlayerTurn.RED: return
 	_selected_card = _red_card_1
 	_card_used_slot = 1 # Lembra qual slot foi usado
-	print("Carta selecionada: ", _red_card_1)
+	game_label.text = "Carta selecionada: %s" % _red_card_1
 	_show_Cursor()
 	
 func _on_red_card_2_pressed():
 	if current_turn != PlayerTurn.RED: return
 	_selected_card = _red_card_2
 	_card_used_slot = 2
-	print("Carta selecionada: ", _red_card_2)
+	game_label.text = "Carta selecionada: %s" % _red_card_2
 	_show_Cursor()
 
 func _on_blue_card_1_pressed():
 	if current_turn != PlayerTurn.BLUE: return
 	_selected_card = _blue_card_1
 	_card_used_slot = 3
-	print("Carta selecionada: ", _blue_card_1)
+	game_label.text = "Carta selecionada: %s" % _blue_card_1
 	_show_Cursor()
 func _on_blue_card_2_pressed():
 	if current_turn != PlayerTurn.BLUE: return
 	_selected_card = _blue_card_2
 	_card_used_slot = 4
-	print("Carta selecionada: ", _blue_card_2)
+	game_label.text = "Carta selecionada: %s" % _blue_card_2
 	_show_Cursor()
 	
 func _game_over(winning_unit: Unit):
@@ -317,11 +321,10 @@ func _game_over(winning_unit: Unit):
 		winner_color = "AZUL"
 		
 	# 2. Mostra a mensagem de vitória
-	if win_label:
-		win_label.text = "FIM DE JOGO!\nO Jogador %s VENCEU!" % winner_color
-		win_label.visible = true
+	if winning_unit.invert_movement :
+		game_label.text = "FIM DE JOGO!\nO Jogador %s VENCEU!" % winner_color
 	else:
-		print("FIM DE JOGO! Jogador %s VENCEU!" % winner_color)
+		game_label.text = "FIM DE JOGO!\nO Jogador %s VENCEU!" % winner_color
 		
 	for unit in _units.values():
 		unit.set_process(false)
