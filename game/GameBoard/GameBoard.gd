@@ -278,7 +278,7 @@ func _switch_turn() -> void:
 		game_label.text = "--- TURNO: JOGADOR AZUL ---"
 	elif current_turn == PlayerTurn.BLUE: # Se era o AZUL (Top)
 		current_turn = PlayerTurn.RED # Agora é o VERMELHO (Bottom)
-		game_label.label_settings.font_color = 0xffff0000
+		game_label.label_settings.font_color = 0xff0000ff
 		
 		game_label.text = "--- TURNO: JOGADOR VERMELHO ---"
 	_update_button_interactivity() # Atualiza quais botões podem ser clicados
@@ -289,27 +289,27 @@ func _on_red_card_1_pressed():
 	if current_turn != PlayerTurn.RED: return
 	_selected_card = _red_card_1
 	_card_used_slot = 1 # Lembra qual slot foi usado
-	game_label.text = "Carta selecionada: %s" % _red_card_1
+	game_label.text = "Carta selecionada: %s" % Card.card_names[_red_card_1]
 	_show_Cursor()
 	
 func _on_red_card_2_pressed():
 	if current_turn != PlayerTurn.RED: return
 	_selected_card = _red_card_2
 	_card_used_slot = 2
-	game_label.text = "Carta selecionada: %s" % _red_card_2
+	game_label.text = "Carta selecionada: %s" % Card.card_names[_red_card_2]
 	_show_Cursor()
 
 func _on_blue_card_1_pressed():
 	if current_turn != PlayerTurn.BLUE: return
 	_selected_card = _blue_card_1
 	_card_used_slot = 3
-	game_label.text = "Carta selecionada: %s" % _blue_card_1
+	game_label.text = "Carta selecionada: %s" % Card.card_names[_blue_card_1]
 	_show_Cursor()
 func _on_blue_card_2_pressed():
 	if current_turn != PlayerTurn.BLUE: return
 	_selected_card = _blue_card_2
 	_card_used_slot = 4
-	game_label.text = "Carta selecionada: %s" % _blue_card_2
+	game_label.text = "Carta selecionada: %s" % Card.card_names[_blue_card_2]
 	_show_Cursor()
 	
 func _game_over(winning_unit: Unit):

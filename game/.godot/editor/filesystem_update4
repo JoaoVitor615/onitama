@@ -1,6 +1,5 @@
-res://Main.tscn
-res://GameBoard/unit_path_tileset.tres
+res://scenes/Main.tscn
 res://UnitOverlay/unit_overlay_tileset.tres
-res://Bridge/JavaScriptBridge.gd
-res://UI/PlayerInfo.gd
-res://UI/PlayerInfo.tscn
+res://GameBoard/unit_path_tileset.tres
+res://GameBoard/GameBoard.gd
+res://UnitOverlay/Card.gd
