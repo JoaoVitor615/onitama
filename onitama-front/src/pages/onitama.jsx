@@ -1,6 +1,34 @@
 import GameIframe from "../components/GameIframe";
+import { useState, useEffect } from "react";
 
 function Onitama() {
+  // Exemplo: dados do jogador (você pode buscar da API ou contexto de autenticação)
+  const [playerData, setPlayerData] = useState({
+    player_name: "Jogador Teste",
+    player_data: {
+      apelido: "Jogador Teste",
+      email: "teste@example.com",
+      xp: 0,
+      pontos: 0,
+      moedas: 0,
+    },
+  });
+
+  // Exemplo: buscar dados do jogador (pode ser substituído por uma chamada à API)
+  useEffect(() => {
+    // TODO: Substituir por chamada real à API ou contexto de autenticação
+    // Exemplo:
+    // const fetchPlayerData = async () => {
+    //   const response = await fetch('/api/usuarios/carregar-por-hash/HASH_AQUI');
+    //   const data = await response.json();
+    //   setPlayerData({
+    //     player_name: data.apelido || data.email || "Jogador",
+    //     player_data: data
+    //   });
+    // };
+    // fetchPlayerData();
+  }, []);
+
   return (
     <div
       style={{
@@ -51,7 +79,7 @@ function Onitama() {
           border: "2px solid rgba(255,255,255,0.1)", // 👈 BORDA SUTIL
         }}
       >
-        <GameIframe />
+        <GameIframe playerData={playerData} />
       </div>
     </div>
   );

@@ -15,6 +15,7 @@ function App() {
         {/* Adicione mais rotas conforme necessário */}
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/register" element={<Register />} />
+        {/* Garantir que rotas do Godot não sejam interceptadas */}
       </Routes>
     </div>
   );
