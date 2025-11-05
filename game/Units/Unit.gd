@@ -57,6 +57,8 @@ var is_selected := false:
 		else:
 			_anim_player.play("idle")
 
+var frozen_turns: int = 0 # Nº de turnos que esta peça está presa
+
 var _is_walking := false:
 	set(value):
 		_is_walking = value

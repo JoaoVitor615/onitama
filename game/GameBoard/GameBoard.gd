@@ -11,7 +11,16 @@ const DIRECTIONS = [Vector2.LEFT, Vector2.RIGHT, Vector2.UP, Vector2.DOWN]
 @export var blue_card_button_1: TextureButton
 @export var blue_card_button_2: TextureButton
 @export var neutral_card_button: TextureButton
-
+@export var timer_label: Label # O texto visual
+@export var start_label: Label
+@export var powerup_label: Label # O label da "animação" de 3s
+@export var red_powerup_1: TextureButton
+@export var red_powerup_2: TextureButton
+@export var red_powerup_3: TextureButton
+@export var blue_powerup_1: TextureButton
+@export var blue_powerup_2: TextureButton
+@export var blue_powerup_3: TextureButton
+@onready var _turn_timer: Timer = $TurnTimer # O timer lógico
 
 
 # Variáveis para guardar os DADOS das cartas em cada slot
@@ -20,6 +29,16 @@ var _red_card_2: Card.CardType
 var _blue_card_1: Card.CardType
 var _blue_card_2: Card.CardType
 var _neutral_card: Card.CardType
+var _red_powerup_used = {1: false, 2: false, 3: false}
+var _blue_powerup_used = {1: false, 2: false, 3: false}
+# Para o Power-up 1 (Tempo)
+var _next_turn_time = 20.0 # O tempo normal do próximo turno
+
+# Para o Power-up 3 (Congelar)
+var _is_selecting_freeze_target = false
+
+# Para travar a UI durante animações
+var _ui_locked = false
 
 # O tipo da carta selecionada (null = nenhuma)
 var _selected_card: Variant = null
@@ -48,15 +67,47 @@ func _ready() -> void:
 	_update_card_visuals() # Define as texturas dos botões
 	_update_button_interactivity() # Desabilita botões do jogador 2
 	_cursor.hide() # Esconde o cursor
-	
-	
 	# Conecta os NOVOS sinais
 	red_card_button_1.pressed.connect(_on_red_card_1_pressed)
 	red_card_button_2.pressed.connect(_on_red_card_2_pressed)
 	blue_card_button_1.pressed.connect(_on_blue_card_1_pressed)
 	blue_card_button_2.pressed.connect(_on_blue_card_2_pressed)
+	_turn_timer.timeout.connect(_on_turn_timer_timeout)
+	red_powerup_1.pressed.connect(_on_red_powerup_1_pressed)
+	red_powerup_2.pressed.connect(_on_red_powerup_2_pressed)
+	red_powerup_3.pressed.connect(_on_red_powerup_3_pressed)
+	blue_powerup_1.pressed.connect(_on_blue_powerup_1_pressed)
+	blue_powerup_2.pressed.connect(_on_blue_powerup_2_pressed)
+	blue_powerup_3.pressed.connect(_on_blue_powerup_3_pressed)
 
-func _process(delta: float) -> void:
+# 1. Prepara a tela para a espera
+	timer_label.text = "E..." # Mensagem no timer principal
+	
+	# 2. Garante que a 'StartLabel' exista e esteja visível
+	if not start_label:
+		# Se a label não foi conectada, apenas espera 5s e começa
+		await get_tree().create_timer(5.0).timeout
+		_start_turn_timer()
+	else:
+		# A 'StartLabel' EXISTE, vamos fazer a contagem!
+		start_label.visible = true
+		
+		# 3. Mostra a mensagem inicial
+		start_label.text = "Prepare-se!"
+		await get_tree().create_timer(1.0).timeout # Espera 1 segundo
+		
+		# 4. Inicia o loop de contagem regressiva (de 4 até 1)
+		for i in range(4, 0, -1): # Loop de 4, 3, 2, 1
+			start_label.text = str(i) # Converte o número 'i' para texto
+			await get_tree().create_timer(1.0).timeout # Espera 1 segundo
+		
+		# 5. Limpa a tela de espera
+		start_label.visible = false
+		
+		# 6. AGORA SIM, Inicia o primeiro turno
+		_start_turn_timer()
+
+func _process(_delta: float) -> void:
 	if Input.is_action_just_pressed("ui_select_red1"):
 		red_card_button_1.pressed.emit()
 	if Input.is_action_just_pressed("ui_select_red2"):
@@ -65,6 +116,10 @@ func _process(delta: float) -> void:
 		blue_card_button_1.pressed.emit()
 	if Input.is_action_just_pressed("ui_select_blue2"):
 		blue_card_button_2.pressed.emit()
+	if not _turn_timer.is_stopped():
+		# Atualiza o texto do Label com o tempo restante
+		# "%.1f" formata o número para mostrar apenas 1 casa decimal (ex: 19.3)
+		timer_label.text = "%.1f" % _turn_timer.time_left
 	
 func _unhandled_input(event: InputEvent) -> void:
 	
@@ -139,7 +194,7 @@ func _move_active_unit(new_cell: Vector2) -> void:
 	# 2. Lógica de Movimento
 	_units.erase(_active_unit.cell)
 	_units[new_cell] = _active_unit
-	
+	_turn_timer.stop() # Para o timer, pois o jogador fez um movimento
 	_deselect_active_unit()
 	_active_unit.walk_along(_unit_path.current_path)
 	
@@ -282,7 +337,7 @@ func _switch_turn() -> void:
 		
 		game_label.text = "--- TURNO: JOGADOR VERMELHO ---"
 	_update_button_interactivity() # Atualiza quais botões podem ser clicados
-	
+	_start_turn_timer() # Inicia o timer para o PRÓXIMO jogador
 
 
 func _on_red_card_1_pressed():
@@ -353,17 +408,26 @@ func _update_card_visuals():
 
 # Habilita/Desabilita os botões de acordo com o turno
 func _update_button_interactivity():
-	# Lembre-se: Vermelho = Bottom | Azul = Top
-	if current_turn == PlayerTurn.RED:
-		red_card_button_1.disabled = false
-		red_card_button_2.disabled = false
-		blue_card_button_1.disabled = true
-		blue_card_button_2.disabled = true
-	else: # PlayerTurn.BLUE
-		red_card_button_1.disabled = true
-		red_card_button_2.disabled = true
-		blue_card_button_1.disabled = false
-		blue_card_button_2.disabled = false
+	# Se a UI está travada (ex: durante a animação), desabilita TUDO
+	if _ui_locked:
+		_set_all_ui_disabled(true)
+		return
+
+	# Lógica normal de turno
+	var is_red_turn = (current_turn == PlayerTurn.RED)
+	red_card_button_1.disabled = not is_red_turn
+	red_card_button_2.disabled = not is_red_turn
+	blue_card_button_1.disabled = is_red_turn
+	blue_card_button_2.disabled = is_red_turn
+
+	# Lógica dos Power-ups (só pode usar no seu turno E se não foi usado)
+	red_powerup_1.disabled = (not is_red_turn) or _red_powerup_used[1]
+	red_powerup_2.disabled = (not is_red_turn) or _red_powerup_used[2]
+	red_powerup_3.disabled = (not is_red_turn) or _red_powerup_used[3]
+	
+	blue_powerup_1.disabled = is_red_turn or _blue_powerup_used[1]
+	blue_powerup_2.disabled = is_red_turn or _blue_powerup_used[2]
+	blue_powerup_3.disabled = is_red_turn or _blue_powerup_used[3]
 
 # Troca a carta usada com a carta neutra
 func _swap_cards():
@@ -384,3 +448,49 @@ func _swap_cards():
 			_blue_card_2 = old_neutral_card
 	
 	_update_card_visuals() # Atualiza as texturas imediatamente
+
+		
+func _on_turn_timer_timeout() -> void:
+	print("Tempo esgotado! Trocando o turno.")
+	
+	# Se o jogador estava com uma peça selecionada, cancela tudo
+	if _active_unit:
+		_deselect_active_unit()
+		_clear_active_unit()
+	
+	# PENALIDADE: Troca o turno do jogador
+	_switch_turn()
+
+# Função para (re)iniciar o timer
+func _start_turn_timer() -> void:
+	_turn_timer.wait_time = _next_turn_time # Usa a variável
+	_turn_timer.start()
+	_next_turn_time = 20.0 # Reseta para o padrão
+	print("Turno iniciado. O jogador tem %s segundos." % _turn_timer.wait_time)
+
+# Trava/Destrava todos os 10 botões (Cartas e Poderes)
+func _set_all_ui_disabled(is_disabled: bool) -> void:
+	 red_card_button_1.disabled = is_disabled
+	 red_card_button_2.disabled = is_disabled
+	 blue_card_button_1.disabled = is_disabled
+	 blue_card_button_2.disabled = is_disabled
+	 
+	 red_powerup_1.disabled = is_disabled
+	 red_powerup_2.disabled = is_disabled
+	 red_powerup_3.disabled = is_disabled
+	 blue_powerup_1.disabled = is_disabled
+	 blue_powerup_2.disabled = is_disabled
+	 blue_powerup_3.disabled = is_disabled
+	
+func _play_powerup_animation(text: String) -> void:
+	_ui_locked = true
+	_set_all_ui_disabled(true) # Trava tudo
+	
+	powerup_label.text = text
+	powerup_label.visible = true
+	
+	await get_tree().create_timer(3.0).timeout
+	
+	powerup_label.visible = false
+	_ui_locked = false
+	# NÃO re-habilita aqui, deixa o _update_button_interactivity fazer isso
