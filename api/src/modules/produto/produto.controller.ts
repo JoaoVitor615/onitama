@@ -1,34 +1,29 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { ProdutoService } from './produto.service';
-import { CreateProdutoDto } from './dto/produto.dto';
-import { UpdateProdutoDto } from './dto/update-produto.dto';
+import { ProdutoDTO } from './dto/produto.dto';
 
 @Controller('produto')
 export class ProdutoController {
   constructor(private readonly produtoService: ProdutoService) {}
 
-  @Post()
-  create(@Body() createProdutoDto: CreateProdutoDto) {
-    return this.produtoService.create(createProdutoDto);
+  @Get('listar-todos')
+  async listar(){
+    return await this.produtoService.CarregarTodos();
   }
 
-  @Get()
-  findAll() {
-    return this.produtoService.findAll();
+  @Post('gravar')
+  async Criar(@Body() data: ProdutoDTO) {
+    return await this.produtoService.Gravar(data);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.produtoService.findOne(+id);
+  @Delete('deletar/:id')
+  async Deletar(@Param('id') id: string) {
+    return await this.produtoService.Deletar(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProdutoDto: UpdateProdutoDto) {
-    return this.produtoService.update(+id, updateProdutoDto);
+  @Get('carregar-por-nome/:nome')
+  async CarregarPorNome(@Param('nome') nome: string) {
+    return await this.produtoService.CarregarPorNome(nome);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.produtoService.remove(+id);
-  }
 }

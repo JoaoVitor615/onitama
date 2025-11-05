@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { ProdutoRepository } from './repository/produto.repository';
-import { ProdutoDto } from './dto/produto.dto';
+import { ProdutoDTO } from './dto/produto.dto';
 
 @Injectable()
 export class ProdutoService {
@@ -13,7 +13,7 @@ export class ProdutoService {
         return await this.produtoRepository.CarregarTodos();
     }
 
-    async Gravar(data: ProdutoDto) {
+    async Gravar(data: ProdutoDTO) {
 
         if (data.id_produto) {
             return await this.Atualizar(data);
@@ -22,7 +22,7 @@ export class ProdutoService {
         return await this.Criar(data);
     }
 
-    async Criar(data: ProdutoDto) {
+    async Criar(data: ProdutoDTO) {
         if (!data.nome) throw new BadRequestException("Nome de produto não informado")
         return await this.produtoRepository.Criar(data);
     }
@@ -31,7 +31,7 @@ export class ProdutoService {
         return await this.produtoRepository.Deletar(id);
     }
 
-    async Atualizar(data: ProdutoDto) {
+    async Atualizar(data: ProdutoDTO) {
         return await this.produtoRepository.Atualizar(data);
     }
 

@@ -1,6 +1,6 @@
 import { Produto } from "@prisma/client";
 
-export class ProdutoDto implements Produto {
+export class ProdutoDTO implements Produto {
     id_produto: number;
     nome: string;
     preco: number | null;

@@ -1,43 +1,43 @@
 import { Injectable } from "@nestjs/common";
 import { PrismaService } from "src/prisma/prisma.service";
-import { ProdutoDTO } from "../dto/produto.dto";
+import { TipoProdutoDTO } from "../dto/tipo_produto.dto";
 
 @Injectable() 
-export class ProdutoRepository {
+export class TipoProdutoRepository {
     constructor(
         private prisma: PrismaService
     ) {}
 
-    async Criar(data: ProdutoDTO) {
-        return await this.prisma.produto.create({
+    async Criar(data: TipoProdutoDTO) {
+        return await this.prisma.tipoProduto.create({
             data
         })
     }
 
         async CarregarTodos() {
-            return await this.prisma.produto.findMany();
+            return await this.prisma.tipoProduto.findMany();
         }
     
     
-        async Atualizar(data: ProdutoDTO) {
-            return await this.prisma.produto.update({
+        async Atualizar(data: TipoProdutoDTO) {
+            return await this.prisma.tipoProduto.update({
                 where: {
-                    id_produto: data.id_produto
+                    id_tipo_produto: data.id_tipo_produto
                 },
                 data
             })
         }
     
         async Deletar(id: number) {
-            return await this.prisma.produto.delete({
+            return await this.prisma.tipoProduto.delete({
                 where: {
-                    id_produto: id
+                    id_tipo_produto: id
                 }
             })
         }
     
         async CarregarPorNome(nome: string) {
-            return await this.prisma.produto.findFirst({
+            return await this.prisma.tipoProduto.findFirst({
                 where: {
                     nome: nome.toLowerCase()
                 }
