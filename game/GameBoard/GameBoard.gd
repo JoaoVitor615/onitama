@@ -266,6 +266,33 @@ func _show_Cursor():
 func _on_Cursor_accept_pressed(cell: Vector2) -> void:
 	var unit_at_cell = _units.get(cell, null)
 	
+	if _is_selecting_freeze_target:
+		if unit_at_cell:
+			# Verifica se é uma peça INIMIGA
+			if (current_turn == PlayerTurn.RED and unit_at_cell.invert_movement) or \
+			   (current_turn == PlayerTurn.BLUE and not unit_at_cell.invert_movement):
+
+				# Sucesso! Congela a peça
+				unit_at_cell.frozen_turns = 2 # Pula 2 turnos deste peão
+				# Opcional: Mudar a cor para azulado
+				unit_at_cell.get_node("PathFollow2D/Sprite").modulate = Color.CYAN
+				print(unit_at_cell.name, " está congelado por 2 rodadas!")
+
+				# Marca o power-up como usado
+				if current_turn == PlayerTurn.RED:
+					_red_powerup_used[3] = true
+				else:
+					_blue_powerup_used[3] = true
+
+				_is_selecting_freeze_target = false
+				_update_button_interactivity() # Desabilita o botão
+			else:
+				print("Você deve selecionar um peão INIMIGO.")
+		else:
+			print("Seleção de congelar cancelada.")
+			_is_selecting_freeze_target = false
+		return # Para a execução aqui
+	
 	if not _active_unit:
 		# 1. NENHUMA UNIDADE SELECIONADA
 		if _selected_card == null:
@@ -273,7 +300,9 @@ func _on_Cursor_accept_pressed(cell: Vector2) -> void:
 			return
 			
 		if unit_at_cell:
-			
+			if unit_at_cell.frozen_turns > 0:
+				print(unit_at_cell.name, " está congelado! Não pode ser selecionado.")
+				return
 			# --- VERIFICAÇÃO DE TURNO (CORRIGIDA) ---
 			# É o turno do VERMELHO (Bottom, false), mas a peça é AZUL (Top, true)?
 			if current_turn == PlayerTurn.RED and unit_at_cell.invert_movement:
@@ -336,6 +365,19 @@ func _switch_turn() -> void:
 		game_label.label_settings.font_color = 0xff0000ff
 		
 		game_label.text = "--- TURNO: JOGADOR VERMELHO ---"
+	print("--- Fase de Descongelamento ---")
+	for unit in _units.values():
+		# Só diminui o contador do jogador QUE VAI JOGAR AGORA
+		if (current_turn == PlayerTurn.RED and not unit.invert_movement) or \
+			(current_turn == PlayerTurn.BLUE and unit.invert_movement):
+
+			if unit.frozen_turns > 0:
+				unit.frozen_turns -= 1
+				print(unit.name, " tem mais ", unit.frozen_turns, " turnos congelado.")
+				if unit.frozen_turns == 0:
+					print(unit.name, " DESCONGELOU!")
+					# Opcional: Resetar a cor
+					unit.get_node("PathFollow2D/Sprite").modulate = Color.WHITE
 	_update_button_interactivity() # Atualiza quais botões podem ser clicados
 	_start_turn_timer() # Inicia o timer para o PRÓXIMO jogador
 
@@ -470,17 +512,16 @@ func _start_turn_timer() -> void:
 
 # Trava/Destrava todos os 10 botões (Cartas e Poderes)
 func _set_all_ui_disabled(is_disabled: bool) -> void:
-	 red_card_button_1.disabled = is_disabled
-	 red_card_button_2.disabled = is_disabled
-	 blue_card_button_1.disabled = is_disabled
-	 blue_card_button_2.disabled = is_disabled
-	 
-	 red_powerup_1.disabled = is_disabled
-	 red_powerup_2.disabled = is_disabled
-	 red_powerup_3.disabled = is_disabled
-	 blue_powerup_1.disabled = is_disabled
-	 blue_powerup_2.disabled = is_disabled
-	 blue_powerup_3.disabled = is_disabled
+	red_card_button_1.disabled = is_disabled
+	red_card_button_2.disabled = is_disabled
+	blue_card_button_1.disabled = is_disabled
+	blue_card_button_2.disabled = is_disabled
+	red_powerup_1.disabled = is_disabled
+	red_powerup_2.disabled = is_disabled
+	red_powerup_3.disabled = is_disabled
+	blue_powerup_1.disabled = is_disabled
+	blue_powerup_2.disabled = is_disabled
+	blue_powerup_3.disabled = is_disabled
 	
 func _play_powerup_animation(text: String) -> void:
 	_ui_locked = true
@@ -494,3 +535,64 @@ func _play_powerup_animation(text: String) -> void:
 	powerup_label.visible = false
 	_ui_locked = false
 	# NÃO re-habilita aqui, deixa o _update_button_interactivity fazer isso
+func _on_red_powerup_1_pressed() -> void:
+	if _red_powerup_used[1] or current_turn != PlayerTurn.RED: return
+
+	_red_powerup_used[1] = true
+	await _play_powerup_animation("TEMPO DO OPONENTE REDUZIDO!")
+	_next_turn_time = 5.0 # Afeta o próximo turno (do Azul)
+	_update_button_interactivity() # Atualiza a UI (desabilita este botão)
+
+func _on_blue_powerup_1_pressed() -> void:
+	if _blue_powerup_used[1] or current_turn != PlayerTurn.BLUE: return
+
+	_blue_powerup_used[1] = true
+	await _play_powerup_animation("TEMPO DO OPONENTE REDUZIDO!")
+	_next_turn_time = 5.0 # Afeta o próximo turno (do Vermelho)
+	_update_button_interactivity()
+
+func _on_red_powerup_2_pressed() -> void:
+	if _red_powerup_used[2] or current_turn != PlayerTurn.RED: return
+
+	_red_powerup_used[2] = true
+	await _play_powerup_animation("TROCA DE CARTAS ATIVADA!")
+
+	var temp_card = _red_card_1
+	_red_card_1 = _blue_card_1
+	_blue_card_1 = temp_card
+
+	_update_card_visuals() # Atualiza as texturas
+	_update_button_interactivity()
+
+func _on_blue_powerup_2_pressed() -> void:
+	if _blue_powerup_used[2] or current_turn != PlayerTurn.BLUE: return
+
+	_blue_powerup_used[2] = true
+	await _play_powerup_animation("TROCA DE CARTAS ATIVADA!")
+
+	var temp_card = _red_card_1
+	_red_card_1 = _blue_card_1
+	_blue_card_1 = temp_card
+
+	_update_card_visuals()
+	_update_button_interactivity()
+	
+func _on_red_powerup_3_pressed() -> void:
+	if _red_powerup_used[3] or current_turn != PlayerTurn.RED: return
+
+	await _play_powerup_animation("CONGELAR!")
+
+	print("Selecione um peão INIMIGO para congelar.")
+	_is_selecting_freeze_target = true
+	_selected_card = null # Cancela seleção de carta
+	_update_button_interactivity() # Re-habilita botões para cancelar
+
+func _on_blue_powerup_3_pressed() -> void:
+	if _blue_powerup_used[3] or current_turn != PlayerTurn.BLUE: return
+
+	await _play_powerup_animation("CONGELAR!")
+
+	print("Selecione um peão INIMIGO para congelar.")
+	_is_selecting_freeze_target = true
+	_selected_card = null
+	_update_button_interactivity()
