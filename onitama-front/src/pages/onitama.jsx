@@ -1,42 +1,58 @@
 import GameIframe from "../components/GameIframe";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { criarSala, entrarSala, carregarSalaPorCodigo } from "../api/salas";
 
 function Onitama() {
-  // Exemplo: dados do jogador (você pode buscar da API ou contexto de autenticação)
-  const [playerData, setPlayerData] = useState({
-    player_name: "Jogador Teste",
-    player_data: {
-      apelido: "Jogador Teste",
-      email: "teste@example.com",
-      xp: 0,
-      pontos: 0,
-      moedas: 0,
-      // Dados de rede (LAN)
-      wsUrl: "ws://127.0.0.1:8081",
-      roomCode: "sala-local",
-      role: "client", // host | client
-    },
-  });
+  // Parâmetros necessários para o jogo (consumidos pelo Godot)
+  const [playerData, setPlayerData] = useState(null);
 
-  // Estado do lobby LAN
+  // Estado do lobby / salas
   const [wsUrl, setWsUrl] = useState("ws://127.0.0.1:8081");
-  const [roomCode, setRoomCode] = useState("sala-local");
-  const [role, setRole] = useState("client");
+  const [roomCode, setRoomCode] = useState("");
+  const [usuarioId, setUsuarioId] = useState("");
+  const [nomeJogador, setNomeJogador] = useState("");
+  const [role, setRole] = useState("client"); // host | client
 
-  // Exemplo: buscar dados do jogador (pode ser substituído por uma chamada à API)
-  useEffect(() => {
-    // TODO: Substituir por chamada real à API ou contexto de autenticação
-    // Exemplo:
-    // const fetchPlayerData = async () => {
-    //   const response = await fetch('/api/usuarios/carregar-por-hash/HASH_AQUI');
-    //   const data = await response.json();
-    //   setPlayerData({
-    //     player_name: data.apelido || data.email || "Jogador",
-    //     player_data: data
-    //   });
-    // };
-    // fetchPlayerData();
-  }, []);
+  const handleCriarSala = async () => {
+    if (!roomCode || !usuarioId) {
+      alert("Informe o código da sala e seu ID de usuário.");
+      return;
+    }
+    try {
+      await criarSala({ codigo: roomCode, id_host: Number(usuarioId) });
+      await entrarSala({ codigo: roomCode, id_usuario: Number(usuarioId), papel: "HOST" });
+      setPlayerData({
+        wsUrl,
+        roomCode,
+        name: nomeJogador || `Host ${usuarioId}`,
+        role: "host",
+      });
+    } catch (err) {
+      console.error(err);
+      alert("Falha ao criar/entrar na sala");
+    }
+  };
+
+  const handleEntrarSala = async () => {
+    if (!roomCode || !usuarioId) {
+      alert("Informe o código da sala e seu ID de usuário.");
+      return;
+    }
+    try {
+      const sala = await carregarSalaPorCodigo(roomCode);
+      if (!sala) throw new Error("Sala inexistente");
+      await entrarSala({ codigo: roomCode, id_usuario: Number(usuarioId), papel: "CLIENTE" });
+      setPlayerData({
+        wsUrl,
+        roomCode,
+        name: nomeJogador || `Cliente ${usuarioId}`,
+        role: "client",
+      });
+    } catch (err) {
+      console.error(err);
+      alert("Falha ao entrar na sala");
+    }
+  };
 
   return (
     <div
@@ -73,7 +89,7 @@ function Onitama() {
               <input
                 value={wsUrl}
                 onChange={(e) => setWsUrl(e.target.value)}
-                placeholder="ws://192.168.0.10:8081"
+                placeholder="ws://localhost:8081"
                 style={{ padding: "8px", borderRadius: "6px", border: "1px solid #333", background: "#111", color: "#fff", minWidth: "260px" }}
               />
             </label>
@@ -84,6 +100,24 @@ function Onitama() {
                 onChange={(e) => setRoomCode(e.target.value)}
                 placeholder="sala-local"
                 style={{ padding: "8px", borderRadius: "6px", border: "1px solid #333", background: "#111", color: "#fff", minWidth: "180px" }}
+              />
+            </label>
+            <label style={{ display: "flex", flexDirection: "column", fontSize: "0.9rem" }}>
+              Seu ID de Usuário
+              <input
+                value={usuarioId}
+                onChange={(e) => setUsuarioId(e.target.value)}
+                placeholder="ex: 42"
+                style={{ padding: "8px", borderRadius: "6px", border: "1px solid #333", background: "#111", color: "#fff", minWidth: "120px" }}
+              />
+            </label>
+            <label style={{ display: "flex", flexDirection: "column", fontSize: "0.9rem" }}>
+              Seu Nome
+              <input
+                value={nomeJogador}
+                onChange={(e) => setNomeJogador(e.target.value)}
+                placeholder="apelido"
+                style={{ padding: "8px", borderRadius: "6px", border: "1px solid #333", background: "#111", color: "#fff", minWidth: "160px" }}
               />
             </label>
             <label style={{ display: "flex", flexDirection: "column", fontSize: "0.9rem" }}>
@@ -98,20 +132,10 @@ function Onitama() {
               </select>
             </label>
             <button
-              onClick={() => {
-                setPlayerData((prev) => ({
-                  ...prev,
-                  player_data: {
-                    ...prev.player_data,
-                    wsUrl,
-                    roomCode,
-                    role,
-                  },
-                }));
-              }}
+              onClick={role === "host" ? handleCriarSala : handleEntrarSala}
               style={{ padding: "10px 14px", borderRadius: "8px", background: "#2b6cb0", color: "#fff", border: "none", fontWeight: 600 }}
             >
-              Conectar à Sala
+              {role === "host" ? "Criar e Entrar" : "Entrar na Sala"}
             </button>
           </div>
         </div>
