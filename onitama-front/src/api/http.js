@@ -21,6 +21,7 @@ export function getUsuarioHash() {
 }
 
 export async function httpFetch(path, { headers = {}, ...rest } = {}) {
+  const API_BASE = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_BASE) || '';
   const id = getUsuarioId();
   const hash = getUsuarioHash();
   const mergedHeaders = {
@@ -30,7 +31,16 @@ export async function httpFetch(path, { headers = {}, ...rest } = {}) {
   if (id != null) mergedHeaders['X-Usuario-Id'] = String(id);
   if (hash) mergedHeaders['X-Usuario-Hash'] = String(hash);
 
-  const res = await fetch(path, { headers: mergedHeaders, ...rest });
+  let url = path;
+  if (API_BASE) {
+    if (/^https?:\/\//.test(API_BASE)) {
+      url = API_BASE + String(path || '').replace(/^\/api/, '');
+    } else {
+      url = API_BASE + path;
+    }
+  }
+
+  const res = await fetch(url, { headers: mergedHeaders, ...rest });
   if (!res.ok) {
     const text = await res.text().catch(() => '');
     throw new Error(text || `HTTP ${res.status}`);

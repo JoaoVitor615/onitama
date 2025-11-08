@@ -2,7 +2,7 @@ import { sala_status } from "@prisma/client";
 
 export class CriarSalaDTO {
   codigo?: string; // opcional; gerado se não informado
-  id_host!: number;
+  id_host!: number; // obtido dos headers no controller
 }
 
 export class EntrarSalaDTO {
