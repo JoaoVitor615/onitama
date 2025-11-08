@@ -1,26 +1,42 @@
-import { Injectable } from '@nestjs/common';
-import { CreateTipoProdutoDto } from './dto/create-tipo_produto.dto';
-import { UpdateTipoProdutoDto } from './dto/update-tipo_produto.dto';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { TipoProdutoRepository } from './repository/tipo_produto.repository';
+import { TipoProdutoDTO } from './dto/tipo_produto.dto';
 
 @Injectable()
 export class TipoProdutoService {
-  create(createTipoProdutoDto: CreateTipoProdutoDto) {
-    return 'This action adds a new tipoProduto';
-  }
+  constructor(
+    private tipoProdutoRepository: TipoProdutoRepository
+  )
+{}
 
-  findAll() {
-    return `This action returns all tipoProduto`;
-  }
+   async CarregarTodos() {
+        return await this.tipoProdutoRepository.CarregarTodos();
+    }
 
-  findOne(id: number) {
-    return `This action returns a #${id} tipoProduto`;
-  }
+    async Gravar(data: TipoProdutoDTO) {
 
-  update(id: number, updateTipoProdutoDto: UpdateTipoProdutoDto) {
-    return `This action updates a #${id} tipoProduto`;
-  }
+        if (data.id_tipo_produto) {
+            return await this.Atualizar(data);
+        }
+    
+        return await this.Criar(data);
+    }
 
-  remove(id: number) {
-    return `This action removes a #${id} tipoProduto`;
-  }
+    async Criar(data: TipoProdutoDTO) {
+        if (!data.nome) throw new BadRequestException("Nome do tipo de produto não informado")
+        return await this.tipoProdutoRepository.Criar(data);
+    }
+
+    async Deletar(id: number) {
+        return await this.tipoProdutoRepository.Deletar(id);
+    }
+
+    async Atualizar(data: TipoProdutoDTO) {
+        return await this.tipoProdutoRepository.Atualizar(data);
+    }
+
+    async CarregarPorNome(nome: string) {
+        return await this.tipoProdutoRepository.CarregarPorNome(nome);
+    }
+
 }
