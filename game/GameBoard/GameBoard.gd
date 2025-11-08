@@ -56,6 +56,15 @@ func _ready() -> void:
 	blue_card_button_1.pressed.connect(_on_blue_card_1_pressed)
 	blue_card_button_2.pressed.connect(_on_blue_card_2_pressed)
 
+	# Integração com WebBridge (React) e Network (LAN)
+	if Engine.has_singleton("WebBridge"):
+		var bridge = Engine.get_singleton("WebBridge")
+		if bridge and bridge.has_signal("player_data_received"):
+			bridge.connect("player_data_received", Callable(self, "_on_player_data_received"))
+
+	if Engine.has_singleton("Network"):
+		Network.connect("move_received", Callable(self, "_on_network_move_received"))
+
 func _process(delta: float) -> void:
 	if Input.is_action_just_pressed("ui_select_red1"):
 		red_card_button_1.pressed.emit()
@@ -121,6 +130,8 @@ func _move_active_unit(new_cell: Vector2) -> void:
 	if not new_cell in _walkable_cells:
 		return
 
+	var old_cell = _active_unit.cell
+
 	var captured_master = false 
 
 	# 1. Lógica de Captura
@@ -146,6 +157,15 @@ func _move_active_unit(new_cell: Vector2) -> void:
 	await _active_unit.walk_finished 
 	
 	_swap_cards()
+
+	# Broadcast move to LAN peers
+	if Engine.has_singleton("Network"):
+		var move_dict = {
+			"from": Vector2i(old_cell),
+			"to": Vector2i(new_cell),
+			"card_slot": _card_used_slot
+		}
+		Network.send_move(move_dict)
 	
 	# 3. Checa a Vitória por Captura
 	if captured_master:
@@ -364,6 +384,38 @@ func _update_button_interactivity():
 		red_card_button_2.disabled = true
 		blue_card_button_1.disabled = false
 		blue_card_button_2.disabled = false
+
+# ==== Integração LAN/React ====
+func _on_player_data_received(data: Dictionary) -> void:
+	# Espera dados vindos do React: { player_data: { wsUrl, roomCode, role }, player_name }
+	var payload: Dictionary = {}
+	if data.has("player_data"):
+		payload = data.player_data
+	var ws_url = payload.get("wsUrl", "ws://127.0.0.1:8081")
+	var room_code = payload.get("roomCode", "local-room")
+	var name = data.get("player_name", "Jogador")
+	var role = payload.get("role", "client")
+	if Engine.has_singleton("Network"):
+		Network.connect_and_join(ws_url, room_code, name, role)
+
+func _on_network_move_received(packet: Dictionary) -> void:
+	if not packet.has("move"):
+		return
+	var mv: Dictionary = packet.move
+	if not (mv.has("from") and mv.has("to") and mv.has("card_slot")):
+		return
+	var from_cell: Vector2 = Vector2(mv.from)
+	var to_cell: Vector2 = Vector2(mv.to)
+	_card_used_slot = int(mv.card_slot)
+	# Prepara estados mínimos para permitir _move_active_unit
+	var unit_at_from = _units.get(from_cell, null)
+	if unit_at_from == null:
+		return
+	_active_unit = unit_at_from
+	_active_unit.is_selected = true
+	_walkable_cells = [to_cell]
+	_unit_path.draw(Vector2i(from_cell), Vector2i(to_cell))
+	_move_active_unit(to_cell)
 
 # Troca a carta usada com a carta neutra
 func _swap_cards():

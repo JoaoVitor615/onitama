@@ -11,8 +11,17 @@ function Onitama() {
       xp: 0,
       pontos: 0,
       moedas: 0,
+      // Dados de rede (LAN)
+      wsUrl: "ws://127.0.0.1:8081",
+      roomCode: "sala-local",
+      role: "client", // host | client
     },
   });
+
+  // Estado do lobby LAN
+  const [wsUrl, setWsUrl] = useState("ws://127.0.0.1:8081");
+  const [roomCode, setRoomCode] = useState("sala-local");
+  const [role, setRole] = useState("client");
 
   // Exemplo: buscar dados do jogador (pode ser substituído por uma chamada à API)
   useEffect(() => {
@@ -57,8 +66,54 @@ function Onitama() {
         >
           🎮 Onitama
         </h1>
-
-        <div style={{ maxWidth: "800px", margin: "0 auto" }}>
+        <div style={{ maxWidth: "900px", margin: "10px auto", color: "#ddd" }}>
+          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
+            <label style={{ display: "flex", flexDirection: "column", fontSize: "0.9rem" }}>
+              Servidor WS
+              <input
+                value={wsUrl}
+                onChange={(e) => setWsUrl(e.target.value)}
+                placeholder="ws://192.168.0.10:8081"
+                style={{ padding: "8px", borderRadius: "6px", border: "1px solid #333", background: "#111", color: "#fff", minWidth: "260px" }}
+              />
+            </label>
+            <label style={{ display: "flex", flexDirection: "column", fontSize: "0.9rem" }}>
+              Código da Sala
+              <input
+                value={roomCode}
+                onChange={(e) => setRoomCode(e.target.value)}
+                placeholder="sala-local"
+                style={{ padding: "8px", borderRadius: "6px", border: "1px solid #333", background: "#111", color: "#fff", minWidth: "180px" }}
+              />
+            </label>
+            <label style={{ display: "flex", flexDirection: "column", fontSize: "0.9rem" }}>
+              Papel
+              <select
+                value={role}
+                onChange={(e) => setRole(e.target.value)}
+                style={{ padding: "8px", borderRadius: "6px", border: "1px solid #333", background: "#111", color: "#fff" }}
+              >
+                <option value="host">Host</option>
+                <option value="client">Cliente</option>
+              </select>
+            </label>
+            <button
+              onClick={() => {
+                setPlayerData((prev) => ({
+                  ...prev,
+                  player_data: {
+                    ...prev.player_data,
+                    wsUrl,
+                    roomCode,
+                    role,
+                  },
+                }));
+              }}
+              style={{ padding: "10px 14px", borderRadius: "8px", background: "#2b6cb0", color: "#fff", border: "none", fontWeight: 600 }}
+            >
+              Conectar à Sala
+            </button>
+          </div>
         </div>
       </div>
 
