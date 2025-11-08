@@ -32,7 +32,7 @@ export function subscribeLista(cbPresence, cbRoomUpdate, cbRoomDeleted) {
   };
 }
 
-export function joinSala(codigo, cbPresence, cbRoomUpdate) {
+export function joinSala(codigo, cbPresence, cbRoomUpdate, cbRoomDeleted) {
   const s = getSalasSocket();
   s.emit('join_sala', { codigo, userId: getUsuarioId() });
   if (cbPresence) s.on('presence_update', (payload) => {
@@ -41,8 +41,12 @@ export function joinSala(codigo, cbPresence, cbRoomUpdate) {
   if (cbRoomUpdate) s.on('room_update', (payload) => {
     if (payload?.codigo === codigo) cbRoomUpdate(payload);
   });
+  if (cbRoomDeleted) s.on('room_deleted', (payload) => {
+    if (payload?.codigo === codigo) cbRoomDeleted(payload);
+  });
   return () => {
     if (cbPresence) s.off('presence_update');
     if (cbRoomUpdate) s.off('room_update');
+    if (cbRoomDeleted) s.off('room_deleted');
   };
 }

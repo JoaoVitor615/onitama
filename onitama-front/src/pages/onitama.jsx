@@ -17,16 +17,16 @@ function Onitama() {
   const usuarioId = useMemo(() => getUsuarioId(), []);
   const wsUrl = useMemo(() => (import.meta.env.VITE_WS_URL || "ws://127.0.0.1:8081"), []);
 
+  // Carrega uma vez os dados da sala (sem polling) para estado inicial
   useEffect(() => {
-    let timer;
-    const tick = async () => {
+    const run = async () => {
       if (!codigoParam) return;
       try {
         setLoading(true);
         setError(null);
         const s = await carregarSalaPorCodigo(codigoParam);
         setSala(s);
-        const count = Array.isArray(s?.SalaJogador) ? s.SalaJogador.length : 0;
+        const count = Array.isArray(s?.SalaJogador) ? s.SalaJogador.length : (s?.presentes ?? 0);
         const isReady = s?.status === 'in_progress' || count >= 2;
         const role = (usuarioId && s?.id_host === usuarioId) ? 'host' : 'client';
         if (isReady) {
@@ -36,11 +36,9 @@ function Onitama() {
         setError("Falha ao carregar sala");
       } finally {
         setLoading(false);
-        timer = setTimeout(tick, 1000);
       }
     };
-    tick();
-    return () => timer && clearTimeout(timer);
+    run();
   }, [codigoParam, usuarioId, wsUrl]);
 
   // Removido: efeito de desmontagem que chamava sairSala.
@@ -52,19 +50,39 @@ function Onitama() {
     if (!codigoParam) return;
     const off = joinSala(
       codigoParam,
+      // presence updates
       (p) => {
-        // atualiza status e contagem baseada em presença
         setSala((curr) => {
-          const next = { ...(curr || {}), status: curr?.status, presentes: p.presentes };
+          const next = { ...(curr || {}), presentes: p.presentes, status: curr?.status };
+          const count = p.presentes ?? 0;
+          const isReady = next?.status === 'in_progress' || count >= 2;
+          if (isReady && !playerData) {
+            const role = (usuarioId && next?.id_host === usuarioId) ? 'host' : 'client';
+            setPlayerData({ wsUrl, roomCode: codigoParam, name: `Jogador ${usuarioId ?? ''}`.trim(), role });
+          }
           return next;
         });
       },
+      // room_update updates
       (u) => {
-        setSala((curr) => ({ ...(curr || {}), status: u.status, presentes: u.presentes }));
+        setSala((curr) => {
+          const next = { ...(curr || {}), status: u.status, presentes: u.presentes };
+          const count = u.presentes ?? 0;
+          const isReady = next?.status === 'in_progress' || count >= 2;
+          if (isReady && !playerData) {
+            const role = (usuarioId && next?.id_host === usuarioId) ? 'host' : 'client';
+            setPlayerData({ wsUrl, roomCode: codigoParam, name: `Jogador ${usuarioId ?? ''}`.trim(), role });
+          }
+          return next;
+        });
+      },
+      // room_deleted updates
+      () => {
+        navigate('/salas');
       }
     );
     return () => off && off();
-  }, [codigoParam]);
+  }, [codigoParam, usuarioId, wsUrl, playerData, navigate]);
 
   const handleSair = async () => {
     if (!codigoParam || leaving) return;
