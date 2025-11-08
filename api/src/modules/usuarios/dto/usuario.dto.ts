@@ -6,10 +6,11 @@ export default class UsuarioDTO implements Usuario {
     data_criacao: Date;
     email: string | null;
     senha: string | null;
-    xp: number | null;
-    pontos: number | null;
     moedas: number | null;
-    id_banner: number | null;
-    id_titulo: number | null;
     apelido: string | null;
+    skin_ativa: number | null;
+    cenario_ativo: number | null;
+    poder_ativo1: number | null;
+    poder_ativo2: number | null;
+    poder_ativo3: number | null;
 }

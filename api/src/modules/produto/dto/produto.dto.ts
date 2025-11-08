@@ -5,6 +5,7 @@ export class ProdutoDTO implements Produto {
     nome: string;
     preco: number | null;
     compravel: boolean | null;
-    xp_min: number | null;
     id_tipo_produto: bigint | null;
+    imagem: string | null;
+    audio: string | null;
 }
