@@ -16,30 +16,42 @@ model TipoProduto {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model Usuario {
-  id_usuario     Int              @id @default(autoincrement())
-  hash_id        String?          @db.VarChar
-  data_criacao   DateTime         @default(now()) @db.Timestamptz(6)
-  email          String?          @db.VarChar
-  senha          String?          @db.VarChar
-  xp             Int?
-  pontos         Int?
-  moedas         Int?
-  id_banner      Int?
-  id_titulo      Int?
-  apelido        String?          @db.VarChar
-  UsuarioProduto UsuarioProduto[]
+  id_usuario                             Int              @id @default(autoincrement())
+  hash_id                                String?          @db.VarChar
+  data_criacao                           DateTime         @default(now()) @db.Timestamptz(6)
+  email                                  String?          @db.VarChar
+  senha                                  String?          @db.VarChar
+  moedas                                 Int?
+  apelido                                String?          @db.VarChar
+  skin_ativa                             Int?
+  cenario_ativo                          Int?
+  poder_ativo1                           Int?
+  poder_ativo2                           Int?
+  poder_ativo3                           Int?
+  Produto_Usuario_cenario_ativoToProduto Produto?         @relation("Usuario_cenario_ativoToProduto", fields: [cenario_ativo], references: [id_produto])
+  Produto_Usuario_poder_ativo1ToProduto  Produto?         @relation("Usuario_poder_ativo1ToProduto", fields: [poder_ativo1], references: [id_produto])
+  Produto_Usuario_poder_ativo2ToProduto  Produto?         @relation("Usuario_poder_ativo2ToProduto", fields: [poder_ativo2], references: [id_produto])
+  Produto_Usuario_poder_ativo3ToProduto  Produto?         @relation("Usuario_poder_ativo3ToProduto", fields: [poder_ativo3], references: [id_produto])
+  Produto_Usuario_skin_ativaToProduto    Produto?         @relation("Usuario_skin_ativaToProduto", fields: [skin_ativa], references: [id_produto])
+  UsuarioProduto                         UsuarioProduto[]
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model Produto {
-  id_produto      Int              @id @default(autoincrement())
-  nome            String           @db.VarChar
-  preco           Int?
-  compravel       Boolean?
-  xp_min          Int?
-  id_tipo_produto BigInt?
-  TipoProduto     TipoProduto?     @relation(fields: [id_tipo_produto], references: [id_tipo_produto], onDelete: Cascade)
-  UsuarioProduto  UsuarioProduto[]
+  id_produto                             Int              @id @default(autoincrement())
+  nome                                   String           @db.VarChar
+  preco                                  Int?
+  compravel                              Boolean?
+  id_tipo_produto                        BigInt?
+  imagem                                 String?
+  audio                                  String?
+  TipoProduto                            TipoProduto?     @relation(fields: [id_tipo_produto], references: [id_tipo_produto], onDelete: Cascade)
+  Usuario_Usuario_cenario_ativoToProduto Usuario[]        @relation("Usuario_cenario_ativoToProduto")
+  Usuario_Usuario_poder_ativo1ToProduto  Usuario[]        @relation("Usuario_poder_ativo1ToProduto")
+  Usuario_Usuario_poder_ativo2ToProduto  Usuario[]        @relation("Usuario_poder_ativo2ToProduto")
+  Usuario_Usuario_poder_ativo3ToProduto  Usuario[]        @relation("Usuario_poder_ativo3ToProduto")
+  Usuario_Usuario_skin_ativaToProduto    Usuario[]        @relation("Usuario_skin_ativaToProduto")
+  UsuarioProduto                         UsuarioProduto[]
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
