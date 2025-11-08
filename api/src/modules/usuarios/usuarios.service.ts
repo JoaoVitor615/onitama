@@ -1,7 +1,8 @@
-import { BadRequestException, HttpException, Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException, UnauthorizedException } from "@nestjs/common";
 import { UsuarioRepository } from "./repository/usuario.repository";
 import UsuarioDTO from "./dto/usuario.dto";
 import Utilitarios from "../../classes/Utilitarios";
+import LoginDTO from "./dto/login.dto";
 
 @Injectable()
 export class UsuarioService {
@@ -44,6 +45,14 @@ export class UsuarioService {
 
         if (!usuario) throw new NotFoundException("Usuário não encontrado");
 
+        return usuario;
+    }
+
+    async Login(data: LoginDTO) {
+        if (!data.email || !data.senha) throw new BadRequestException("Email e senha são obrigatórios");
+        const senhaHash = await Utilitarios.GerarHashSenha(data.senha);
+        const usuario = await this.usuarioRepository.CarregarPorEmailSenha(data.email, senhaHash);
+        if (!usuario) throw new UnauthorizedException("Credenciais inválidas");
         return usuario;
     }
 
