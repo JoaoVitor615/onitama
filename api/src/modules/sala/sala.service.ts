@@ -2,10 +2,11 @@ import { BadRequestException, Injectable, NotFoundException } from "@nestjs/comm
 import { SalaRepository } from "./repository/sala.repository";
 import { CriarSalaDTO, EntrarSalaDTO, SairSalaDTO, AtualizarStatusSalaDTO } from "./dto/sala.dto";
 import Utilitarios from "src/classes/Utilitarios";
+import { SalaGateway } from "./sala.gateway";
 
 @Injectable()
 export class SalaService {
-  constructor(private salaRepository: SalaRepository) {}
+  constructor(private salaRepository: SalaRepository, private salaGateway: SalaGateway) {}
 
   async Listar() {
     return await this.salaRepository.Listar();
@@ -26,7 +27,11 @@ export class SalaService {
     const sala = await this.salaRepository.CriarSala(codigo, data.id_host);
     // Adiciona o host como jogador
     await this.salaRepository.EntrarSala(sala.id_sala, data.id_host, 'host');
-    return await this.salaRepository.CarregarPorCodigo(codigo);
+    const final = await this.salaRepository.CarregarPorCodigo(codigo);
+    if (final) {
+      this.salaGateway.broadcastSalaUpdate(codigo, final.status, await this.salaRepository.ContarJogadores(final.id_sala));
+    }
+    return final;
   }
 
   async Entrar(data: EntrarSalaDTO) {
@@ -44,7 +49,11 @@ export class SalaService {
       await this.salaRepository.AtualizarStatus(sala.id_sala, 'in_progress');
     }
 
-    return await this.salaRepository.CarregarPorCodigo(data.codigo);
+    const final = await this.salaRepository.CarregarPorCodigo(data.codigo);
+    if (final) {
+      this.salaGateway.broadcastSalaUpdate(data.codigo, final.status, await this.salaRepository.ContarJogadores(final.id_sala));
+    }
+    return final;
   }
 
   async Sair(data: SairSalaDTO) {
@@ -53,12 +62,19 @@ export class SalaService {
     await this.salaRepository.SairSala(sala.id_sala, data.id_usuario);
 
     const count = await this.salaRepository.ContarJogadores(sala.id_sala);
-    if (count === 0 && sala.status !== 'cancelled') {
-      await this.salaRepository.AtualizarStatus(sala.id_sala, 'cancelled');
+    if (count === 0) {
+      // Exclui sala quando não houver jogadores e notifica front
+      await this.salaRepository.ExcluirSala(sala.id_sala);
+      this.salaGateway.broadcastSalaDeleted(data.codigo);
+      return null;
     } else if (count === 1 && sala.status !== 'waiting') {
       await this.salaRepository.AtualizarStatus(sala.id_sala, 'waiting');
     }
 
-    return await this.salaRepository.CarregarPorCodigo(data.codigo);
+    const final = await this.salaRepository.CarregarPorCodigo(data.codigo);
+    if (final) {
+      this.salaGateway.broadcastSalaUpdate(data.codigo, final.status, await this.salaRepository.ContarJogadores(final.id_sala));
+    }
+    return final;
   }
 }

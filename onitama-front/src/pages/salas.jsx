@@ -1,10 +1,13 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import styles from "../SaladeJogos.module.css";
 import { useEffect, useState, useCallback } from "react";
 import { criarSala, listarSalas, entrarSala } from "../api/salas";
+import { subscribeLista } from "../api/ws";
 
 function Salas() {
+  const navigate = useNavigate();
   const [salas, setSalas] = useState([]);
+  const [presencas, setPresencas] = useState({}); // { codigo: presentes }
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -24,15 +27,58 @@ function Salas() {
   }, []);
 
   useEffect(() => {
+    // carrega uma vez a lista atual
     carregar();
-    const id = setInterval(carregar, 5000);
-    return () => clearInterval(id);
+    // assina atualizações de presença e sala via socket
+    const unsubscribe = subscribeLista(
+      (p) => {
+        if (p?.codigo) {
+          setPresencas((prev) => {
+            const next = { ...prev, [p.codigo]: p.presentes ?? 0 };
+            setSalas((curr) => curr.map((s) => (s.codigo === p.codigo ? { ...s, presentes: next[p.codigo] } : s)));
+            return next;
+          });
+        }
+      },
+      (u) => {
+        if (u?.codigo) {
+          setSalas((curr) => {
+            const idx = curr.findIndex((s) => s.codigo === u.codigo);
+            if (idx >= 0) {
+              const next = [...curr];
+              next[idx] = { ...next[idx], status: u.status, presentes: u.presentes ?? next[idx].presentes };
+              return next;
+            }
+            // adiciona nova sala desconhecida à listagem
+            return [
+              { codigo: u.codigo, status: u.status, presentes: u.presentes ?? 0, capacidade: 2, SalaJogador: [] },
+              ...curr,
+            ];
+          });
+        }
+      },
+      // handler para remoção de sala
+      (d) => {
+        if (d?.codigo) {
+          setSalas((curr) => curr.filter((s) => s.codigo !== d.codigo));
+          setPresencas((prev) => {
+            const { [d.codigo]: _, ...rest } = prev;
+            return rest;
+          });
+        }
+      }
+    );
+    return () => unsubscribe && unsubscribe();
   }, [carregar]);
 
   const handleCriarSala = async () => {
     try {
-      await criarSala();
+      const s = await criarSala();
       await carregar();
+      const codigo = s?.codigo || s?.data?.codigo;
+      if (codigo) {
+        navigate(`/onitama?codigo=${encodeURIComponent(codigo)}`);
+      }
     } catch (e) {
       alert("Não foi possível criar a sala.");
     }
@@ -42,6 +88,7 @@ function Salas() {
     try {
       await entrarSala({ codigo });
       await carregar();
+      navigate(`/onitama?codigo=${encodeURIComponent(codigo)}`);
     } catch (e) {
       alert("Não foi possível entrar na sala.");
     }
@@ -71,7 +118,7 @@ function Salas() {
 
         {salas.map((sala, idx) => {
           const nome = sala?.nome || sala?.host?.apelido || `Sala ${sala?.codigo || idx + 1}`;
-          const jogadores = sala?.jogadores?.length ?? sala?.lotacaoAtual ?? 1;
+          const jogadores = presencas[sala?.codigo] ?? sala?.presentes ?? 0;
           const capacidade = sala?.capacidade ?? 2;
           const codigo = sala?.codigo;
           return (

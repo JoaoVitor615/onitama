@@ -66,4 +66,8 @@ export class SalaRepository {
       data: { status },
     });
   }
+
+  async ExcluirSala(id_sala: number) {
+    return await this.prisma.sala.delete({ where: { id_sala } });
+  }
 }

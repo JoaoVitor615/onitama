@@ -58,7 +58,16 @@ export class SalaController {
   }
 
   @Post('sair')
-  async sair(@Body() data: SairSalaDTO) {
-    return await this.salaService.Sair(data);
+  async sair(
+    @Body() data: SairSalaDTO,
+    @Headers('x-usuario-id') idHeader?: string,
+    @Headers('x-usuario-hash') hashHeader?: string,
+  ) {
+    const id = idHeader ? Number(idHeader) : undefined;
+    if (!id || !hashHeader) throw new UnauthorizedException('Usuário não autenticado');
+    const usuario = await this.usuarioService.CarregarPorHash(hashHeader);
+    if (!usuario || usuario.id_usuario !== id) throw new UnauthorizedException('Cabeçalhos de usuário inválidos');
+    const payload: SairSalaDTO = { codigo: data.codigo, id_usuario: id };
+    return await this.salaService.Sair(payload);
   }
 }

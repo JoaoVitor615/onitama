@@ -9,10 +9,10 @@ export async function criarSala() {
   });
 }
 
-export async function entrarSala({ codigo, id_usuario, papel }) {
+export async function entrarSala({ codigo }) {
   return httpFetch('/api/salas/entrar', {
     method: 'POST',
-    body: JSON.stringify({ codigo, id_usuario, papel }),
+    body: JSON.stringify({ codigo }),
   });
 }
 
@@ -22,4 +22,11 @@ export async function carregarSalaPorCodigo(codigo) {
 
 export async function listarSalas() {
   return httpFetch('/api/salas/listar');
+}
+
+export async function sairSala({ codigo }) {
+  return httpFetch('/api/salas/sair', {
+    method: 'POST',
+    body: JSON.stringify({ codigo }),
+  });
 }

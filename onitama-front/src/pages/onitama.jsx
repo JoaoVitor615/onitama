@@ -1,56 +1,81 @@
 import GameIframe from "../components/GameIframe";
-import { useState } from "react";
-import { criarSala, entrarSala, carregarSalaPorCodigo } from "../api/salas";
+import { useEffect, useMemo, useState } from "react";
+import { carregarSalaPorCodigo, sairSala } from "../api/salas";
+import { joinSala } from "../api/ws";
+import { getUsuarioId } from "../api/http";
+import { useSearchParams, useNavigate } from "react-router-dom";
 
 function Onitama() {
-  // Parâmetros necessários para o jogo (consumidos pelo Godot)
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const codigoParam = searchParams.get("codigo");
   const [playerData, setPlayerData] = useState(null);
+  const [sala, setSala] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [leaving, setLeaving] = useState(false);
+  const usuarioId = useMemo(() => getUsuarioId(), []);
+  const wsUrl = useMemo(() => (import.meta.env.VITE_WS_URL || "ws://127.0.0.1:8081"), []);
 
-  // Estado do lobby / salas
-  const [wsUrl, setWsUrl] = useState("ws://127.0.0.1:8081");
-  const [roomCode, setRoomCode] = useState("");
-  const [usuarioId, setUsuarioId] = useState("");
-  const [nomeJogador, setNomeJogador] = useState("");
-  const [role, setRole] = useState("client"); // host | client
+  useEffect(() => {
+    let timer;
+    const tick = async () => {
+      if (!codigoParam) return;
+      try {
+        setLoading(true);
+        setError(null);
+        const s = await carregarSalaPorCodigo(codigoParam);
+        setSala(s);
+        const count = Array.isArray(s?.SalaJogador) ? s.SalaJogador.length : 0;
+        const isReady = s?.status === 'in_progress' || count >= 2;
+        const role = (usuarioId && s?.id_host === usuarioId) ? 'host' : 'client';
+        if (isReady) {
+          setPlayerData({ wsUrl, roomCode: s?.codigo || codigoParam, name: `Jogador ${usuarioId ?? ''}`.trim(), role });
+        }
+      } catch (e) {
+        setError("Falha ao carregar sala");
+      } finally {
+        setLoading(false);
+        timer = setTimeout(tick, 1000);
+      }
+    };
+    tick();
+    return () => timer && clearTimeout(timer);
+  }, [codigoParam, usuarioId, wsUrl]);
 
-  const handleCriarSala = async () => {
-    if (!roomCode || !usuarioId) {
-      alert("Informe o código da sala e seu ID de usuário.");
-      return;
-    }
+  // Removido: efeito de desmontagem que chamava sairSala.
+  // Em ambiente de desenvolvimento com React StrictMode, efeitos montam e desmontam imediatamente,
+  // o que disparava "sair" indevidamente logo após entrar na sala.
+
+  // Assina presença da sala para refletir contagem em tempo real
+  useEffect(() => {
+    if (!codigoParam) return;
+    const off = joinSala(
+      codigoParam,
+      (p) => {
+        // atualiza status e contagem baseada em presença
+        setSala((curr) => {
+          const next = { ...(curr || {}), status: curr?.status, presentes: p.presentes };
+          return next;
+        });
+      },
+      (u) => {
+        setSala((curr) => ({ ...(curr || {}), status: u.status, presentes: u.presentes }));
+      }
+    );
+    return () => off && off();
+  }, [codigoParam]);
+
+  const handleSair = async () => {
+    if (!codigoParam || leaving) return;
     try {
-      await criarSala({ codigo: roomCode, id_host: Number(usuarioId) });
-      await entrarSala({ codigo: roomCode, id_usuario: Number(usuarioId), papel: "HOST" });
-      setPlayerData({
-        wsUrl,
-        roomCode,
-        name: nomeJogador || `Host ${usuarioId}`,
-        role: "host",
-      });
-    } catch (err) {
-      console.error(err);
-      alert("Falha ao criar/entrar na sala");
-    }
-  };
-
-  const handleEntrarSala = async () => {
-    if (!roomCode || !usuarioId) {
-      alert("Informe o código da sala e seu ID de usuário.");
-      return;
-    }
-    try {
-      const sala = await carregarSalaPorCodigo(roomCode);
-      if (!sala) throw new Error("Sala inexistente");
-      await entrarSala({ codigo: roomCode, id_usuario: Number(usuarioId), papel: "CLIENTE" });
-      setPlayerData({
-        wsUrl,
-        roomCode,
-        name: nomeJogador || `Cliente ${usuarioId}`,
-        role: "client",
-      });
-    } catch (err) {
-      console.error(err);
-      alert("Falha ao entrar na sala");
+      setLeaving(true);
+      await sairSala({ codigo: codigoParam });
+    } catch (e) {
+      // silencia erro; navega mesmo assim
+    } finally {
+      navigate('/salas');
+      setLeaving(false);
     }
   };
 
@@ -83,59 +108,35 @@ function Onitama() {
           🎮 Onitama
         </h1>
         <div style={{ maxWidth: "900px", margin: "10px auto", color: "#ddd" }}>
-          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "center" }}>
-            <label style={{ display: "flex", flexDirection: "column", fontSize: "0.9rem" }}>
-              Servidor WS
-              <input
-                value={wsUrl}
-                onChange={(e) => setWsUrl(e.target.value)}
-                placeholder="ws://localhost:8081"
-                style={{ padding: "8px", borderRadius: "6px", border: "1px solid #333", background: "#111", color: "#fff", minWidth: "260px" }}
-              />
-            </label>
-            <label style={{ display: "flex", flexDirection: "column", fontSize: "0.9rem" }}>
-              Código da Sala
-              <input
-                value={roomCode}
-                onChange={(e) => setRoomCode(e.target.value)}
-                placeholder="sala-local"
-                style={{ padding: "8px", borderRadius: "6px", border: "1px solid #333", background: "#111", color: "#fff", minWidth: "180px" }}
-              />
-            </label>
-            <label style={{ display: "flex", flexDirection: "column", fontSize: "0.9rem" }}>
-              Seu ID de Usuário
-              <input
-                value={usuarioId}
-                onChange={(e) => setUsuarioId(e.target.value)}
-                placeholder="ex: 42"
-                style={{ padding: "8px", borderRadius: "6px", border: "1px solid #333", background: "#111", color: "#fff", minWidth: "120px" }}
-              />
-            </label>
-            <label style={{ display: "flex", flexDirection: "column", fontSize: "0.9rem" }}>
-              Seu Nome
-              <input
-                value={nomeJogador}
-                onChange={(e) => setNomeJogador(e.target.value)}
-                placeholder="apelido"
-                style={{ padding: "8px", borderRadius: "6px", border: "1px solid #333", background: "#111", color: "#fff", minWidth: "160px" }}
-              />
-            </label>
-            <label style={{ display: "flex", flexDirection: "column", fontSize: "0.9rem" }}>
-              Papel
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value)}
-                style={{ padding: "8px", borderRadius: "6px", border: "1px solid #333", background: "#111", color: "#fff" }}
-              >
-                <option value="host">Host</option>
-                <option value="client">Cliente</option>
-              </select>
-            </label>
+          {(!codigoParam || error) && (
+            <div style={{ padding: "10px", background: "#222", borderRadius: "8px" }}>
+              {error || "Abra pelo botão Entrar na página de Salas."}
+            </div>
+          )}
+          {codigoParam && !playerData && (
+            <div style={{ padding: "10px", background: "#222", borderRadius: "8px" }}>
+              Aguardando outro jogador entrar na sala "{codigoParam}"...
+            </div>
+          )}
+          {playerData && (
+            <div style={{ padding: "10px", background: "#1f4f1f", borderRadius: "8px" }}>
+              Sala pronta! Iniciando partida em "{playerData.roomCode}".
+            </div>
+          )}
+          <div style={{ marginTop: "12px" }}>
             <button
-              onClick={role === "host" ? handleCriarSala : handleEntrarSala}
-              style={{ padding: "10px 14px", borderRadius: "8px", background: "#2b6cb0", color: "#fff", border: "none", fontWeight: 600 }}
+              onClick={handleSair}
+              disabled={leaving}
+              style={{
+                background: leaving ? "#555" : "#8b0000",
+                color: "#fff",
+                border: "none",
+                padding: "8px 12px",
+                borderRadius: "6px",
+                cursor: leaving ? "not-allowed" : "pointer",
+              }}
             >
-              {role === "host" ? "Criar e Entrar" : "Entrar na Sala"}
+              {leaving ? "Saindo..." : "Sair da sala"}
             </button>
           </div>
         </div>
