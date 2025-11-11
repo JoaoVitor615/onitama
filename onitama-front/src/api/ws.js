@@ -50,3 +50,16 @@ export function joinSala(codigo, cbPresence, cbRoomUpdate, cbRoomDeleted) {
     if (cbRoomDeleted) s.off('room_deleted');
   };
 }
+
+/** Jogo Onitama: eventos simples para sincronização de estado via Socket.IO */
+export function emitGameState(codigo, state) {
+  const s = getSalasSocket();
+  s.emit('game_state', { codigo, state });
+}
+
+export function subscribeGameState(codigo, cb) {
+  const s = getSalasSocket();
+  const handler = (payload) => { if (payload?.codigo === codigo) cb(payload.state); };
+  s.on('game_state', handler);
+  return () => s.off('game_state', handler);
+}

@@ -12,6 +12,7 @@ export class SalaGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   private logger = new Logger(SalaGateway.name);
   private presenceByCodigo: Map<string, Map<string, PresenceEntry>> = new Map();
+  private gameStateByCodigo: Map<string, any> = new Map();
 
   /** Lista */
   @SubscribeMessage('subscribe_lista')
@@ -38,6 +39,9 @@ export class SalaGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.presenceByCodigo.set(codigo, roomMap);
     this.broadcastPresence(codigo);
     client.emit('joined_sala', { codigo });
+    // envia estado de jogo atual se existir
+    const existing = this.gameStateByCodigo.get(codigo);
+    if (existing) client.emit('game_state', { codigo, state: existing });
   }
 
   handleConnection(client: Socket) {
@@ -78,6 +82,18 @@ export class SalaGateway implements OnGatewayConnection, OnGatewayDisconnect {
   broadcastSalaDeleted(codigo: string) {
     this.server.to('lista').emit('room_deleted', { codigo });
     this.server.to(`sala:${codigo}`).emit('room_deleted', { codigo });
+  }
+
+  /** Recebe e retransmite estado de jogo (sem validação, por ora) */
+  @SubscribeMessage('game_state')
+  handleGameState(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() data: { codigo: string; state: any }
+  ) {
+    const codigo = (data?.codigo || '').trim().toLowerCase();
+    if (!codigo) return;
+    this.gameStateByCodigo.set(codigo, data?.state);
+    this.server.to(`sala:${codigo}`).emit('game_state', { codigo, state: data?.state });
   }
 
   getPresenceCount(codigo: string): number {

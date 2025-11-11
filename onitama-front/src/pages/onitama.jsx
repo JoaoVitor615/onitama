@@ -1,9 +1,9 @@
-import GameIframe from "../components/GameIframe";
 import { useEffect, useMemo, useState } from "react";
 import { carregarSalaPorCodigo, sairSala } from "../api/salas";
 import { joinSala } from "../api/ws";
 import { getUsuarioId } from "../api/http";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import GameOnitama from "../components/onitama/GameOnitama";
 
 function Onitama() {
   const navigate = useNavigate();
@@ -160,7 +160,7 @@ function Onitama() {
         </div>
       </div>
 
-      {/* Container do jogo - QUASE TELA CHEIA */}
+      {/* Container do jogo Onitama (novo) */}
       <div
         style={{
           width: "98%", // 👈 QUASE 100% DA LARGURA
@@ -177,7 +177,13 @@ function Onitama() {
           border: "2px solid rgba(255,255,255,0.1)", // 👈 BORDA SUTIL
         }}
       >
-        <GameIframe playerData={playerData} />
+        {playerData ? (
+          <GameOnitama seed={undefined} roomCode={playerData.roomCode} role={playerData.role} />
+        ) : (
+          <div style={{ color: "#fff", textAlign: "center", padding: "20px" }}>
+            Aguardando sala ficar pronta para iniciar a partida.
+          </div>
+        )}
       </div>
     </div>
   );

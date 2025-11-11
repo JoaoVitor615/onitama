@@ -1,0 +1,87 @@
+import React, { useEffect, useMemo, useState } from 'react';
+import { initState, getValidMoves, applyMove } from '../../game/onitama/logic';
+import { Board } from './Board';
+import { CardPanel } from './CardPanel';
+import { emitGameState, subscribeGameState } from '../../api/ws';
+
+/**
+ * GameOnitama: modo local (single-client) por enquanto; integração WS será feita depois.
+ */
+export default function GameOnitama({ seed = undefined, roomCode, role }) {
+  const [state, setState] = useState(() => initState(seed));
+  const [validMoves, setValidMoves] = useState([]);
+  const orientation = role === 'host' ? 'south' : 'north';
+
+  const myCards = useMemo(() => state.hands[state.currentPlayer], [state]);
+
+  // sincronização via WS: recebe estado
+  useEffect(() => {
+    if (!roomCode) return;
+    const off = subscribeGameState(roomCode, (st) => {
+      setState(st);
+      setValidMoves([]);
+    });
+    // Ao montar e ser host, envia estado inicial
+    if (role === 'host') emitGameState(roomCode, state);
+    return () => off && off();
+  }, [roomCode, role]);
+
+  const handleSelect = ({ y, x }) => {
+    if (state.selectedCardIndex == null) {
+      // sem carta selecionada, apenas marca peça
+      setState((s) => ({ ...s, selected: { y, x } }));
+      setValidMoves([]);
+      return;
+    }
+    // com carta selecionada, computa movimentos
+    const idx = state.selectedCardIndex;
+    const moves = getValidMoves(state, y, x, idx);
+    setState((s) => ({ ...s, selected: { y, x } }));
+    setValidMoves(moves);
+  };
+
+  const handleSelectCard = (idx) => {
+    if (idx === 'center') return;
+    setState((s) => ({ ...s, selectedCardIndex: idx }));
+    // recomputa movimentos se já há peça selecionada
+    if (state.selected) {
+      const moves = getValidMoves(state, state.selected.y, state.selected.x, idx);
+      setValidMoves(moves);
+    }
+  };
+
+  const handleMove = (to) => {
+    if (!state.selected || state.selectedCardIndex == null) return;
+    const next = applyMove(state, state.selected, to, state.selectedCardIndex);
+    setState(next);
+    setValidMoves([]);
+    if (roomCode) emitGameState(roomCode, next);
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center', width: '100%' }}>
+      <div style={{ color: '#fff' }}>
+        {state.winner ? (
+          <div>Vitória do jogador {state.winner}!</div>
+        ) : (
+          <div>Vez do jogador {state.currentPlayer}</div>
+        )}
+      </div>
+      <Board
+        board={state.board}
+        currentPlayer={state.currentPlayer}
+        selected={state.selected}
+        validMoves={validMoves}
+        onSelect={handleSelect}
+        onMove={handleMove}
+        orientation={orientation}
+      />
+      <CardPanel
+        myCards={myCards}
+        centerCard={state.center}
+        selectedCardIndex={state.selectedCardIndex}
+        onSelectCard={handleSelectCard}
+      />
+    </div>
+  );
+}

@@ -1,6 +1,0 @@
-[gd_resource type="Resource" script_class="Grid" load_steps=2 format=3 uid="uid://bfc1nbtu3n586"]
-
-[ext_resource type="Script" uid="uid://ht5awfqw53t" path="res://GameBoard/Grid.gd" id="1"]
-
-[resource]
-script = ExtResource("1")
