@@ -20,7 +20,7 @@ export class SalaRepository {
     return await this.prisma.sala.findUnique({
       where: { codigo },
       include: {
-        SalaJogador: true,
+        SalaJogador: { include: { Usuario: true } },
         Usuario: true,
       },
     });

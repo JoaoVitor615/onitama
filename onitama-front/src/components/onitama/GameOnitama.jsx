@@ -7,7 +7,7 @@ import { emitGameState, subscribeGameState } from '../../api/ws';
 /**
  * GameOnitama: modo local (single-client) por enquanto; integração WS será feita depois.
  */
-export default function GameOnitama({ seed = undefined, roomCode, role }) {
+export default function GameOnitama({ seed = undefined, roomCode, role, names }) {
   const [state, setState] = useState(() => initState(seed));
   const [validMoves, setValidMoves] = useState([]);
   const orientation = role === 'host' ? 'south' : 'north';
@@ -62,9 +62,9 @@ export default function GameOnitama({ seed = undefined, roomCode, role }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center', width: '100%' }}>
       <div style={{ color: '#fff' }}>
         {state.winner ? (
-          <div>Vitória do jogador {state.winner}!</div>
+          <div>Vitória de { (names && names[state.winner]) || (state.winner === 'A' ? 'Jogador A' : 'Jogador B') }!</div>
         ) : (
-          <div>Vez do jogador {state.currentPlayer}</div>
+          <div>Vez de { (names && names[state.currentPlayer]) || (state.currentPlayer === 'A' ? 'Jogador A' : 'Jogador B') }</div>
         )}
       </div>
       <Board

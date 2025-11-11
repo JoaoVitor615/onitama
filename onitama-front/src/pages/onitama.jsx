@@ -52,29 +52,30 @@ function Onitama() {
       codigoParam,
       // presence updates
       (p) => {
-        setSala((curr) => {
-          const next = { ...(curr || {}), presentes: p.presentes, status: curr?.status };
-          const count = p.presentes ?? 0;
-          const isReady = next?.status === 'in_progress' || count >= 2;
+        // atualiza apenas contagem e refaz carregamento para obter apelidos
+        setSala((curr) => ({ ...(curr || {}), presentes: p.presentes, status: curr?.status }));
+        carregarSalaPorCodigo(codigoParam).then((s) => {
+          setSala(s);
+          const count = Array.isArray(s?.SalaJogador) ? s.SalaJogador.length : (s?.presentes ?? 0);
+          const isReady = s?.status === 'in_progress' || count >= 2;
           if (isReady && !playerData) {
-            const role = (usuarioId && next?.id_host === usuarioId) ? 'host' : 'client';
+            const role = (usuarioId && s?.id_host === usuarioId) ? 'host' : 'client';
             setPlayerData({ wsUrl, roomCode: codigoParam, name: `Jogador ${usuarioId ?? ''}`.trim(), role });
           }
-          return next;
-        });
+        }).catch(() => {});
       },
       // room_update updates
       (u) => {
-        setSala((curr) => {
-          const next = { ...(curr || {}), status: u.status, presentes: u.presentes };
-          const count = u.presentes ?? 0;
-          const isReady = next?.status === 'in_progress' || count >= 2;
+        setSala((curr) => ({ ...(curr || {}), status: u.status, presentes: u.presentes }));
+        carregarSalaPorCodigo(codigoParam).then((s) => {
+          setSala(s);
+          const count = Array.isArray(s?.SalaJogador) ? s.SalaJogador.length : (s?.presentes ?? 0);
+          const isReady = s?.status === 'in_progress' || count >= 2;
           if (isReady && !playerData) {
-            const role = (usuarioId && next?.id_host === usuarioId) ? 'host' : 'client';
+            const role = (usuarioId && s?.id_host === usuarioId) ? 'host' : 'client';
             setPlayerData({ wsUrl, roomCode: codigoParam, name: `Jogador ${usuarioId ?? ''}`.trim(), role });
           }
-          return next;
-        });
+        }).catch(() => {});
       },
       // room_deleted updates
       () => {
@@ -141,6 +142,29 @@ function Onitama() {
               Sala pronta! Iniciando partida em "{playerData.roomCode}".
             </div>
           )}
+          {/* Apelidos dos jogadores quando disponíveis */}
+          {sala && Array.isArray(sala.SalaJogador) && sala.SalaJogador.length > 0 && (
+            <div style={{
+              marginTop: "12px",
+              padding: "10px",
+              background: "#222",
+              borderRadius: "8px",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center"
+            }}>
+              <div style={{ color: "#fff" }}>
+                {(() => {
+                  const hostPlayer = sala.SalaJogador.find(j => j.id_usuario === sala.id_host);
+                  const clientPlayer = sala.SalaJogador.find(j => j.id_usuario !== sala.id_host);
+                  const hostName = hostPlayer?.Usuario?.apelido || sala.Usuario?.apelido || "Host";
+                  const clientName = clientPlayer?.Usuario?.apelido || "Client";
+                  return `👤 ${hostName} vs ${clientName}`;
+                })()}
+              </div>
+            </div>
+          )}
+
           <div style={{ marginTop: "12px" }}>
             <button
               onClick={handleSair}
@@ -178,7 +202,16 @@ function Onitama() {
         }}
       >
         {playerData ? (
-          <GameOnitama seed={undefined} roomCode={playerData.roomCode} role={playerData.role} />
+          (() => {
+            const hostPlayer = sala?.SalaJogador?.find?.(j => j.id_usuario === sala?.id_host);
+            const clientPlayer = sala?.SalaJogador?.find?.(j => j.id_usuario !== sala?.id_host);
+            const hostName = hostPlayer?.Usuario?.apelido || sala?.Usuario?.apelido || "Host";
+            const clientName = clientPlayer?.Usuario?.apelido || "Client";
+            const names = { A: hostName, B: clientName };
+            return (
+              <GameOnitama seed={undefined} roomCode={playerData.roomCode} role={playerData.role} names={names} />
+            );
+          })()
         ) : (
           <div style={{ color: "#fff", textAlign: "center", padding: "20px" }}>
             Aguardando sala ficar pronta para iniciar a partida.
