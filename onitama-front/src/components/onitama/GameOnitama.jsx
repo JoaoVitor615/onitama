@@ -81,6 +81,8 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names })
         centerCard={state.center}
         selectedCardIndex={state.selectedCardIndex}
         onSelectCard={handleSelectCard}
+        orientation={orientation}
+        owner={state.currentPlayer}
       />
     </div>
   );
