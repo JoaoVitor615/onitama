@@ -1,5 +1,7 @@
 import { shuffleDeck, CARDS } from './cards';
 
+export const TURN_MS = 15000;
+
 export const BOARD_SIZE = 5;
 export const TEMPLE_A = { y: 4, x: 2 };
 export const TEMPLE_B = { y: 0, x: 2 };
@@ -30,9 +32,12 @@ export function initState(seed) {
     winner: null,
     selected: null, // { y, x }
     selectedCardIndex: null, // 0 ou 1
+    turnStartedAt: Date.now(),
   };
   // inicia aleatório por cor da próxima carta do A/B para variar quem começa
   if (state.next?.A?.color === 'red') state.currentPlayer = 'B';
+  // reinicia início do turno após decidir quem começa
+  state.turnStartedAt = Date.now();
   return state;
 }
 
@@ -121,5 +126,16 @@ export function applyMove(state, from, to, cardIndex) {
   next.currentPlayer = owner === 'A' ? 'B' : 'A';
   next.selected = null;
   next.selectedCardIndex = null;
+  next.turnStartedAt = Date.now();
+  return next;
+}
+
+export function passTurn(state) {
+  if (state.winner) return state;
+  const next = structuredClone(state);
+  next.currentPlayer = state.currentPlayer === 'A' ? 'B' : 'A';
+  next.selected = null;
+  next.selectedCardIndex = null;
+  next.turnStartedAt = Date.now();
   return next;
 }

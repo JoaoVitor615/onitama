@@ -1,5 +1,5 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { initState, getValidMoves, applyMove } from '../../game/onitama/logic';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { initState, getValidMoves, applyMove, passTurn, TURN_MS } from '../../game/onitama/logic';
 import { Board } from './Board';
 import { CardPanel } from './CardPanel';
 import { emitGameState, subscribeGameState } from '../../api/ws';
@@ -10,6 +10,8 @@ import { emitGameState, subscribeGameState } from '../../api/ws';
 export default function GameOnitama({ seed = undefined, roomCode, role, names, skins }) {
   const [state, setState] = useState(() => initState(seed));
   const [validMoves, setValidMoves] = useState([]);
+  const [remainingMs, setRemainingMs] = useState(TURN_MS);
+  const lastTurnStartRef = useRef(state.turnStartedAt);
   const orientation = role === 'host' ? 'south' : 'north';
   const myPlayer = role === 'host' ? 'A' : 'B';
 
@@ -21,11 +23,37 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
     const off = subscribeGameState(roomCode, (st) => {
       setState(st);
       setValidMoves([]);
+      // reseta contagem de tempo ao receber novo estado
+      if (st && st.turnStartedAt) {
+        lastTurnStartRef.current = st.turnStartedAt;
+        const deadline = st.turnStartedAt + TURN_MS;
+        setRemainingMs(Math.max(0, deadline - Date.now()));
+      }
     });
     // Ao montar e ser host, envia estado inicial
     if (role === 'host') emitGameState(roomCode, state);
     return () => off && off();
   }, [roomCode, role]);
+
+  // Timer de turno: atualiza restante e aplica passagem quando expira
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const deadline = (state?.turnStartedAt || Date.now()) + TURN_MS;
+      const rem = Math.max(0, deadline - Date.now());
+      setRemainingMs(rem);
+      if (rem === 0 && !state.winner) {
+        // Evita repetir para o mesmo início de turno
+        if (lastTurnStartRef.current !== state.turnStartedAt) return;
+        // Efetua passagem de turno e emite estado (qualquer cliente pode emitir para garantir liveness)
+        const next = passTurn(state);
+        lastTurnStartRef.current = next.turnStartedAt;
+        setState(next);
+        setValidMoves([]);
+        if (roomCode) emitGameState(roomCode, next);
+      }
+    }, 200);
+    return () => clearInterval(interval);
+  }, [state, roomCode]);
 
   const handleSelect = ({ y, x }) => {
     if (state.currentPlayer !== myPlayer) return; // só interage no próprio turno
@@ -67,7 +95,10 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
         {state.winner ? (
           <div>Vitória de { (names && names[state.winner]) || (state.winner === 'A' ? 'Jogador A' : 'Jogador B') }!</div>
         ) : (
-          <div>Vez de { (names && names[state.currentPlayer]) || (state.currentPlayer === 'A' ? 'Jogador A' : 'Jogador B') }</div>
+          <div>
+            Vez de { (names && names[state.currentPlayer]) || (state.currentPlayer === 'A' ? 'Jogador A' : 'Jogador B') }
+            {' '}• Tempo: { Math.ceil(remainingMs / 1000) }s
+          </div>
         )}
       </div>
       <Board
