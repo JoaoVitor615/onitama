@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { WebSocketGateway, WebSocketServer, SubscribeMessage, MessageBody, ConnectedSocket, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 type PresenceEntry = { userId: number };
 
@@ -13,6 +14,8 @@ export class SalaGateway implements OnGatewayConnection, OnGatewayDisconnect {
   private logger = new Logger(SalaGateway.name);
   private presenceByCodigo: Map<string, Map<string, PresenceEntry>> = new Map();
   private gameStateByCodigo: Map<string, any> = new Map();
+
+  constructor(private readonly prisma: PrismaService) {}
 
   /** Lista */
   @SubscribeMessage('subscribe_lista')
@@ -41,7 +44,21 @@ export class SalaGateway implements OnGatewayConnection, OnGatewayDisconnect {
     client.emit('joined_sala', { codigo });
     // envia estado de jogo atual se existir
     const existing = this.gameStateByCodigo.get(codigo);
-    if (existing) client.emit('game_state', { codigo, state: existing });
+    if (existing) {
+      client.emit('game_state', { codigo, state: existing });
+    } else {
+      // tenta carregar do banco se não houver em memória
+      this.prisma.sala.findUnique({ where: { codigo }, select: { game_state: true } })
+        .then((res) => {
+          if (res && res.game_state != null) {
+            this.gameStateByCodigo.set(codigo, res.game_state as any);
+            client.emit('game_state', { codigo, state: res.game_state });
+          }
+        })
+        .catch((err) => {
+          this.logger.warn(`Falha ao carregar game_state do banco para sala ${codigo}: ${String(err)}`);
+        });
+    }
   }
 
   handleConnection(client: Socket) {
@@ -94,6 +111,11 @@ export class SalaGateway implements OnGatewayConnection, OnGatewayDisconnect {
     if (!codigo) return;
     this.gameStateByCodigo.set(codigo, data?.state);
     this.server.to(`sala:${codigo}`).emit('game_state', { codigo, state: data?.state });
+    // persiste no banco (não bloqueia resposta WS)
+    this.prisma.sala.update({ where: { codigo }, data: { game_state: data?.state as any } })
+      .catch((err) => {
+        this.logger.warn(`Falha ao persistir game_state para sala ${codigo}: ${String(err)}`);
+      });
   }
 
   getPresenceCount(codigo: string): number {
