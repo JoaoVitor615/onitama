@@ -20,8 +20,25 @@ export class SalaRepository {
     return await this.prisma.sala.findUnique({
       where: { codigo },
       include: {
-        SalaJogador: { include: { Usuario: true } },
-        Usuario: true,
+        // Inclui apenas o campo "imagem" do Produto (skin ativa) para evitar BigInt na resposta
+        SalaJogador: {
+          include: {
+            Usuario: {
+              include: {
+                Produto_Usuario_skin_ativaToProduto: {
+                  select: { imagem: true }
+                }
+              }
+            }
+          }
+        },
+        Usuario: {
+          include: {
+            Produto_Usuario_skin_ativaToProduto: {
+              select: { imagem: true }
+            }
+          }
+        },
       },
     });
   }

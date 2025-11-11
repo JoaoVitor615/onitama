@@ -184,9 +184,9 @@ function Onitama() {
         </div>
       </div>
 
-      {/* Container do jogo Onitama (novo) */}
-      <div
-        style={{
+          {/* Container do jogo Onitama (novo) */}
+          <div
+            style={{
           width: "98%", // 👈 QUASE 100% DA LARGURA
           height: "85vh", // 👈 QUASE 100% DA ALTURA
           minHeight: "650px",
@@ -201,23 +201,32 @@ function Onitama() {
           border: "2px solid rgba(255,255,255,0.1)", // 👈 BORDA SUTIL
         }}
       >
-        {playerData ? (
-          (() => {
-            const hostPlayer = sala?.SalaJogador?.find?.(j => j.id_usuario === sala?.id_host);
-            const clientPlayer = sala?.SalaJogador?.find?.(j => j.id_usuario !== sala?.id_host);
-            const hostName = hostPlayer?.Usuario?.apelido || sala?.Usuario?.apelido || "Host";
-            const clientName = clientPlayer?.Usuario?.apelido || "Client";
-            const names = { A: hostName, B: clientName };
-            return (
-              <GameOnitama seed={undefined} roomCode={playerData.roomCode} role={playerData.role} names={names} />
-            );
-          })()
-        ) : (
-          <div style={{ color: "#fff", textAlign: "center", padding: "20px" }}>
-            Aguardando sala ficar pronta para iniciar a partida.
+            {playerData ? (
+              (() => {
+                const hostPlayer = sala?.SalaJogador?.find?.(j => j.id_usuario === sala?.id_host);
+                const clientPlayer = sala?.SalaJogador?.find?.(j => j.id_usuario !== sala?.id_host);
+                const hostName = hostPlayer?.Usuario?.apelido || sala?.Usuario?.apelido || "Host";
+                const clientName = clientPlayer?.Usuario?.apelido || "Client";
+                const names = { A: hostName, B: clientName };
+
+                // Skins: obtém a imagem base do produto da skin ativa, usa como pasta e base
+                const hostSkinBase = hostPlayer?.Usuario?.Produto_Usuario_skin_ativaToProduto?.imagem || sala?.Usuario?.Produto_Usuario_skin_ativaToProduto?.imagem || 'default';
+                const clientSkinBase = clientPlayer?.Usuario?.Produto_Usuario_skin_ativaToProduto?.imagem || 'default';
+                const skins = {
+                  A: hostSkinBase ? { folder: hostSkinBase, base: hostSkinBase } : null,
+                  B: clientSkinBase ? { folder: clientSkinBase, base: clientSkinBase } : null,
+                };
+
+                return (
+                  <GameOnitama seed={undefined} roomCode={playerData.roomCode} role={playerData.role} names={names} skins={skins} />
+                );
+              })()
+            ) : (
+              <div style={{ color: "#fff", textAlign: "center", padding: "20px" }}>
+                Aguardando sala ficar pronta para iniciar a partida.
+              </div>
+            )}
           </div>
-        )}
-      </div>
     </div>
   );
 }

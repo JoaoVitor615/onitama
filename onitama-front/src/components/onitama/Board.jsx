@@ -4,7 +4,7 @@ import { BOARD_SIZE } from '../../game/onitama/logic';
 /**
  * orientation: 'south' (padrão, sem rotação) ou 'north' (rotaciona 180°)
  */
-export function Board({ board, currentPlayer, selected, validMoves, onSelect, onMove, orientation = 'south' }) {
+export function Board({ board, currentPlayer, selected, validMoves, onSelect, onMove, orientation = 'south', skins = {} }) {
   const toCanonical = (y, x) => {
     if (orientation === 'north') return { y: BOARD_SIZE - 1 - y, x: BOARD_SIZE - 1 - x };
     return { y, x };
@@ -24,6 +24,11 @@ export function Board({ board, currentPlayer, selected, validMoves, onSelect, on
           const bg = isSelected ? '#4a90e2' : canMove ? '#3c763d' : bgBase;
           const temple = isTempleCanonical(cy, cx);
           const border = temple ? '3px solid #e0e' : '2px solid rgba(255,255,255,0.2)';
+          const ownerSkin = skins?.[piece?.owner];
+          const imgBase = ownerSkin?.base;
+          const imgFolder = ownerSkin?.folder;
+          const imgName = piece ? `${imgBase}_${piece.type === 'master' ? 'mestre' : 'peao'}.png` : null;
+          const imgSrc = (imgFolder && imgName) ? `/skins/${imgFolder}/${imgName}` : null;
           return (
             <div key={`${y}-${x}`} style={{
               aspectRatio: '1',
@@ -41,16 +46,22 @@ export function Board({ board, currentPlayer, selected, validMoves, onSelect, on
             }}
             >
               {piece && (
-                <div style={{
-                  width: '70%', height: '70%',
-                  borderRadius: '50%',
-                  background: piece.owner === 'A' ? '#222' : '#eee',
-                  color: piece.owner === 'A' ? '#fff' : '#000',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontWeight: 'bold',
-                }}>
-                  {piece.type === 'master' ? 'M' : 'S'}
-                </div>
+                imgSrc ? (
+                  <img src={imgSrc} alt={piece.type}
+                    style={{ width: '80%', height: '80%', objectFit: 'contain' }}
+                  />
+                ) : (
+                  <div style={{
+                    width: '70%', height: '70%',
+                    borderRadius: '50%',
+                    background: piece.owner === 'A' ? '#222' : '#eee',
+                    color: piece.owner === 'A' ? '#fff' : '#000',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontWeight: 'bold',
+                  }}>
+                    {piece.type === 'master' ? 'M' : 'S'}
+                  </div>
+                )
               )}
             </div>
           );

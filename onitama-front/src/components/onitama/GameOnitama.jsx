@@ -7,7 +7,7 @@ import { emitGameState, subscribeGameState } from '../../api/ws';
 /**
  * GameOnitama: modo local (single-client) por enquanto; integração WS será feita depois.
  */
-export default function GameOnitama({ seed = undefined, roomCode, role, names }) {
+export default function GameOnitama({ seed = undefined, roomCode, role, names, skins }) {
   const [state, setState] = useState(() => initState(seed));
   const [validMoves, setValidMoves] = useState([]);
   const orientation = role === 'host' ? 'south' : 'north';
@@ -78,6 +78,7 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names })
         onSelect={handleSelect}
         onMove={handleMove}
         orientation={orientation}
+        skins={skins}
       />
       <CardPanel
         myCards={myCards}
