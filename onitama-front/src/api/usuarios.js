@@ -10,3 +10,10 @@ export async function loginUsuario(email, senha) {
     body: JSON.stringify({ email, senha }),
   });
 }
+
+export async function atualizarMoedas(id_usuario, moedas) {
+  return httpFetch('/api/usuarios/gravar', {
+    method: 'POST',
+    body: JSON.stringify({ id_usuario, moedas }),
+  });
+}

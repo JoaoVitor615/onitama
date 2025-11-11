@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Menu from "./pages/menu";
+import Loja from "./pages/loja";
 import Onitama from "./pages/onitama";
 import Salas from "./pages/salas";
 //import About from "./pages/About";
@@ -12,6 +13,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/menu" element={<Menu />} />
+        <Route path="/loja" element={<Loja />} />
         <Route path="/onitama" element={<Onitama />} />
         <Route path="/salas" element={<Salas />} />
         {/* Adicione mais rotas conforme necessário */}
