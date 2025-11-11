@@ -1,4 +1,4 @@
-import { shuffleDeck } from './cards';
+import { shuffleDeck, CARDS } from './cards';
 
 export const BOARD_SIZE = 5;
 export const TEMPLE_A = { y: 4, x: 2 };
@@ -16,19 +16,23 @@ export function initialBoard() {
 }
 
 export function initState(seed) {
-  const deck = shuffleDeck(seed);
+  const seedA = (seed ?? Date.now());
+  const seedB = seedA + 17;
+  const deckA = shuffleDeck(seedA);
+  const deckB = shuffleDeck(seedB);
   const state = {
     board: initialBoard(),
-    hands: { A: [deck[0], deck[1]], B: [deck[2], deck[3]] },
-    center: deck[4],
-    deck: deck.slice(5), // não usado após inicialização; mantido por referência
+    hands: { A: [deckA[0], deckA[1]], B: [deckB[0], deckB[1]] },
+    next: { A: deckA[2], B: deckB[2] },
+    deckA: deckA.slice(3),
+    deckB: deckB.slice(3),
     currentPlayer: 'A',
     winner: null,
     selected: null, // { y, x }
     selectedCardIndex: null, // 0 ou 1
   };
-  // Jogador com carta vermelha no centro inicia (regra oficial); se center.color==='red', B começa
-  if (state.center?.color === 'red') state.currentPlayer = 'B';
+  // inicia aleatório por cor da próxima carta do A/B para variar quem começa
+  if (state.next?.A?.color === 'red') state.currentPlayer = 'B';
   return state;
 }
 
@@ -82,11 +86,36 @@ export function applyMove(state, from, to, cardIndex) {
     if (to.y === TEMPLE_A.y && to.x === TEMPLE_A.x && piece.owner === 'B') next.winner = 'B';
   }
 
-  // troca de carta usada pela do centro
+  // troca de carta usada pela "próxima" do jogador (independente por jogador)
   const owner = piece.owner;
   const used = next.hands[owner][cardIndex];
-  next.hands[owner][cardIndex] = next.center;
-  next.center = used;
+  next.hands[owner][cardIndex] = next.next[owner];
+  // escolhe próxima carta aleatória para o jogador (independente)
+  const pool = owner === 'A' ? next.deckA : next.deckB;
+  if (pool.length === 0) {
+    // quando esgota, reembaralha todas as cartas evitando duplicar as que estão nas mãos e próximas
+    const excludeNames = new Set([
+      next.hands.A[0]?.name, next.hands.A[1]?.name,
+      next.hands.B[0]?.name, next.hands.B[1]?.name,
+      next.next.A?.name, next.next.B?.name,
+    ].filter(Boolean));
+    const re = CARDS.filter(c => !excludeNames.has(c.name)).map(c => ({ ...c }));
+    // simples Fisher-Yates
+    for (let i = re.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [re[i], re[j]] = [re[j], re[i]];
+    }
+    if (owner === 'A') next.deckA = re; else next.deckB = re;
+  }
+  const pool2 = owner === 'A' ? next.deckA : next.deckB;
+  const candidate = pool2.shift();
+  // garante que próxima carta dos dois jogadores não seja a mesma
+  if (candidate && candidate.name === next.next[owner === 'A' ? 'B' : 'A']?.name) {
+    const alt = pool2.shift();
+    if (alt) next.next[owner] = alt; else next.next[owner] = candidate;
+  } else {
+    next.next[owner] = candidate || next.next[owner];
+  }
 
   // alterna jogador
   next.currentPlayer = owner === 'A' ? 'B' : 'A';

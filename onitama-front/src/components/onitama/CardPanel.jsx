@@ -47,12 +47,12 @@ function MovesGrid({ card, orientation, owner }) {
   );
 }
 
-export function CardPanel({ myCards, centerCard, selectedCardIndex, onSelectCard, orientation = 'south', owner = 'A' }) {
+export function CardPanel({ myCards, nextCard, selectedCardIndex, onSelectCard, orientation = 'south', owner = 'A', canSelect = true }) {
   const renderCard = (card, idx, clickable = true) => (
     <div key={card?.name || idx} style={{
       background: '#222', color: '#fff', borderRadius: '8px', padding: '8px',
       border: selectedCardIndex === idx ? '2px solid #4a90e2' : '1px solid #555',
-      cursor: clickable ? 'pointer' : 'default', minWidth: '150px'
+      cursor: clickable ? 'pointer' : 'default', minWidth: '150px', opacity: clickable ? 1 : 0.7
     }} onClick={() => clickable && onSelectCard(idx)}>
       <div style={{ fontWeight: 'bold' }}>{card?.name}</div>
       <div style={{ fontSize: '12px', color: '#bbb' }}>cor: {card?.color}</div>
@@ -62,10 +62,10 @@ export function CardPanel({ myCards, centerCard, selectedCardIndex, onSelectCard
 
   return (
     <div style={{ display: 'flex', gap: '10px', alignItems: 'stretch', justifyContent: 'center', width: '100%' }}>
-      {renderCard(myCards?.[0], 0)}
-      {renderCard(myCards?.[1], 1)}
+      {renderCard(myCards?.[0], 0, canSelect)}
+      {renderCard(myCards?.[1], 1, canSelect)}
       <div style={{ display: 'flex', alignItems: 'center', color: '#fff' }}>→</div>
-      {renderCard(centerCard, 'center', false)}
+      {renderCard(nextCard, 'next', false)}
     </div>
   );
 }

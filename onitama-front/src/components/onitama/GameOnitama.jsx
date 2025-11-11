@@ -11,8 +11,9 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names })
   const [state, setState] = useState(() => initState(seed));
   const [validMoves, setValidMoves] = useState([]);
   const orientation = role === 'host' ? 'south' : 'north';
+  const myPlayer = role === 'host' ? 'A' : 'B';
 
-  const myCards = useMemo(() => state.hands[state.currentPlayer], [state]);
+  const myCards = useMemo(() => state.hands[myPlayer], [state, myPlayer]);
 
   // sincronização via WS: recebe estado
   useEffect(() => {
@@ -27,6 +28,7 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names })
   }, [roomCode, role]);
 
   const handleSelect = ({ y, x }) => {
+    if (state.currentPlayer !== myPlayer) return; // só interage no próprio turno
     if (state.selectedCardIndex == null) {
       // sem carta selecionada, apenas marca peça
       setState((s) => ({ ...s, selected: { y, x } }));
@@ -42,6 +44,7 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names })
 
   const handleSelectCard = (idx) => {
     if (idx === 'center') return;
+    if (state.currentPlayer !== myPlayer) return; // não seleciona carta fora do turno
     setState((s) => ({ ...s, selectedCardIndex: idx }));
     // recomputa movimentos se já há peça selecionada
     if (state.selected) {
@@ -78,11 +81,12 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names })
       />
       <CardPanel
         myCards={myCards}
-        centerCard={state.center}
+        nextCard={state.next?.[myPlayer]}
         selectedCardIndex={state.selectedCardIndex}
         onSelectCard={handleSelectCard}
         orientation={orientation}
-        owner={state.currentPlayer}
+        owner={myPlayer}
+        canSelect={state.currentPlayer === myPlayer}
       />
     </div>
   );
