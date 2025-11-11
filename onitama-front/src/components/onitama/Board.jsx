@@ -1,14 +1,52 @@
-import React from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { BOARD_SIZE } from '../../game/onitama/logic';
 
 /**
  * orientation: 'south' (padrão, sem rotação) ou 'north' (rotaciona 180°)
  */
-export function Board({ board, currentPlayer, selected, validMoves, onSelect, onMove, orientation = 'south', skins = {} }) {
+export function Board({ board, currentPlayer, selected, validMoves, onSelect, onMove, orientation = 'south', skins = {}, bombTarget = null, onBombDone = null }) {
+  const bombRef = useRef(null);
+  const [bombVisible, setBombVisible] = useState(false);
   const toCanonical = (y, x) => {
     if (orientation === 'north') return { y: BOARD_SIZE - 1 - y, x: BOARD_SIZE - 1 - x };
     return { y, x };
   };
+
+  useEffect(() => {
+    if (!bombTarget) { setBombVisible(false); return; }
+    setBombVisible(true);
+    // animação da bomba com animejs via import dinâmico (fallback para WAAPI)
+    const el = bombRef.current;
+    (async () => {
+      try {
+        const anime = await import('https://esm.sh/animejs@3.2.1');
+        if (el) {
+          anime.default({
+            targets: el,
+            translateY: [-80, 0],
+            rotate: [0, 360],
+            scale: [0.8, 1],
+            easing: 'easeOutBounce',
+            duration: 800,
+            complete: () => {
+              setBombVisible(false);
+              onBombDone && onBombDone();
+            },
+          });
+        }
+      } catch (_) {
+        if (el) {
+          el.animate([
+            { transform: 'translateY(-80px) rotate(0deg) scale(0.8)' },
+            { transform: 'translateY(0px) rotate(360deg) scale(1.0)' }
+          ], { duration: 800, easing: 'ease-out' }).onfinish = () => {
+            setBombVisible(false);
+            onBombDone && onBombDone();
+          };
+        }
+      }
+    })();
+  }, [bombTarget, onBombDone]);
 
   const isTempleCanonical = (y, x) => (y === 0 && x === 2) || (y === BOARD_SIZE - 1 && x === 2);
 
@@ -29,12 +67,14 @@ export function Board({ board, currentPlayer, selected, validMoves, onSelect, on
           const imgFolder = ownerSkin?.folder;
           const imgName = piece ? `${imgBase}_${piece.type === 'master' ? 'mestre' : 'peao'}.png` : null;
           const imgSrc = (imgFolder && imgName) ? `/skins/${imgFolder}/${imgName}` : null;
+          const isBombHere = bombTarget && bombVisible && bombTarget.y === cy && bombTarget.x === cx;
           return (
             <div key={`${y}-${x}`} style={{
               aspectRatio: '1',
               background: bg,
               border,
               borderRadius: '6px',
+              position: 'relative',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -62,6 +102,12 @@ export function Board({ board, currentPlayer, selected, validMoves, onSelect, on
                     {piece.type === 'master' ? 'M' : 'S'}
                   </div>
                 )
+              )}
+              {isBombHere && (
+                <div ref={bombRef} style={{
+                  position: 'absolute', top: '-10%', left: '50%', transform: 'translateX(-50%)',
+                  fontSize: '28px'
+                }}>💣</div>
               )}
             </div>
           );

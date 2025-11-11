@@ -33,6 +33,7 @@ export function initState(seed) {
     selected: null, // { y, x }
     selectedCardIndex: null, // 0 ou 1
     turnStartedAt: Date.now(),
+    powersUsed: { A: [false, false, false], B: [false, false, false] },
   };
   // inicia aleatório por cor da próxima carta do A/B para variar quem começa
   if (state.next?.A?.color === 'red') state.currentPlayer = 'B';

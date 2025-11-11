@@ -217,8 +217,21 @@ function Onitama() {
                   B: clientSkinBase ? { folder: clientSkinBase, base: clientSkinBase } : null,
                 };
 
+                // Powers: obtém os 3 poderes ativos (id/nome/imagem) de cada jogador
+                const hostPowers = [
+                  hostPlayer?.Usuario?.Produto_Usuario_poder_ativo1ToProduto,
+                  hostPlayer?.Usuario?.Produto_Usuario_poder_ativo2ToProduto,
+                  hostPlayer?.Usuario?.Produto_Usuario_poder_ativo3ToProduto,
+                ].map((p) => (p ? { id: p.id_produto, nome: p.nome, imagem: p.imagem } : null));
+                const clientPowers = [
+                  clientPlayer?.Usuario?.Produto_Usuario_poder_ativo1ToProduto,
+                  clientPlayer?.Usuario?.Produto_Usuario_poder_ativo2ToProduto,
+                  clientPlayer?.Usuario?.Produto_Usuario_poder_ativo3ToProduto,
+                ].map((p) => (p ? { id: p.id_produto, nome: p.nome, imagem: p.imagem } : null));
+                const powers = { A: hostPowers, B: clientPowers };
+
                 return (
-                  <GameOnitama seed={undefined} roomCode={playerData.roomCode} role={playerData.role} names={names} skins={skins} />
+                  <GameOnitama seed={undefined} roomCode={playerData.roomCode} role={playerData.role} names={names} skins={skins} powers={powers} />
                 );
               })()
             ) : (

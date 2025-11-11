@@ -7,13 +7,16 @@ import { emitGameState, subscribeGameState } from '../../api/ws';
 /**
  * GameOnitama: modo local (single-client) por enquanto; integração WS será feita depois.
  */
-export default function GameOnitama({ seed = undefined, roomCode, role, names, skins }) {
+export default function GameOnitama({ seed = undefined, roomCode, role, names, skins, powers }) {
   const [state, setState] = useState(() => initState(seed));
   const [validMoves, setValidMoves] = useState([]);
   const [remainingMs, setRemainingMs] = useState(TURN_MS);
   const lastTurnStartRef = useRef(state.turnStartedAt);
   const orientation = role === 'host' ? 'south' : 'north';
   const myPlayer = role === 'host' ? 'A' : 'B';
+  const myPowers = useMemo(() => powers?.[myPlayer] || [null, null, null], [powers, myPlayer]);
+  const [activePowerIdx, setActivePowerIdx] = useState(null);
+  const [bombTarget, setBombTarget] = useState(null);
 
   const myCards = useMemo(() => state.hands[myPlayer], [state, myPlayer]);
 
@@ -29,6 +32,9 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
         const deadline = st.turnStartedAt + TURN_MS;
         setRemainingMs(Math.max(0, deadline - Date.now()));
       }
+      // ao receber estado, limpa power ativo e animação pendente
+      setActivePowerIdx(null);
+      setBombTarget(null);
     });
     // Ao montar e ser host, envia estado inicial
     if (role === 'host') emitGameState(roomCode, state);
@@ -57,6 +63,18 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
 
   const handleSelect = ({ y, x }) => {
     if (state.currentPlayer !== myPlayer) return; // só interage no próprio turno
+    // Se há poder ativo, intercepta clique para aplicar
+    if (activePowerIdx != null) {
+      const power = myPowers[activePowerIdx];
+      if (power && power.id === 5) {
+        const piece = state.board[y][x];
+        if (piece && piece.owner !== myPlayer && piece.type === 'student') {
+          // dispara animação de bomba nesta célula
+          setBombTarget({ y, x });
+        }
+      }
+      return; // não prossegue com seleção normal
+    }
     if (state.selectedCardIndex == null) {
       // sem carta selecionada, apenas marca peça
       setState((s) => ({ ...s, selected: { y, x } }));
@@ -89,6 +107,29 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
     if (roomCode) emitGameState(roomCode, next);
   };
 
+  // Conclusão da animação de bomba: remove peça, consome poder e passa turno
+  const handleBombDone = () => {
+    if (!bombTarget || activePowerIdx == null) return;
+    const power = myPowers[activePowerIdx];
+    if (!power || power.id !== 5) return;
+    const { y, x } = bombTarget;
+    const piece = state.board[y][x];
+    if (!piece || piece.owner === myPlayer || piece.type !== 'student') { setBombTarget(null); return; }
+    const next = structuredClone(state);
+    next.board[y][x] = null; // elimina o peão inimigo
+    // marca poder usado
+    const used = Array.isArray(next.powersUsed?.[myPlayer]) ? [...next.powersUsed[myPlayer]] : [false, false, false];
+    used[activePowerIdx] = true;
+    next.powersUsed = { ...next.powersUsed, [myPlayer]: used };
+    // passa o turno após uso do poder
+    const after = passTurn(next);
+    setBombTarget(null);
+    setActivePowerIdx(null);
+    setState(after);
+    setValidMoves([]);
+    if (roomCode) emitGameState(roomCode, after);
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'center', width: '100%' }}>
       <div style={{ color: '#fff' }}>
@@ -101,16 +142,50 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
           </div>
         )}
       </div>
-      <Board
-        board={state.board}
-        currentPlayer={state.currentPlayer}
-        selected={state.selected}
-        validMoves={validMoves}
-        onSelect={handleSelect}
-        onMove={handleMove}
-        orientation={orientation}
-        skins={skins}
-      />
+      <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+        <Board
+          board={state.board}
+          currentPlayer={state.currentPlayer}
+          selected={state.selected}
+          validMoves={validMoves}
+          onSelect={handleSelect}
+          onMove={handleMove}
+          orientation={orientation}
+          skins={skins}
+          bombTarget={bombTarget}
+          onBombDone={handleBombDone}
+        />
+        {/* Painel de poderes (lado direito) */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', minWidth: '160px' }}>
+          <div style={{ color: '#fff', fontWeight: 'bold' }}>Poderes</div>
+          {myPowers.map((p, idx) => {
+            const used = state.powersUsed?.[myPlayer]?.[idx];
+            const isActive = activePowerIdx === idx;
+            const canUse = state.currentPlayer === myPlayer && !used && p != null;
+            const label = p?.nome || (p?.id ? `Poder ${p.id}` : 'Vazio');
+            const imgSrc = p?.imagem ? `/skins/${p.imagem}/${p.imagem}_poder.png` : null; // opcional, caso haja imagem específica
+            return (
+              <div key={idx} onClick={() => { if (canUse) setActivePowerIdx(idx); }} style={{
+                background: '#222', color: '#fff', borderRadius: '8px', padding: '8px',
+                border: isActive ? '2px solid #4a90e2' : '1px solid #555',
+                cursor: canUse ? 'pointer' : 'default', opacity: canUse ? 1 : 0.6,
+                minHeight: '60px', display: 'flex', alignItems: 'center', gap: '8px'
+              }}>
+                <div style={{ width: '36px', height: '36px', borderRadius: '6px', background: '#333', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {p ? (p.id === 5 ? '💣' : '✨') : '—'}
+                </div>
+                <div style={{ fontSize: '14px' }}>
+                  <div style={{ fontWeight: 'bold' }}>{label}</div>
+                  <div style={{ color: '#bbb', fontSize: '12px' }}>{used ? 'Usado' : (canUse ? (isActive ? 'Selecionado' : 'Disponível') : 'Indisponível')}</div>
+                </div>
+              </div>
+            );
+          })}
+          {activePowerIdx != null && (
+            <div style={{ color: '#fff', fontSize: '12px' }}>Selecione uma peça inimiga para usar o poder.</div>
+          )}
+        </div>
+      </div>
       <CardPanel
         myCards={myCards}
         nextCard={state.next?.[myPlayer]}
