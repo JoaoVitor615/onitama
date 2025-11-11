@@ -19,7 +19,7 @@ function Home() {
       if (!usuario?.id_usuario || !usuario?.hash_id) throw new Error('Resposta inválida');
       localStorage.setItem('usuario_id', String(usuario.id_usuario));
       localStorage.setItem('usuario_hash', String(usuario.hash_id));
-      navigate('/salas');
+      navigate('/menu');
     } catch (err) {
       alert(err?.message || 'Falha no login');
     }
