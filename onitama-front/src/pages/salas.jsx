@@ -3,7 +3,7 @@ import styles from "../SaladeJogos.module.css";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { criarSala, listarSalas, entrarSala } from "../api/salas";
 import { subscribeLista } from "../api/ws";
-import { carregarUsuarioPorHash, atualizarSkinAtiva } from "../api/usuarios";
+import { carregarUsuarioPorHash, atualizarSkinAtiva, atualizarCenarioAtivo } from "../api/usuarios";
 import { getUsuarioHash, setUsuarioHash, setUsuarioId } from "../api/http";
 import { listarUsuarioProdutosPorUsuario } from "../api/usuarioProduto";
 import { listarProdutos } from "../api/produtos";
@@ -20,6 +20,9 @@ function Salas() {
   const [usuarioSkinAtiva, setUsuarioSkinAtiva] = useState(null);
   const [skins, setSkins] = useState([]);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [usuarioCenarioAtivo, setUsuarioCenarioAtivo] = useState(null);
+  const [mapas, setMapas] = useState([]);
+  const [activeMapIndex, setActiveMapIndex] = useState(0);
   const [pendingAction, setPendingAction] = useState(null); // { type: 'create' | 'enter', codigo?: string }
 
   const carregar = useCallback(async () => {
@@ -44,6 +47,7 @@ function Salas() {
             setUsuarioId(usuario.id_usuario);
             setUsuarioIdState(usuario.id_usuario);
             setUsuarioSkinAtiva(usuario.skin_ativa ?? null);
+            setUsuarioCenarioAtivo(usuario.cenario_ativo ?? null);
             const [prodRes, usuProdRes] = await Promise.all([
               listarProdutos(),
               listarUsuarioProdutosPorUsuario(usuario.id_usuario),
@@ -58,6 +62,14 @@ function Salas() {
             if (usuario.skin_ativa != null) {
               const idx = skinsDoUsuario.findIndex((p) => p.id_produto === usuario.skin_ativa);
               setActiveIndex(idx >= 0 ? idx : 0);
+            }
+            const mapasDoUsuario = usuProds
+              .map((up) => map.get(up.id_produto))
+              .filter((p) => p && Number(p.id_tipo_produto) === 3);
+            setMapas(mapasDoUsuario);
+            if (usuario.cenario_ativo != null) {
+              const midx = mapasDoUsuario.findIndex((p) => p.id_produto === usuario.cenario_ativo);
+              setActiveMapIndex(midx >= 0 ? midx : 0);
             }
           }
         } catch (_) {
@@ -148,6 +160,26 @@ function Salas() {
     }
   };
 
+  const mapImageSrc = useMemo(() => {
+    const current = mapas[activeMapIndex];
+    const base = current?.imagem || 'default';
+    const ext = current?.extensao || 'png';
+    return `/cenarios/${base}/${base}_tabuleiro.${ext}`;
+  }, [mapas, activeMapIndex]);
+
+  const changeMapIndex = async (nextIndex) => {
+    if (!mapas.length) return;
+    const bounded = (nextIndex + mapas.length) % mapas.length;
+    setActiveMapIndex(bounded);
+    const current = mapas[bounded];
+    setUsuarioCenarioAtivo(current.id_produto);
+    try {
+      if (usuarioId) await atualizarCenarioAtivo(usuarioId, current.id_produto);
+    } catch (err) {
+      console.error('Falha ao atualizar cenario_ativo', err);
+    }
+  };
+
   const handleJogar = async () => {
     try {
       if (pendingAction?.type === 'create') {
@@ -233,8 +265,16 @@ function Salas() {
             )}
 
             {modalTab === 'mapas' && (
-              <div style={{ padding: 24, textAlign: 'center', color: '#ddd' }}>
-                <p>Em breve: seleção de cenários.</p>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+                <button onClick={() => changeMapIndex(activeMapIndex - 1)} style={{ padding: 8, borderRadius: 8, border: '1px solid #777', background: '#222', color: '#fff' }}>{'<'}</button>
+                <div style={{ width: 360, height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.3)', borderRadius: 12 }}>
+                  {mapas.length ? (
+                    <img src={mapImageSrc} alt="Cenário ativo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                  ) : (
+                    <span style={{ color: '#bbb' }}>Nenhum cenário disponível</span>
+                  )}
+                </div>
+                <button onClick={() => changeMapIndex(activeMapIndex + 1)} style={{ padding: 8, borderRadius: 8, border: '1px solid #777', background: '#222', color: '#fff' }}>{'>'}</button>
               </div>
             )}
 

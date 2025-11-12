@@ -68,6 +68,9 @@ function Itens() {
     if (tipo === TIPO.PODER) {
       return `/skins/${prod.imagem}/${prod.imagem}_poder.${ext}`;
     }
+    if (tipo === TIPO.MAPA) {
+      return `/cenarios/${prod.imagem}/${prod.imagem}_tabuleiro.${ext}`;
+    }
     // fallback geral: ícone genérico com possível extensão
     if (String(prod.imagem).startsWith('/')) return prod.imagem;
     return `/icons/${prod.imagem}.${ext}`;

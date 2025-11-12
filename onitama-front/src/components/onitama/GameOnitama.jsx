@@ -7,7 +7,7 @@ import { emitGameState, subscribeGameState } from '../../api/ws';
 /**
  * GameOnitama: modo local (single-client) por enquanto; integração WS será feita depois.
  */
-export default function GameOnitama({ seed = undefined, roomCode, role, names, skins, powers, blocked = false }) {
+export default function GameOnitama({ seed = undefined, roomCode, role, names, skins, powers, scenario = null, blocked = false }) {
   const [state, setState] = useState(() => initState(seed));
   const [validMoves, setValidMoves] = useState([]);
   const [remainingMs, setRemainingMs] = useState(TURN_MS);
@@ -157,6 +157,7 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
           onMove={handleMove}
           orientation={orientation}
           skins={skins}
+          scenario={scenario}
           bombTarget={bombTarget}
           onBombDone={handleBombDone}
         />

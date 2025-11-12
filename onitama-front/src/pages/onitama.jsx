@@ -154,8 +154,27 @@ function Onitama() {
             ].map((p) => (p ? { id: p.id_produto, nome: p.nome, imagem: p.imagem, extensao: p.extensao } : null));
             const powers = { A: hostPowers, B: clientPowers };
 
+            // Cenário ativo: usa o cenário do usuário local (host ou client)
+            const hostScenarioProduto = hostPlayer?.Usuario?.Produto_Usuario_cenario_ativoToProduto || sala?.Usuario?.Produto_Usuario_cenario_ativoToProduto;
+            const clientScenarioProduto = clientPlayer?.Usuario?.Produto_Usuario_cenario_ativoToProduto;
+            const myScenarioProduto = playerData.role === 'host' ? hostScenarioProduto : clientScenarioProduto;
+            const scenario = myScenarioProduto ? {
+              folder: myScenarioProduto.imagem,
+              base: myScenarioProduto.imagem,
+              ext: myScenarioProduto.extensao || 'png',
+            } : null;
+
             return (
-              <GameOnitama seed={undefined} roomCode={playerData.roomCode} role={playerData.role} names={names} skins={skins} powers={powers} blocked={isWaiting} />
+              <GameOnitama
+                seed={undefined}
+                roomCode={playerData.roomCode}
+                role={playerData.role}
+                names={names}
+                skins={skins}
+                powers={powers}
+                scenario={scenario}
+                blocked={isWaiting}
+              />
             );
           })()
         ) : null}

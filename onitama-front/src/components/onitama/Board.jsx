@@ -4,7 +4,7 @@ import { BOARD_SIZE } from '../../game/onitama/logic';
 /**
  * orientation: 'south' (padrão, sem rotação) ou 'north' (rotaciona 180°)
  */
-export function Board({ board, currentPlayer, selected, validMoves, onSelect, onMove, orientation = 'south', skins = {}, bombTarget = null, onBombDone = null }) {
+export function Board({ board, currentPlayer, selected, validMoves, onSelect, onMove, orientation = 'south', skins = {}, scenario = null, bombTarget = null, onBombDone = null }) {
   const bombRef = useRef(null);
   const [bombVisible, setBombVisible] = useState(false);
   const toCanonical = (y, x) => {
@@ -50,16 +50,29 @@ export function Board({ board, currentPlayer, selected, validMoves, onSelect, on
 
   const isTempleCanonical = (y, x) => (y === 0 && x === 2) || (y === BOARD_SIZE - 1 && x === 2);
 
+  const scenarioSrc = scenario && scenario.folder && scenario.base ? `/cenarios/${scenario.folder}/${scenario.base}_tabuleiro.${scenario.ext || 'png'}` : null;
+  const containerStyle = {
+    display: 'grid',
+    gridTemplateColumns: `repeat(${BOARD_SIZE}, 1fr)`,
+    gap: '4px',
+    width: 'min(600px, 90vw)',
+    backgroundImage: scenarioSrc ? `url(${scenarioSrc})` : undefined,
+    backgroundSize: 'contain',
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'center',
+    aspectRatio: '1',
+  };
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: `repeat(${BOARD_SIZE}, 1fr)`, gap: '4px', width: 'min(600px, 90vw)' }}>
+    <div style={containerStyle}>
       {Array.from({ length: BOARD_SIZE }).map((_, y) => (
         Array.from({ length: BOARD_SIZE }).map((_, x) => {
           const { y: cy, x: cx } = toCanonical(y, x);
           const piece = board[cy][cx];
           const isSelected = selected && selected.y === cy && selected.x === cx;
           const canMove = validMoves?.find((m) => m.y === cy && m.x === cx);
-          const bgBase = (y + x) % 2 === 0 ? '#d2b48c' : '#a67c52';
-          const bg = isSelected ? '#4a90e2' : canMove ? '#3c763d' : bgBase;
+          const hasScenario = !!scenarioSrc;
+          const bgBase = hasScenario ? 'transparent' : ((y + x) % 2 === 0 ? '#d2b48c' : '#a67c52');
+          const bg = isSelected ? 'rgba(74,144,226,0.55)' : canMove ? 'rgba(60,118,61,0.55)' : bgBase;
           const temple = isTempleCanonical(cy, cx);
           const border = temple ? '3px solid #e0e' : '2px solid rgba(255,255,255,0.2)';
           const ownerSkin = skins?.[piece?.owner];

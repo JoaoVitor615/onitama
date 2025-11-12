@@ -28,6 +28,9 @@ export class SalaRepository {
                 Produto_Usuario_skin_ativaToProduto: {
                   select: { imagem: true, extensao: true }
                 },
+                Produto_Usuario_cenario_ativoToProduto: {
+                  select: { imagem: true, extensao: true }
+                },
                 Produto_Usuario_poder_ativo1ToProduto: {
                   select: { id_produto: true, nome: true, imagem: true, extensao: true }
                 },
@@ -44,6 +47,9 @@ export class SalaRepository {
         Usuario: {
           include: {
             Produto_Usuario_skin_ativaToProduto: {
+              select: { imagem: true, extensao: true }
+            },
+            Produto_Usuario_cenario_ativoToProduto: {
               select: { imagem: true, extensao: true }
             },
             Produto_Usuario_poder_ativo1ToProduto: {

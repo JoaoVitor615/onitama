@@ -24,3 +24,10 @@ export async function atualizarSkinAtiva(id_usuario, skin_ativa) {
     body: JSON.stringify({ id_usuario, skin_ativa }),
   });
 }
+
+export async function atualizarCenarioAtivo(id_usuario, cenario_ativo) {
+  return httpFetch('/api/usuarios/gravar', {
+    method: 'POST',
+    body: JSON.stringify({ id_usuario, cenario_ativo }),
+  });
+}
