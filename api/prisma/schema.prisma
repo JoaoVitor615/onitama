@@ -62,6 +62,7 @@ model UsuarioProduto {
   id_usuario_produto Int      @id @default(autoincrement())
   id_usuario         Int?
   id_produto         Int?
+  quantidade         Int?
   Produto            Produto? @relation(fields: [id_produto], references: [id_produto], onDelete: NoAction)
   Usuario            Usuario? @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction)
 }
