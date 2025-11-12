@@ -5,48 +5,94 @@ import { BOARD_SIZE } from '../../game/onitama/logic';
  * orientation: 'south' (padrão, sem rotação) ou 'north' (rotaciona 180°)
  */
 export function Board({ board, currentPlayer, selected, validMoves, onSelect, onMove, orientation = 'south', skins = {}, scenario = null, bombTarget = null, onBombDone = null }) {
-  const bombRef = useRef(null);
+  const containerRef = useRef(null);
+  const missileRef = useRef(null);
+  const animatingRef = useRef(false);
   const [bombVisible, setBombVisible] = useState(false);
+  const [missileStart, setMissileStart] = useState({ x: 0, y: -24 });
+  const [missileEnd, setMissileEnd] = useState({ x: 0, y: 0 });
+  const [explosionVisible, setExplosionVisible] = useState(false);
+  const [explosionPos, setExplosionPos] = useState({ x: 0, y: 0 });
   const toCanonical = (y, x) => {
     if (orientation === 'north') return { y: BOARD_SIZE - 1 - y, x: BOARD_SIZE - 1 - x };
     return { y, x };
   };
 
+  // Preparar coordenadas quando o alvo muda e tornar o míssil visível
   useEffect(() => {
     if (!bombTarget) { setBombVisible(false); return; }
+    const container = containerRef.current;
+    if (!container) { console.warn('[Bomba] container do tabuleiro não encontrado'); return; }
+    const cellEl = container.querySelector(`[data-cell="${bombTarget.y}-${bombTarget.x}"]`);
+    if (!cellEl) { console.warn('[Bomba] célula alvo não encontrada', bombTarget); return; }
+    const rr = cellEl.getBoundingClientRect();
+    const endX = rr.left + rr.width / 2; // coordenada de tela (viewport)
+    const endY = rr.top + rr.height / 2;  // coordenada de tela (viewport)
+    console.log('[Bomba] alvo (centro da peça em viewport):', { cell: `${bombTarget.y}-${bombTarget.x}`, endX, endY });
+    console.log('[Bomba] origem (topo da tela):', { x: endX, y: 0 });
+    setMissileStart({ x: endX, y: 0 });
+    setMissileEnd({ x: endX, y: endY });
     setBombVisible(true);
-    // animação da bomba com animejs via import dinâmico (fallback para WAAPI)
-    const el = bombRef.current;
+  }, [bombTarget]);
+
+  // Iniciar animação somente após o míssil estar montado no DOM
+  useEffect(() => {
+    if (!(bombVisible && missileRef.current)) return;
+    if (animatingRef.current) return; // evita múltiplos disparos
+    const duration = 2000;
+    const endY = missileEnd.y;
+    const endX = missileStart.x;
+    console.log('[Bomba] iniciar animação', { from: missileStart, to: missileEnd, duration });
+    animatingRef.current = true;
     (async () => {
       try {
         const anime = await import('https://esm.sh/animejs@3.2.1');
-        if (el) {
-          anime.default({
-            targets: el,
-            translateY: [-80, 0],
-            rotate: [0, 360],
-            scale: [0.8, 1],
-            easing: 'easeOutBounce',
-            duration: 800,
-            complete: () => {
-              setBombVisible(false);
-              onBombDone && onBombDone();
-            },
-          });
-        }
-      } catch (_) {
-        if (el) {
-          el.animate([
-            { transform: 'translateY(-80px) rotate(0deg) scale(0.8)' },
-            { transform: 'translateY(0px) rotate(360deg) scale(1.0)' }
-          ], { duration: 800, easing: 'ease-out' }).onfinish = () => {
+        // posição inicial
+        missileRef.current.style.left = `${endX}px`;
+        missileRef.current.style.top = `0px`;
+        anime.default({
+          targets: missileRef.current,
+          translateY: [0, endY],
+          easing: 'easeInCubic',
+          duration,
+          complete: () => {
+            console.log('[Bomba] animação concluída em', { x: endX, y: endY });
             setBombVisible(false);
-            onBombDone && onBombDone();
+            animatingRef.current = false;
+            setExplosionPos({ x: endX, y: endY });
+            setExplosionVisible(true);
+            setTimeout(() => {
+              setExplosionVisible(false);
+              onBombDone && onBombDone();
+            }, 900);
+          }
+        });
+      } catch (_) {
+        console.warn('[Bomba] anime.js indisponível, usando WAAPI fallback');
+        // Fallback WAAPI
+        requestAnimationFrame(() => {
+          if (!missileRef.current) return;
+          missileRef.current.style.left = `${endX}px`;
+          missileRef.current.style.top = `0px`;
+          const anim = missileRef.current.animate([
+            { transform: 'translateX(-50%) translateY(0px)' },
+            { transform: `translateX(-50%) translateY(${endY}px)` },
+          ], { duration, easing: 'ease-in', fill: 'forwards' });
+          anim.onfinish = () => {
+            console.log('[Bomba] animação (WAAPI) concluída em', { x: endX, y: endY });
+            setBombVisible(false);
+            animatingRef.current = false;
+            setExplosionPos({ x: endX, y: endY });
+            setExplosionVisible(true);
+            setTimeout(() => {
+              setExplosionVisible(false);
+              onBombDone && onBombDone();
+            }, 900);
           };
-        }
+        });
       }
     })();
-  }, [bombTarget, onBombDone]);
+  }, [bombVisible, missileStart, missileEnd, onBombDone]);
 
   const isTempleCanonical = (y, x) => (y === 0 && x === 2) || (y === BOARD_SIZE - 1 && x === 2);
 
@@ -61,9 +107,10 @@ export function Board({ board, currentPlayer, selected, validMoves, onSelect, on
     backgroundRepeat: 'no-repeat',
     backgroundPosition: 'center',
     aspectRatio: '1',
+    position: 'relative',
   };
   return (
-    <div style={containerStyle}>
+    <div ref={containerRef} style={containerStyle}>
       {Array.from({ length: BOARD_SIZE }).map((_, y) => (
         Array.from({ length: BOARD_SIZE }).map((_, x) => {
           const { y: cy, x: cx } = toCanonical(y, x);
@@ -83,7 +130,7 @@ export function Board({ board, currentPlayer, selected, validMoves, onSelect, on
           const imgSrc = (imgFolder && imgName) ? `/skins/${imgFolder}/${imgName}` : null;
           const isBombHere = bombTarget && bombVisible && bombTarget.y === cy && bombTarget.x === cx;
           return (
-            <div key={`${y}-${x}`} style={{
+            <div key={`${y}-${x}`} data-cell={`${cy}-${cx}`} style={{
               aspectRatio: '1',
               background: bg,
               border,
@@ -117,16 +164,44 @@ export function Board({ board, currentPlayer, selected, validMoves, onSelect, on
                   </div>
                 )
               )}
-              {isBombHere && (
-                <div ref={bombRef} style={{
-                  position: 'absolute', top: '-10%', left: '50%', transform: 'translateX(-50%)',
-                  fontSize: '28px'
-                }}>💣</div>
-              )}
+              {/* Removido míssil por célula — agora usamos overlay global */}
             </div>
           );
         })
       ))}
+      {bombVisible && (
+        <div ref={missileRef} style={{
+          position: 'fixed',
+          left: `${missileStart.x}px`,
+          top: 0,
+          transform: 'translateX(-50%) translateY(0px)',
+          pointerEvents: 'none',
+          zIndex: 9999
+        }}>
+          <img src="/assets/missil.png" alt="míssil" style={{
+            width: 48,
+            height: 48,
+            pointerEvents: 'none',
+            transform: 'rotate(180deg)'
+          }} />
+        </div>
+      )}
+      {explosionVisible && (
+        <img
+          src="/animations/explosion.gif"
+          alt="explosão"
+          style={{
+            position: 'fixed',
+            left: `${explosionPos.x}px`,
+            top: `${explosionPos.y}px`,
+            transform: 'translate(-50%, -50%)',
+            width: 80,
+            height: 80,
+            pointerEvents: 'none',
+            zIndex: 9999
+          }}
+        />
+      )}
     </div>
   );
 }
