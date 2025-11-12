@@ -9,7 +9,9 @@ dotenv.config()
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.enableCors({
-    origin: [/^http:\/\/localhost:\d+$/],
+    // Em desenvolvimento na LAN, permita qualquer origem.
+    // Em produção, restrinja a origens específicas.
+    origin: true,
     credentials: true,
     allowedHeaders: ['Content-Type', 'X-Usuario-Id', 'X-Usuario-Hash'],
   });
@@ -17,7 +19,7 @@ async function bootstrap() {
   app.useWebSocketAdapter(new IoAdapter(app));
   console.log(process.env.DATABASE_URL)
   const port = Number(process.env.PORT ?? 3000);
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
 
   // Servidor WebSocket (RFC6455) para Godot (WebSocketPeer)
   const httpServer = app.getHttpServer();
