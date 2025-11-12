@@ -87,7 +87,7 @@ function Menu() {
         <div style={listStyle}>
           <button style={btnStyle} onClick={() => navigate("/salas")}>SALAS</button>
           <button style={btnStyle} onClick={() => navigate("/loja")}>LOJA</button>
-          <button style={disabledBtnStyle} onClick={() => alert("Em breve")}>SKINS</button>
+          <button style={btnStyle} onClick={() => navigate("/itens")}>ITENS</button>
           <button style={disabledBtnStyle} onClick={() => alert("Em breve")}>COMO JOGAR</button>
         </div>
       </div>
