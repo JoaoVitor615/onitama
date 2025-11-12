@@ -7,7 +7,7 @@ import { emitGameState, subscribeGameState } from '../../api/ws';
 /**
  * GameOnitama: modo local (single-client) por enquanto; integração WS será feita depois.
  */
-export default function GameOnitama({ seed = undefined, roomCode, role, names, skins, powers }) {
+export default function GameOnitama({ seed = undefined, roomCode, role, names, skins, powers, blocked = false }) {
   const [state, setState] = useState(() => initState(seed));
   const [validMoves, setValidMoves] = useState([]);
   const [remainingMs, setRemainingMs] = useState(TURN_MS);
@@ -17,6 +17,8 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
   const myPowers = useMemo(() => powers?.[myPlayer] || [null, null, null], [powers, myPlayer]);
   const [activePowerIdx, setActivePowerIdx] = useState(null);
   const [bombTarget, setBombTarget] = useState(null);
+  const isGameOver = !!state?.winner;
+  const isBlocked = blocked || isGameOver;
 
   const myCards = useMemo(() => state.hands[myPlayer], [state, myPlayer]);
 
@@ -62,6 +64,7 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
   }, [state, roomCode]);
 
   const handleSelect = ({ y, x }) => {
+    if (isBlocked) return;
     if (state.currentPlayer !== myPlayer) return; // só interage no próprio turno
     // Se há poder ativo, intercepta clique para aplicar
     if (activePowerIdx != null) {
@@ -89,6 +92,7 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
   };
 
   const handleSelectCard = (idx) => {
+    if (isBlocked) return;
     if (idx === 'center') return;
     if (state.currentPlayer !== myPlayer) return; // não seleciona carta fora do turno
     setState((s) => ({ ...s, selectedCardIndex: idx }));
@@ -100,6 +104,7 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
   };
 
   const handleMove = (to) => {
+    if (isBlocked) return;
     if (!state.selected || state.selectedCardIndex == null) return;
     const next = applyMove(state, state.selected, to, state.selectedCardIndex);
     setState(next);
@@ -161,7 +166,7 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
           {myPowers.map((p, idx) => {
             const used = state.powersUsed?.[myPlayer]?.[idx];
             const isActive = activePowerIdx === idx;
-            const canUse = state.currentPlayer === myPlayer && !used && p != null;
+            const canUse = !isBlocked && state.currentPlayer === myPlayer && !used && p != null;
             const label = p?.nome || (p?.id ? `Poder ${p.id}` : 'Vazio');
             const ext = p?.extensao || 'png';
             const imgSrc = p?.imagem ? `/skins/${p.imagem}/${p.imagem}_poder.${ext}` : null; // opcional, caso haja imagem específica
@@ -194,7 +199,7 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
         onSelectCard={handleSelectCard}
         orientation={orientation}
         owner={myPlayer}
-        canSelect={state.currentPlayer === myPlayer}
+        canSelect={!isBlocked && state.currentPlayer === myPlayer}
       />
     </div>
   );

@@ -26,12 +26,9 @@ function Onitama() {
         setError(null);
         const s = await carregarSalaPorCodigo(codigoParam);
         setSala(s);
-        const count = Array.isArray(s?.SalaJogador) ? s.SalaJogador.length : (s?.presentes ?? 0);
-        const isReady = s?.status === 'in_progress' || count >= 2;
         const role = (usuarioId && s?.id_host === usuarioId) ? 'host' : 'client';
-        if (isReady) {
-          setPlayerData({ wsUrl, roomCode: s?.codigo || codigoParam, name: `Jogador ${usuarioId ?? ''}`.trim(), role });
-        }
+        // Inicializa playerData mesmo aguardando outro jogador, o jogo ficará bloqueado
+        setPlayerData({ wsUrl, roomCode: s?.codigo || codigoParam, name: `Jogador ${usuarioId ?? ''}`.trim(), role });
       } catch (e) {
         setError("Falha ao carregar sala");
       } finally {
@@ -56,9 +53,7 @@ function Onitama() {
         setSala((curr) => ({ ...(curr || {}), presentes: p.presentes, status: curr?.status }));
         carregarSalaPorCodigo(codigoParam).then((s) => {
           setSala(s);
-          const count = Array.isArray(s?.SalaJogador) ? s.SalaJogador.length : (s?.presentes ?? 0);
-          const isReady = s?.status === 'in_progress' || count >= 2;
-          if (isReady && !playerData) {
+          if (!playerData) {
             const role = (usuarioId && s?.id_host === usuarioId) ? 'host' : 'client';
             setPlayerData({ wsUrl, roomCode: codigoParam, name: `Jogador ${usuarioId ?? ''}`.trim(), role });
           }
@@ -69,9 +64,7 @@ function Onitama() {
         setSala((curr) => ({ ...(curr || {}), status: u.status, presentes: u.presentes }));
         carregarSalaPorCodigo(codigoParam).then((s) => {
           setSala(s);
-          const count = Array.isArray(s?.SalaJogador) ? s.SalaJogador.length : (s?.presentes ?? 0);
-          const isReady = s?.status === 'in_progress' || count >= 2;
-          if (isReady && !playerData) {
+          if (!playerData) {
             const role = (usuarioId && s?.id_host === usuarioId) ? 'host' : 'client';
             setPlayerData({ wsUrl, roomCode: codigoParam, name: `Jogador ${usuarioId ?? ''}`.trim(), role });
           }
@@ -98,152 +91,82 @@ function Onitama() {
     }
   };
 
+  // Determina se há dois jogadores conectados
+  const connectedCount = Array.isArray(sala?.SalaJogador) ? (sala.SalaJogador.filter((j) => j?.conectado).length) : (sala?.presentes ?? 0);
+  const isWaiting = connectedCount < 2;
+
   return (
-    <div
-      style={{
-        backgroundColor: "#1a1a2e",
-        minHeight: "100vh",
-        padding: "15px",
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-      }}
-    >
-      {/* Cabeçalho compacto */}
-      <div
+    <div style={{ position: 'relative', minHeight: '100vh', background: '#0d0d0f', overflow: 'hidden' }}>
+      {/* Botão sair no canto superior esquerdo */}
+      <button
+        onClick={handleSair}
+        disabled={leaving}
         style={{
-          textAlign: "center",
-          marginBottom: "15px",
-          width: "100%",
+          position: 'fixed', top: 16, left: 16, zIndex: 3000,
+          background: leaving ? '#555' : '#8b0000', color: '#fff', border: 'none',
+          padding: '10px 14px', borderRadius: 8, cursor: leaving ? 'not-allowed' : 'pointer', fontWeight: 700
         }}
       >
-        <h1
-          style={{
-            color: "#ffffff",
-            margin: "0 0 8px 0",
-            fontSize: "2.2rem",
-          }}
-        >
-          🎮 Onitama
-        </h1>
-        <div style={{ maxWidth: "900px", margin: "10px auto", color: "#ddd" }}>
-          {(!codigoParam || error) && (
-            <div style={{ padding: "10px", background: "#222", borderRadius: "8px" }}>
-              {error || "Abra pelo botão Entrar na página de Salas."}
-            </div>
-          )}
-          {codigoParam && !playerData && (
-            <div style={{ padding: "10px", background: "#222", borderRadius: "8px" }}>
-              Aguardando outro jogador entrar na sala "{codigoParam}"...
-            </div>
-          )}
-          {playerData && (
-            <div style={{ padding: "10px", background: "#1f4f1f", borderRadius: "8px" }}>
-              Sala pronta! Iniciando partida em "{playerData.roomCode}".
-            </div>
-          )}
-          {/* Apelidos dos jogadores quando disponíveis */}
-          {sala && Array.isArray(sala.SalaJogador) && sala.SalaJogador.length > 0 && (
-            <div style={{
-              marginTop: "12px",
-              padding: "10px",
-              background: "#222",
-              borderRadius: "8px",
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center"
-            }}>
-              <div style={{ color: "#fff" }}>
-                {(() => {
-                  const hostPlayer = sala.SalaJogador.find(j => j.id_usuario === sala.id_host);
-                  const clientPlayer = sala.SalaJogador.find(j => j.id_usuario !== sala.id_host);
-                  const hostName = hostPlayer?.Usuario?.apelido || sala.Usuario?.apelido || "Host";
-                  const clientName = clientPlayer?.Usuario?.apelido || "Client";
-                  return `👤 ${hostName} vs ${clientName}`;
-                })()}
-              </div>
-            </div>
-          )}
+        {leaving ? 'Saindo...' : 'Sair da sala'}
+      </button>
 
-          <div style={{ marginTop: "12px" }}>
-            <button
-              onClick={handleSair}
-              disabled={leaving}
-              style={{
-                background: leaving ? "#555" : "#8b0000",
-                color: "#fff",
-                border: "none",
-                padding: "8px 12px",
-                borderRadius: "6px",
-                cursor: leaving ? "not-allowed" : "pointer",
-              }}
-            >
-              {leaving ? "Saindo..." : "Sair da sala"}
-            </button>
-          </div>
-        </div>
+      {/* Nomes dos jogadores no canto superior direito */}
+      <div style={{ position: 'fixed', top: 16, right: 16, zIndex: 1000, color: '#fff', fontWeight: 800 }}>
+        {(() => {
+          const hostPlayer = sala?.SalaJogador?.find?.(j => j.id_usuario === sala?.id_host);
+          const clientPlayer = sala?.SalaJogador?.find?.(j => j.id_usuario !== sala?.id_host);
+          const hostName = hostPlayer?.Usuario?.apelido || sala?.Usuario?.apelido || 'Jogador A';
+          const clientName = clientPlayer?.Usuario?.apelido || 'Jogador B';
+          return `${hostName} vs ${clientName}`;
+        })()}
       </div>
 
-          {/* Container do jogo Onitama (novo) */}
-          <div
-            style={{
-          width: "98%", // 👈 QUASE 100% DA LARGURA
-          height: "85vh", // 👈 QUASE 100% DA ALTURA
-          minHeight: "650px",
-          maxWidth: "1400px", // 👈 LARGURA MÁXIMA BEM GRANDE
-          backgroundColor: "#000000",
-          borderRadius: "12px",
-          overflow: "hidden",
-          boxShadow: "0 10px 35px rgba(0,0,0,0.7)",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          border: "2px solid rgba(255,255,255,0.1)", // 👈 BORDA SUTIL
-        }}
-      >
-            {playerData ? (
-              (() => {
-                const hostPlayer = sala?.SalaJogador?.find?.(j => j.id_usuario === sala?.id_host);
-                const clientPlayer = sala?.SalaJogador?.find?.(j => j.id_usuario !== sala?.id_host);
-                const hostName = hostPlayer?.Usuario?.apelido || sala?.Usuario?.apelido || "Host";
-                const clientName = clientPlayer?.Usuario?.apelido || "Client";
-                const names = { A: hostName, B: clientName };
+      {/* Jogo centralizado */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', padding: 20 }}>
+        {playerData ? (
+          (() => {
+            const hostPlayer = sala?.SalaJogador?.find?.(j => j.id_usuario === sala?.id_host);
+            const clientPlayer = sala?.SalaJogador?.find?.(j => j.id_usuario !== sala?.id_host);
+            const hostName = hostPlayer?.Usuario?.apelido || sala?.Usuario?.apelido || 'Host';
+            const clientName = clientPlayer?.Usuario?.apelido || 'Client';
+            const names = { A: hostName, B: clientName };
 
-                // Skins: obtém a imagem base do produto da skin ativa, usa como pasta e base
-                const hostSkinProduto = hostPlayer?.Usuario?.Produto_Usuario_skin_ativaToProduto || sala?.Usuario?.Produto_Usuario_skin_ativaToProduto;
-                const clientSkinProduto = clientPlayer?.Usuario?.Produto_Usuario_skin_ativaToProduto;
-                const hostSkinBase = hostSkinProduto?.imagem || 'default';
-                const clientSkinBase = clientSkinProduto?.imagem || 'default';
-                const hostSkinExt = hostSkinProduto?.extensao || 'png';
-                const clientSkinExt = clientSkinProduto?.extensao || 'png';
-                const skins = {
-                  A: hostSkinBase ? { folder: hostSkinBase, base: hostSkinBase, ext: hostSkinExt } : null,
-                  B: clientSkinBase ? { folder: clientSkinBase, base: clientSkinBase, ext: clientSkinExt } : null,
-                };
+            const hostSkinProduto = hostPlayer?.Usuario?.Produto_Usuario_skin_ativaToProduto || sala?.Usuario?.Produto_Usuario_skin_ativaToProduto;
+            const clientSkinProduto = clientPlayer?.Usuario?.Produto_Usuario_skin_ativaToProduto;
+            const hostSkinBase = hostSkinProduto?.imagem || 'default';
+            const clientSkinBase = clientSkinProduto?.imagem || 'default';
+            const hostSkinExt = hostSkinProduto?.extensao || 'png';
+            const clientSkinExt = clientSkinProduto?.extensao || 'png';
+            const skins = {
+              A: hostSkinBase ? { folder: hostSkinBase, base: hostSkinBase, ext: hostSkinExt } : null,
+              B: clientSkinBase ? { folder: clientSkinBase, base: clientSkinBase, ext: clientSkinExt } : null,
+            };
 
-                // Powers: obtém os 3 poderes ativos (id/nome/imagem) de cada jogador
-                const hostPowers = [
-                  hostPlayer?.Usuario?.Produto_Usuario_poder_ativo1ToProduto,
-                  hostPlayer?.Usuario?.Produto_Usuario_poder_ativo2ToProduto,
-                  hostPlayer?.Usuario?.Produto_Usuario_poder_ativo3ToProduto,
-                ].map((p) => (p ? { id: p.id_produto, nome: p.nome, imagem: p.imagem, extensao: p.extensao } : null));
-                const clientPowers = [
-                  clientPlayer?.Usuario?.Produto_Usuario_poder_ativo1ToProduto,
-                  clientPlayer?.Usuario?.Produto_Usuario_poder_ativo2ToProduto,
-                  clientPlayer?.Usuario?.Produto_Usuario_poder_ativo3ToProduto,
-                ].map((p) => (p ? { id: p.id_produto, nome: p.nome, imagem: p.imagem, extensao: p.extensao } : null));
-                const powers = { A: hostPowers, B: clientPowers };
+            const hostPowers = [
+              hostPlayer?.Usuario?.Produto_Usuario_poder_ativo1ToProduto,
+              hostPlayer?.Usuario?.Produto_Usuario_poder_ativo2ToProduto,
+              hostPlayer?.Usuario?.Produto_Usuario_poder_ativo3ToProduto,
+            ].map((p) => (p ? { id: p.id_produto, nome: p.nome, imagem: p.imagem, extensao: p.extensao } : null));
+            const clientPowers = [
+              clientPlayer?.Usuario?.Produto_Usuario_poder_ativo1ToProduto,
+              clientPlayer?.Usuario?.Produto_Usuario_poder_ativo2ToProduto,
+              clientPlayer?.Usuario?.Produto_Usuario_poder_ativo3ToProduto,
+            ].map((p) => (p ? { id: p.id_produto, nome: p.nome, imagem: p.imagem, extensao: p.extensao } : null));
+            const powers = { A: hostPowers, B: clientPowers };
 
-                return (
-                  <GameOnitama seed={undefined} roomCode={playerData.roomCode} role={playerData.role} names={names} skins={skins} powers={powers} />
-                );
-              })()
-            ) : (
-              <div style={{ color: "#fff", textAlign: "center", padding: "20px" }}>
-                Aguardando sala ficar pronta para iniciar a partida.
-              </div>
-            )}
-          </div>
+            return (
+              <GameOnitama seed={undefined} roomCode={playerData.roomCode} role={playerData.role} names={names} skins={skins} powers={powers} blocked={isWaiting} />
+            );
+          })()
+        ) : null}
+      </div>
+
+      {/* Overlay de espera centralizado e bloqueando a interação */}
+      {isWaiting && (
+        <div style={{ position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000, background: 'rgba(0,0,0,0.4)' }}>
+          <div style={{ color: '#fff', fontSize: 22, fontWeight: 800 }}>Esperando o outro jogador</div>
+        </div>
+      )}
     </div>
   );
 }
