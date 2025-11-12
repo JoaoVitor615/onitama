@@ -145,7 +145,17 @@ function Itens() {
               <div style={{ fontWeight: 800 }}>{prod.nome}</div>
               {prod.imagem ? (
                 <div style={{ height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <img src={getProdutoImagemSrc(prod)} alt={prod.nome} style={{ maxHeight: 110 }} />
+                  <img
+                    src={getProdutoImagemSrc(prod)}
+                    alt={prod.nome}
+                    style={{
+                      width: 'auto',
+                      height: 'auto',
+                      maxWidth: '100%',
+                      maxHeight: 110,
+                      objectFit: 'contain'
+                    }}
+                  />
                 </div>
               ) : (
                 <div style={{ height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.7 }}>
