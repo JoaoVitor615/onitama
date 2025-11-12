@@ -15,6 +15,7 @@ function Itens() {
   const [produtos, setProdutos] = useState([]);
   const [aba, setAba] = useState(TIPO.SKIN);
   const [compradosIds, setCompradosIds] = useState(new Set());
+  const [quantidadesPorProduto, setQuantidadesPorProduto] = useState(new Map());
   const [loadingId, setLoadingId] = useState(null);
 
   useEffect(() => {
@@ -47,7 +48,14 @@ function Itens() {
       try {
         const list = await listarUsuarioProdutosPorUsuario(usuarioId);
         const ids = new Set((list || []).map((up) => up.id_produto));
+        const qtdMap = new Map();
+        (list || []).forEach((up) => {
+          if (up?.id_produto != null) {
+            qtdMap.set(up.id_produto, up?.quantidade ?? null);
+          }
+        });
         setCompradosIds(ids);
+        setQuantidadesPorProduto(qtdMap);
       } catch (_) {}
     }
     carregarComprados();
@@ -66,7 +74,8 @@ function Itens() {
       return `/skins/${prod.imagem}/${prod.imagem}_mestre.${ext}`;
     }
     if (tipo === TIPO.PODER) {
-      return `/skins/${prod.imagem}/${prod.imagem}_poder.${ext}`;
+      // Poderes: imagens em public/assets/<imagem>.<extensao>
+      return `/assets/${prod.imagem}.${ext}`;
     }
     if (tipo === TIPO.MAPA) {
       return `/cenarios/${prod.imagem}/${prod.imagem}_tabuleiro.${ext}`;
@@ -80,7 +89,8 @@ function Itens() {
     const usuarioId = getUsuarioId();
     if (!usuarioId) return alert('Usuário não identificado');
     if (!produto?.id_produto) return;
-    if (compradosIds.has(produto.id_produto)) {
+    const tipo = Number(produto?.id_tipo_produto);
+    if (tipo !== TIPO.PODER && compradosIds.has(produto.id_produto)) {
       return alert('Você já possui este item.');
     }
     setLoadingId(produto.id_produto);
@@ -89,6 +99,14 @@ function Itens() {
       const novo = new Set(compradosIds);
       novo.add(produto.id_produto);
       setCompradosIds(novo);
+      // Atualiza quantidade local para poderes
+      if (tipo === TIPO.PODER) {
+        const atual = quantidadesPorProduto.get(produto.id_produto) ?? 0;
+        const novoQtd = (Number(atual) || 0) + 1;
+        const novoMap = new Map(quantidadesPorProduto);
+        novoMap.set(produto.id_produto, novoQtd);
+        setQuantidadesPorProduto(novoMap);
+      }
       alert('Item comprado com sucesso!');
     } catch (err) {
       alert(err?.message || 'Falha ao processar compra');
@@ -139,7 +157,7 @@ function Itens() {
             Nenhum item encontrado nesta aba.
           </div>
         ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
           {filtrados.map(prod => (
             <div key={prod.id_produto} style={{
               background: 'rgba(255,255,255,0.2)', border: '2px solid rgba(255,255,255,0.4)', borderRadius: 12,
@@ -172,16 +190,21 @@ function Itens() {
                 </span>
                 <button
                   onClick={() => comprar(prod)}
-                  disabled={loadingId === prod.id_produto || compradosIds.has(prod.id_produto)}
+                  disabled={loadingId === prod.id_produto}
                   style={{
                     padding: '8px 12px', borderRadius: 8, border: 'none',
-                    background: compradosIds.has(prod.id_produto) ? '#777' : '#5dbb63', color: '#fff', fontWeight: 800,
-                    cursor: compradosIds.has(prod.id_produto) ? 'not-allowed' : 'pointer'
+                    background: '#5dbb63', color: '#fff', fontWeight: 800,
+                    cursor: loadingId === prod.id_produto ? 'not-allowed' : 'pointer'
                   }}
                 >
-                  {compradosIds.has(prod.id_produto) ? 'COMPRADO' : (loadingId === prod.id_produto ? '...' : 'COMPRAR')}
+                  {loadingId === prod.id_produto ? '...' : (Number(prod.id_tipo_produto) === TIPO.PODER ? 'COMPRAR +1' : (compradosIds.has(prod.id_produto) ? 'COMPRADO' : 'COMPRAR'))}
                 </button>
               </div>
+              {Number(prod.id_tipo_produto) === TIPO.PODER ? (
+                <div style={{ marginTop: 6, fontSize: 12, opacity: 0.9 }}>
+                  Você possui: <b>{quantidadesPorProduto.get(prod.id_produto) ?? 0}</b>
+                </div>
+              ) : null}
             </div>
           ))}
         </div>
