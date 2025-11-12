@@ -17,3 +17,10 @@ export async function atualizarMoedas(id_usuario, moedas) {
     body: JSON.stringify({ id_usuario, moedas }),
   });
 }
+
+export async function atualizarSkinAtiva(id_usuario, skin_ativa) {
+  return httpFetch('/api/usuarios/gravar', {
+    method: 'POST',
+    body: JSON.stringify({ id_usuario, skin_ativa }),
+  });
+}

@@ -1,8 +1,12 @@
 import { Link, useNavigate } from "react-router-dom";
 import styles from "../SaladeJogos.module.css";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { criarSala, listarSalas, entrarSala } from "../api/salas";
 import { subscribeLista } from "../api/ws";
+import { carregarUsuarioPorHash, atualizarSkinAtiva } from "../api/usuarios";
+import { getUsuarioHash, setUsuarioHash, setUsuarioId } from "../api/http";
+import { listarUsuarioProdutosPorUsuario } from "../api/usuarioProduto";
+import { listarProdutos } from "../api/produtos";
 
 function Salas() {
   const navigate = useNavigate();
@@ -10,6 +14,13 @@ function Salas() {
   const [presencas, setPresencas] = useState({}); // { codigo: presentes }
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [modalTab, setModalTab] = useState('skins'); // 'mapas' | 'poderes'
+  const [usuarioId, setUsuarioIdState] = useState(null);
+  const [usuarioSkinAtiva, setUsuarioSkinAtiva] = useState(null);
+  const [skins, setSkins] = useState([]);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [pendingAction, setPendingAction] = useState(null); // { type: 'create' | 'enter', codigo?: string }
 
   const carregar = useCallback(async () => {
     try {
@@ -19,6 +30,40 @@ function Salas() {
       // Espera que a API retorne { success, data: [] }
       const lista = res?.data || res || [];
       setSalas(Array.isArray(lista) ? lista : []);
+
+      // garante hash do usuário
+      const hash = getUsuarioHash() || (window.location.hash?.replace('#', '') || null);
+      if (hash) setUsuarioHash(hash);
+
+      // carrega usuário e skins disponíveis
+      if (hash) {
+        try {
+          const usuarioRes = await carregarUsuarioPorHash(hash);
+          const usuario = usuarioRes?.usuario || usuarioRes?.data || usuarioRes;
+          if (usuario?.id_usuario) {
+            setUsuarioId(usuario.id_usuario);
+            setUsuarioIdState(usuario.id_usuario);
+            setUsuarioSkinAtiva(usuario.skin_ativa ?? null);
+            const [prodRes, usuProdRes] = await Promise.all([
+              listarProdutos(),
+              listarUsuarioProdutosPorUsuario(usuario.id_usuario),
+            ]);
+            const produtos = Array.isArray(prodRes) ? prodRes : (prodRes?.data || []);
+            const map = new Map(produtos.map((p) => [p.id_produto, p]));
+            const usuProds = Array.isArray(usuProdRes) ? usuProdRes : (usuProdRes?.data || []);
+            const skinsDoUsuario = usuProds
+              .map((up) => map.get(up.id_produto))
+              .filter((p) => p && Number(p.id_tipo_produto) === 2);
+            setSkins(skinsDoUsuario);
+            if (usuario.skin_ativa != null) {
+              const idx = skinsDoUsuario.findIndex((p) => p.id_produto === usuario.skin_ativa);
+              setActiveIndex(idx >= 0 ? idx : 0);
+            }
+          }
+        } catch (_) {
+          // silencioso: se não carregar usuário, segue fluxo de salas
+        }
+      }
     } catch (e) {
       setError("Falha ao carregar salas");
     } finally {
@@ -72,25 +117,54 @@ function Salas() {
   }, [carregar]);
 
   const handleCriarSala = async () => {
-    try {
-      const s = await criarSala();
-      await carregar();
-      const codigo = s?.codigo || s?.data?.codigo;
-      if (codigo) {
-        navigate(`/onitama?codigo=${encodeURIComponent(codigo)}`);
-      }
-    } catch (e) {
-      alert("Não foi possível criar a sala.");
-    }
+    setPendingAction({ type: 'create' });
+    setShowModal(true);
+    setModalTab('skins');
   };
 
   const handleEntrarSala = async (codigo) => {
+    setPendingAction({ type: 'enter', codigo });
+    setShowModal(true);
+    setModalTab('skins');
+  };
+
+  const skinImageSrc = useMemo(() => {
+    const current = skins[activeIndex];
+    const base = current?.imagem || 'default';
+    const ext = current?.extensao || 'png';
+    return `/skins/${base}/${base}_mestre.${ext}`;
+  }, [skins, activeIndex]);
+
+  const changeSkinIndex = async (nextIndex) => {
+    if (!skins.length) return;
+    const bounded = (nextIndex + skins.length) % skins.length;
+    setActiveIndex(bounded);
+    const current = skins[bounded];
+    setUsuarioSkinAtiva(current.id_produto);
     try {
-      await entrarSala({ codigo });
-      await carregar();
-      navigate(`/onitama?codigo=${encodeURIComponent(codigo)}`);
+      if (usuarioId) await atualizarSkinAtiva(usuarioId, current.id_produto);
+    } catch (err) {
+      console.error('Falha ao atualizar skin_ativa', err);
+    }
+  };
+
+  const handleJogar = async () => {
+    try {
+      if (pendingAction?.type === 'create') {
+        const s = await criarSala();
+        await carregar();
+        const codigo = s?.codigo || s?.data?.codigo;
+        if (codigo) navigate(`/onitama?codigo=${encodeURIComponent(codigo)}`);
+      } else if (pendingAction?.type === 'enter' && pendingAction.codigo) {
+        await entrarSala({ codigo: pendingAction.codigo });
+        await carregar();
+        navigate(`/onitama?codigo=${encodeURIComponent(pendingAction.codigo)}`);
+      }
     } catch (e) {
-      alert("Não foi possível entrar na sala.");
+      alert('Não foi possível iniciar a partida.');
+    } finally {
+      setShowModal(false);
+      setPendingAction(null);
     }
   };
 
@@ -138,6 +212,45 @@ function Salas() {
           );
         })}
       </div>
+
+      {showModal && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }}>
+          <div style={{ width: 720, maxWidth: '90vw', borderRadius: 12, background: 'rgba(20,20,20,0.85)', border: '1px solid #666', color: '#fff', padding: 24 }}>
+            <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
+              <button onClick={() => setModalTab('skins')} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #777', background: modalTab === 'skins' ? '#444' : '#222', color: '#fff' }}>Skins</button>
+              <button onClick={() => setModalTab('mapas')} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #777', background: modalTab === 'mapas' ? '#444' : '#222', color: '#fff' }}>Cenários</button>
+              <button onClick={() => setModalTab('poderes')} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #777', background: modalTab === 'poderes' ? '#444' : '#222', color: '#fff' }}>Poderes</button>
+            </div>
+
+            {modalTab === 'skins' && (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+                <button onClick={() => changeSkinIndex(activeIndex - 1)} style={{ padding: 8, borderRadius: 8, border: '1px solid #777', background: '#222', color: '#fff' }}>{'<'}</button>
+                <div style={{ width: 280, height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.3)', borderRadius: 12 }}>
+                  <img src={skinImageSrc} alt="Skin ativa" style={{ maxWidth: '100%', maxHeight: '100%' }} />
+                </div>
+                <button onClick={() => changeSkinIndex(activeIndex + 1)} style={{ padding: 8, borderRadius: 8, border: '1px solid #777', background: '#222', color: '#fff' }}>{'>'}</button>
+              </div>
+            )}
+
+            {modalTab === 'mapas' && (
+              <div style={{ padding: 24, textAlign: 'center', color: '#ddd' }}>
+                <p>Em breve: seleção de cenários.</p>
+              </div>
+            )}
+
+            {modalTab === 'poderes' && (
+              <div style={{ padding: 24, textAlign: 'center', color: '#ddd' }}>
+                <p>Em breve: seleção de poderes.</p>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 24 }}>
+              <button onClick={() => { setShowModal(false); setPendingAction(null); }} style={{ padding: '10px 16px', borderRadius: 8, border: '1px solid #777', background: '#222', color: '#fff' }}>Cancelar</button>
+              <button onClick={handleJogar} style={{ padding: '10px 16px', borderRadius: 8, border: '1px solid #0a8', background: '#0a8', color: '#fff' }}>Jogar</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

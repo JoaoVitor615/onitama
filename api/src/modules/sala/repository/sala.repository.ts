@@ -26,16 +26,16 @@ export class SalaRepository {
             Usuario: {
               include: {
                 Produto_Usuario_skin_ativaToProduto: {
-                  select: { imagem: true }
+                  select: { imagem: true, extensao: true }
                 },
                 Produto_Usuario_poder_ativo1ToProduto: {
-                  select: { id_produto: true, nome: true, imagem: true }
+                  select: { id_produto: true, nome: true, imagem: true, extensao: true }
                 },
                 Produto_Usuario_poder_ativo2ToProduto: {
-                  select: { id_produto: true, nome: true, imagem: true }
+                  select: { id_produto: true, nome: true, imagem: true, extensao: true }
                 },
                 Produto_Usuario_poder_ativo3ToProduto: {
-                  select: { id_produto: true, nome: true, imagem: true }
+                  select: { id_produto: true, nome: true, imagem: true, extensao: true }
                 }
               }
             }
@@ -44,16 +44,16 @@ export class SalaRepository {
         Usuario: {
           include: {
             Produto_Usuario_skin_ativaToProduto: {
-              select: { imagem: true }
+              select: { imagem: true, extensao: true }
             },
             Produto_Usuario_poder_ativo1ToProduto: {
-              select: { id_produto: true, nome: true, imagem: true }
+              select: { id_produto: true, nome: true, imagem: true, extensao: true }
             },
             Produto_Usuario_poder_ativo2ToProduto: {
-              select: { id_produto: true, nome: true, imagem: true }
+              select: { id_produto: true, nome: true, imagem: true, extensao: true }
             },
             Produto_Usuario_poder_ativo3ToProduto: {
-              select: { id_produto: true, nome: true, imagem: true }
+              select: { id_produto: true, nome: true, imagem: true, extensao: true }
             }
           }
         },

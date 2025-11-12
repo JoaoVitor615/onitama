@@ -163,7 +163,8 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
             const isActive = activePowerIdx === idx;
             const canUse = state.currentPlayer === myPlayer && !used && p != null;
             const label = p?.nome || (p?.id ? `Poder ${p.id}` : 'Vazio');
-            const imgSrc = p?.imagem ? `/skins/${p.imagem}/${p.imagem}_poder.png` : null; // opcional, caso haja imagem específica
+            const ext = p?.extensao || 'png';
+            const imgSrc = p?.imagem ? `/skins/${p.imagem}/${p.imagem}_poder.${ext}` : null; // opcional, caso haja imagem específica
             return (
               <div key={idx} onClick={() => { if (canUse) setActivePowerIdx(idx); }} style={{
                 background: '#222', color: '#fff', borderRadius: '8px', padding: '8px',

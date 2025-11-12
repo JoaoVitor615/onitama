@@ -58,6 +58,21 @@ function Itens() {
     return produtos.filter((p) => Number(p?.id_tipo_produto) === Number(aba));
   }, [produtos, aba]);
 
+  function getProdutoImagemSrc(prod) {
+    if (!prod?.imagem) return null;
+    const ext = prod?.extensao || 'png';
+    const tipo = Number(prod?.id_tipo_produto);
+    if (tipo === TIPO.SKIN) {
+      return `/skins/${prod.imagem}/${prod.imagem}_mestre.${ext}`;
+    }
+    if (tipo === TIPO.PODER) {
+      return `/skins/${prod.imagem}/${prod.imagem}_poder.${ext}`;
+    }
+    // fallback geral: ícone genérico com possível extensão
+    if (String(prod.imagem).startsWith('/')) return prod.imagem;
+    return `/icons/${prod.imagem}.${ext}`;
+  }
+
   async function comprar(produto) {
     const usuarioId = getUsuarioId();
     if (!usuarioId) return alert('Usuário não identificado');
@@ -130,7 +145,7 @@ function Itens() {
               <div style={{ fontWeight: 800 }}>{prod.nome}</div>
               {prod.imagem ? (
                 <div style={{ height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <img src={String(prod.imagem).startsWith('/') ? prod.imagem : `/icons/${prod.imagem}`} alt={prod.nome} style={{ maxHeight: 110 }} />
+                  <img src={getProdutoImagemSrc(prod)} alt={prod.nome} style={{ maxHeight: 110 }} />
                 </div>
               ) : (
                 <div style={{ height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.7 }}>

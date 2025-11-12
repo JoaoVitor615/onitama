@@ -65,7 +65,8 @@ export function Board({ board, currentPlayer, selected, validMoves, onSelect, on
           const ownerSkin = skins?.[piece?.owner];
           const imgBase = ownerSkin?.base;
           const imgFolder = ownerSkin?.folder;
-          const imgName = piece ? `${imgBase}_${piece.type === 'master' ? 'mestre' : 'peao'}.png` : null;
+          const imgExt = ownerSkin?.ext || 'png';
+          const imgName = piece && imgBase ? `${imgBase}_${piece.type === 'master' ? 'mestre' : 'peao'}.${imgExt}` : null;
           const imgSrc = (imgFolder && imgName) ? `/skins/${imgFolder}/${imgName}` : null;
           const isBombHere = bombTarget && bombVisible && bombTarget.y === cy && bombTarget.x === cx;
           return (

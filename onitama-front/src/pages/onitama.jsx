@@ -210,11 +210,15 @@ function Onitama() {
                 const names = { A: hostName, B: clientName };
 
                 // Skins: obtém a imagem base do produto da skin ativa, usa como pasta e base
-                const hostSkinBase = hostPlayer?.Usuario?.Produto_Usuario_skin_ativaToProduto?.imagem || sala?.Usuario?.Produto_Usuario_skin_ativaToProduto?.imagem || 'default';
-                const clientSkinBase = clientPlayer?.Usuario?.Produto_Usuario_skin_ativaToProduto?.imagem || 'default';
+                const hostSkinProduto = hostPlayer?.Usuario?.Produto_Usuario_skin_ativaToProduto || sala?.Usuario?.Produto_Usuario_skin_ativaToProduto;
+                const clientSkinProduto = clientPlayer?.Usuario?.Produto_Usuario_skin_ativaToProduto;
+                const hostSkinBase = hostSkinProduto?.imagem || 'default';
+                const clientSkinBase = clientSkinProduto?.imagem || 'default';
+                const hostSkinExt = hostSkinProduto?.extensao || 'png';
+                const clientSkinExt = clientSkinProduto?.extensao || 'png';
                 const skins = {
-                  A: hostSkinBase ? { folder: hostSkinBase, base: hostSkinBase } : null,
-                  B: clientSkinBase ? { folder: clientSkinBase, base: clientSkinBase } : null,
+                  A: hostSkinBase ? { folder: hostSkinBase, base: hostSkinBase, ext: hostSkinExt } : null,
+                  B: clientSkinBase ? { folder: clientSkinBase, base: clientSkinBase, ext: clientSkinExt } : null,
                 };
 
                 // Powers: obtém os 3 poderes ativos (id/nome/imagem) de cada jogador
@@ -222,12 +226,12 @@ function Onitama() {
                   hostPlayer?.Usuario?.Produto_Usuario_poder_ativo1ToProduto,
                   hostPlayer?.Usuario?.Produto_Usuario_poder_ativo2ToProduto,
                   hostPlayer?.Usuario?.Produto_Usuario_poder_ativo3ToProduto,
-                ].map((p) => (p ? { id: p.id_produto, nome: p.nome, imagem: p.imagem } : null));
+                ].map((p) => (p ? { id: p.id_produto, nome: p.nome, imagem: p.imagem, extensao: p.extensao } : null));
                 const clientPowers = [
                   clientPlayer?.Usuario?.Produto_Usuario_poder_ativo1ToProduto,
                   clientPlayer?.Usuario?.Produto_Usuario_poder_ativo2ToProduto,
                   clientPlayer?.Usuario?.Produto_Usuario_poder_ativo3ToProduto,
-                ].map((p) => (p ? { id: p.id_produto, nome: p.nome, imagem: p.imagem } : null));
+                ].map((p) => (p ? { id: p.id_produto, nome: p.nome, imagem: p.imagem, extensao: p.extensao } : null));
                 const powers = { A: hostPowers, B: clientPowers };
 
                 return (

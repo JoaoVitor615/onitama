@@ -47,6 +47,7 @@ model Produto {
   id_tipo_produto                        BigInt?
   imagem                                 String?
   audio                                  String?
+  extensao                               String?          @db.VarChar
   TipoProduto                            TipoProduto?     @relation(fields: [id_tipo_produto], references: [id_tipo_produto], onDelete: Cascade)
   Usuario_Usuario_cenario_ativoToProduto Usuario[]        @relation("Usuario_cenario_ativoToProduto")
   Usuario_Usuario_poder_ativo1ToProduto  Usuario[]        @relation("Usuario_poder_ativo1ToProduto")
