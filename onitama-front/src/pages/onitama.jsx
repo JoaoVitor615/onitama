@@ -95,8 +95,22 @@ function Onitama() {
   const connectedCount = Array.isArray(sala?.SalaJogador) ? (sala.SalaJogador.filter((j) => j?.conectado).length) : (sala?.presentes ?? 0);
   const isWaiting = connectedCount < 2;
 
+  // Background da tela de jogo baseado no cenário selecionado do usuário
+  const fundoSrc = (() => {
+    const hostPlayer = sala?.SalaJogador?.find?.(j => j.id_usuario === sala?.id_host);
+    const clientPlayer = sala?.SalaJogador?.find?.(j => j.id_usuario !== sala?.id_host);
+    const hostScenarioProduto = hostPlayer?.Usuario?.Produto_Usuario_cenario_ativoToProduto || sala?.Usuario?.Produto_Usuario_cenario_ativoToProduto;
+    const clientScenarioProduto = clientPlayer?.Usuario?.Produto_Usuario_cenario_ativoToProduto;
+    const myScenarioProduto = playerData?.role === 'host' ? hostScenarioProduto : clientScenarioProduto;
+    const base = myScenarioProduto?.imagem;
+    const ext = myScenarioProduto?.extensao || 'png';
+    return base ? `/cenarios/${base}/${base}_fundo.${ext}` : null;
+  })();
+
   return (
-    <div style={{ position: 'relative', minHeight: '100vh', background: '#0d0d0f', overflow: 'hidden' }}>
+    <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden',
+      backgroundImage: fundoSrc ? `url(${fundoSrc})` : undefined,
+      backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
       {/* Botão sair no canto superior esquerdo */}
       <button
         onClick={handleSair}
