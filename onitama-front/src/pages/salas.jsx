@@ -98,7 +98,10 @@ function Salas() {
     <div className={styles.container}>
       <div className={styles.header}>
         <h1 className={styles.titulo}>Salas de Jogo</h1>
-        <button className={styles.header} onClick={handleCriarSala}> Criar </button>
+        <div style={{ display: 'flex', gap: 12 }}>
+          <button className={styles.header} onClick={handleCriarSala}>Criar</button>
+          <button className={styles.header} onClick={() => navigate('/menu')}>Menu</button>
+        </div>
       </div>
       <p className={styles.subtitulo}>Escolha uma sala para jogar</p>
 
