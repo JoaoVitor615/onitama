@@ -4,7 +4,7 @@ import { BOARD_SIZE } from '../../game/onitama/logic';
 /**
  * orientation: 'south' (padrão, sem rotação) ou 'north' (rotaciona 180°)
  */
-export function Board({ board, currentPlayer, selected, validMoves, onSelect, onMove, orientation = 'south', skins = {}, scenario = null, bombTarget = null, onBombDone = null }) {
+export function Board({ board, currentPlayer, selected, validMoves, onSelect, onMove, orientation = 'south', skins = {}, scenario = null, bombTarget = null, onBombDone = null, myPlayer = null }) {
   const containerRef = useRef(null);
   const missileRef = useRef(null);
   const animatingRef = useRef(false);
@@ -119,7 +119,9 @@ export function Board({ board, currentPlayer, selected, validMoves, onSelect, on
           const canMove = validMoves?.find((m) => m.y === cy && m.x === cx);
           const hasScenario = !!scenarioSrc;
           const bgBase = hasScenario ? 'transparent' : ((y + x) % 2 === 0 ? '#d2b48c' : '#a67c52');
-          const bg = isSelected ? 'rgba(74,144,226,0.55)' : canMove ? 'rgba(60,118,61,0.55)' : bgBase;
+          const baseBg = isSelected ? 'rgba(74,144,226,0.55)' : canMove ? 'rgba(60,118,61,0.55)' : bgBase;
+          const isOpponentPiece = !!(piece && myPlayer && piece.owner !== myPlayer);
+          const bg = isOpponentPiece ? `linear-gradient(rgba(255,60,60,0.18), rgba(255,60,60,0.18)), ${baseBg}` : baseBg;
           const temple = isTempleCanonical(cy, cx);
           const border = temple ? '3px solid #e0e' : '2px solid rgba(255,255,255,0.2)';
           const ownerSkin = skins?.[piece?.owner];

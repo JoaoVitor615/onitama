@@ -197,10 +197,14 @@ function Salas() {
         const s = await criarSala();
         await carregar();
         const codigo = s?.codigo || s?.data?.codigo;
-        if (codigo) navigate(`/onitama?codigo=${encodeURIComponent(codigo)}`);
+        if (codigo) {
+          try { new Audio('/sound/fx/ui/positivo_6.wav').play().catch(() => {}); } catch (_) {}
+          navigate(`/onitama?codigo=${encodeURIComponent(codigo)}`);
+        }
       } else if (pendingAction?.type === 'enter' && pendingAction.codigo) {
         await entrarSala({ codigo: pendingAction.codigo });
         await carregar();
+        try { new Audio('/sound/fx/ui/positivo_6.wav').play().catch(() => {}); } catch (_) {}
         navigate(`/onitama?codigo=${encodeURIComponent(pendingAction.codigo)}`);
       }
     } catch (e) {

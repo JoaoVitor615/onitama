@@ -16,6 +16,7 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
   const lastTurnStartRef = useRef(state.turnStartedAt);
   const [showTimeoutMsg, setShowTimeoutMsg] = useState(false);
   const timeoutRef = useRef(null);
+  const playedLoseSoundRef = useRef(false);
   const orientation = role === 'host' ? 'south' : 'north';
   const myPlayer = role === 'host' ? 'A' : 'B';
   const myPowers = useMemo(() => powers?.[myPlayer] || [null, null, null], [powers, myPlayer]);
@@ -69,6 +70,17 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
     }, 200);
     return () => clearInterval(interval);
   }, [state, roomCode]);
+
+  // Som de derrota: toca quando a partida termina e eu NÃO sou o vencedor
+  useEffect(() => {
+    if (state?.winner && myPlayer !== state.winner && !playedLoseSoundRef.current) {
+      playedLoseSoundRef.current = true;
+      try { new Audio('/sound/fx/ui/erro_1.wav').play().catch(() => {}); } catch (_) {}
+    }
+    if (!state?.winner) {
+      playedLoseSoundRef.current = false;
+    }
+  }, [state?.winner, myPlayer]);
 
   // Animação do banner de tempo esgotado (fade-in/out)
   useEffect(() => {
@@ -175,9 +187,16 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
   const handleMove = (to) => {
     if (isBlocked) return;
     if (!state.selected || state.selectedCardIndex == null) return;
+    // detecta se haverá captura de peão (alvo é estudante inimigo) antes de aplicar o movimento
+    const preTarget = state.board[to.y][to.x];
+    const willCaptureStudent = !!preTarget && preTarget.type === 'student' && preTarget.owner !== state.currentPlayer;
     const next = applyMove(state, state.selected, to, state.selectedCardIndex);
     setState(next);
     setValidMoves([]);
+    // reproduz som de "soco" apenas para captura de peão por movimento normal (exceto bomba)
+    if (willCaptureStudent) {
+      try { new Audio('/sound/fx/soco/soco_4.wav').play().catch(() => {}); } catch (_) {}
+    }
     if (roomCode) emitGameState(roomCode, next);
   };
 
@@ -274,6 +293,7 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
           scenario={scenario}
           bombTarget={bombTarget}
           onBombDone={handleBombDone}
+          myPlayer={myPlayer}
         />
         {/* Painel de poderes (lado direito) */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', minWidth: '160px' }}>
