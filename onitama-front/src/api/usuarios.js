@@ -31,3 +31,24 @@ export async function atualizarCenarioAtivo(id_usuario, cenario_ativo) {
     body: JSON.stringify({ id_usuario, cenario_ativo }),
   });
 }
+
+export async function atualizarPoderAtivo1(id_usuario, poder_ativo1) {
+  return httpFetch('/api/usuarios/gravar', {
+    method: 'POST',
+    body: JSON.stringify({ id_usuario, poder_ativo1 }),
+  });
+}
+
+export async function atualizarPoderAtivo2(id_usuario, poder_ativo2) {
+  return httpFetch('/api/usuarios/gravar', {
+    method: 'POST',
+    body: JSON.stringify({ id_usuario, poder_ativo2 }),
+  });
+}
+
+export async function atualizarPoderAtivo3(id_usuario, poder_ativo3) {
+  return httpFetch('/api/usuarios/gravar', {
+    method: 'POST',
+    body: JSON.stringify({ id_usuario, poder_ativo3 }),
+  });
+}

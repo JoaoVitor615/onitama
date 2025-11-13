@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { initState, getValidMoves, applyMove, passTurn, TURN_MS } from '../../game/onitama/logic';
+import { initState, getValidMoves, applyMove, passTurn, TURN_MS, findRestorePosition, findRestorePositionFromInitial } from '../../game/onitama/logic';
 import { Board } from './Board';
 import { CardPanel } from './CardPanel';
 import { emitGameState, subscribeGameState } from '../../api/ws';
@@ -8,6 +8,7 @@ import { emitGameState, subscribeGameState } from '../../api/ws';
  * GameOnitama: modo local (single-client) por enquanto; integração WS será feita depois.
  */
 export default function GameOnitama({ seed = undefined, roomCode, role, names, skins, powers, scenario = null, blocked = false, onExit = null }) {
+  const HEAL_POWER_ID = 11; // Heal identificado pelo id do produto
   const [state, setState] = useState(() => initState(seed));
   const [validMoves, setValidMoves] = useState([]);
   const [remainingMs, setRemainingMs] = useState(TURN_MS);
@@ -69,6 +70,7 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
     // Se há poder ativo, intercepta clique para aplicar
     if (activePowerIdx != null) {
       const power = myPowers[activePowerIdx];
+      // Bomba: requer seleção de peça inimiga estudante
       if (power && power.id === 5) {
         const piece = state.board[y][x];
         if (piece && piece.owner !== myPlayer && piece.type === 'student') {
@@ -122,6 +124,13 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
     if (!piece || piece.owner === myPlayer || piece.type !== 'student') { setBombTarget(null); return; }
     const next = structuredClone(state);
     next.board[y][x] = null; // elimina o peão inimigo
+    // registra em graveyard e pilha do dono da peça eliminada
+    if (piece && piece.type === 'student') {
+      next.graveyard[piece.owner].students += 1;
+      if (piece.initial) {
+        next.defeatedStack[piece.owner].push({ y: piece.initial.y, x: piece.initial.x });
+      }
+    }
     // marca poder usado
     const used = Array.isArray(next.powersUsed?.[myPlayer]) ? [...next.powersUsed[myPlayer]] : [false, false, false];
     used[activePowerIdx] = true;
@@ -129,6 +138,32 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
     // passa o turno após uso do poder
     const after = passTurn(next);
     setBombTarget(null);
+    setActivePowerIdx(null);
+    setState(after);
+    setValidMoves([]);
+    if (roomCode) emitGameState(roomCode, after);
+  };
+
+  // Uso do Heal: restaura o último peão derrotado (nunca o Mestre)
+  const useHeal = () => {
+    if (isBlocked || state.currentPlayer !== myPlayer) return;
+    const power = myPowers[activePowerIdx];
+    const isHeal = power && (power.id === HEAL_POWER_ID);
+    if (!isHeal) return;
+    const stack = state.defeatedStack?.[myPlayer] || [];
+    if (!stack.length) { setActivePowerIdx(null); return; }
+    const initial = stack[stack.length - 1];
+    const pos = findRestorePositionFromInitial(state.board, initial) || findRestorePosition(state.board, myPlayer);
+    if (!pos) { setActivePowerIdx(null); return; }
+    const next = structuredClone(state);
+    next.board[pos.y][pos.x] = { owner: myPlayer, type: 'student' };
+    next.graveyard[myPlayer].students = Math.max(0, (next.graveyard[myPlayer].students || 0) - 1);
+    // remove da pilha o último derrotado
+    next.defeatedStack[myPlayer] = stack.slice(0, stack.length - 1);
+    const used = Array.isArray(next.powersUsed?.[myPlayer]) ? [...next.powersUsed[myPlayer]] : [false, false, false];
+    used[activePowerIdx] = true;
+    next.powersUsed = { ...next.powersUsed, [myPlayer]: used };
+    const after = passTurn(next);
     setActivePowerIdx(null);
     setState(after);
     setValidMoves([]);
@@ -167,28 +202,41 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
           {myPowers.map((p, idx) => {
             const used = state.powersUsed?.[myPlayer]?.[idx];
             const isActive = activePowerIdx === idx;
-            const canUse = !isBlocked && state.currentPlayer === myPlayer && !used && p != null;
+            const isHeal = p && (p.id === HEAL_POWER_ID);
+            const hasDefeated = (state.graveyard?.[myPlayer]?.students || 0) > 0;
+            const canUseBase = !isBlocked && state.currentPlayer === myPlayer && !used && p != null;
+            const canUse = canUseBase && (!isHeal || hasDefeated);
             const label = p?.nome || (p?.id ? `Poder ${p.id}` : 'Vazio');
             const ext = p?.extensao || 'png';
             const imgSrc = p?.imagem ? `/skins/${p.imagem}/${p.imagem}_poder.${ext}` : null; // opcional, caso haja imagem específica
             return (
-              <div key={idx} onClick={() => { if (canUse) setActivePowerIdx(idx); }} style={{
+              <div key={idx} onClick={() => {
+                if (!canUse) return;
+                setActivePowerIdx(idx);
+                // aplica imediatamente se for Heal
+                const pw = myPowers[idx];
+                const isHealNow = pw && (pw.id === HEAL_POWER_ID);
+                if (isHealNow) {
+                  // ligeiro atraso para feedback de seleção
+                  setTimeout(() => useHeal(), 0);
+                }
+              }} style={{
                 background: '#222', color: '#fff', borderRadius: '8px', padding: '8px',
                 border: isActive ? '2px solid #4a90e2' : '1px solid #555',
                 cursor: canUse ? 'pointer' : 'default', opacity: canUse ? 1 : 0.6,
                 minHeight: '60px', display: 'flex', alignItems: 'center', gap: '8px'
               }}>
                 <div style={{ width: '36px', height: '36px', borderRadius: '6px', background: '#333', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {p ? (p.id === 5 ? '💣' : '✨') : '—'}
+                  {p ? (p.id === 5 ? '💣' : (isHeal ? '💖' : '✨')) : '—'}
                 </div>
                 <div style={{ fontSize: '14px' }}>
                   <div style={{ fontWeight: 'bold' }}>{label}</div>
-                  <div style={{ color: '#bbb', fontSize: '12px' }}>{used ? 'Usado' : (canUse ? (isActive ? 'Selecionado' : 'Disponível') : 'Indisponível')}</div>
+                  <div style={{ color: '#bbb', fontSize: '12px' }}>{used ? 'Usado' : (canUse ? (isActive ? 'Selecionado' : 'Disponível') : (isHeal && !hasDefeated ? 'Sem peças a restaurar' : 'Indisponível'))}</div>
                 </div>
               </div>
             );
           })}
-          {activePowerIdx != null && (
+          {activePowerIdx != null && myPowers[activePowerIdx]?.id === 5 && (
             <div style={{ color: '#fff', fontSize: '12px' }}>Selecione uma peça inimiga para usar o poder.</div>
           )}
         </div>

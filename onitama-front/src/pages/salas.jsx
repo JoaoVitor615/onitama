@@ -3,7 +3,7 @@ import styles from "../SaladeJogos.module.css";
 import { useEffect, useState, useCallback, useMemo } from "react";
 import { criarSala, listarSalas, entrarSala } from "../api/salas";
 import { subscribeLista } from "../api/ws";
-import { carregarUsuarioPorHash, atualizarSkinAtiva, atualizarCenarioAtivo } from "../api/usuarios";
+import { carregarUsuarioPorHash, atualizarSkinAtiva, atualizarCenarioAtivo, atualizarPoderAtivo1, atualizarPoderAtivo2, atualizarPoderAtivo3 } from "../api/usuarios";
 import { getUsuarioHash, setUsuarioHash, setUsuarioId } from "../api/http";
 import { listarUsuarioProdutosPorUsuario } from "../api/usuarioProduto";
 import { listarProdutos } from "../api/produtos";
@@ -23,6 +23,8 @@ function Salas() {
   const [usuarioCenarioAtivo, setUsuarioCenarioAtivo] = useState(null);
   const [mapas, setMapas] = useState([]);
   const [activeMapIndex, setActiveMapIndex] = useState(0);
+  const [poderes, setPoderes] = useState([]);
+  const [selectedPoderIds, setSelectedPoderIds] = useState([null, null, null]);
   const [pendingAction, setPendingAction] = useState(null); // { type: 'create' | 'enter', codigo?: string }
 
   const carregar = useCallback(async () => {
@@ -71,6 +73,15 @@ function Salas() {
               const midx = mapasDoUsuario.findIndex((p) => p.id_produto === usuario.cenario_ativo);
               setActiveMapIndex(midx >= 0 ? midx : 0);
             }
+            const poderesDoUsuario = usuProds
+              .map((up) => map.get(up.id_produto))
+              .filter((p) => p && Number(p.id_tipo_produto) === 4);
+            setPoderes(poderesDoUsuario);
+            setSelectedPoderIds([
+              usuario.poder_ativo1 ?? null,
+              usuario.poder_ativo2 ?? null,
+              usuario.poder_ativo3 ?? null,
+            ]);
           }
         } catch (_) {
           // silencioso: se não carregar usuário, segue fluxo de salas
@@ -279,8 +290,49 @@ function Salas() {
             )}
 
             {modalTab === 'poderes' && (
-              <div style={{ padding: 24, textAlign: 'center', color: '#ddd' }}>
-                <p>Em breve: seleção de poderes.</p>
+              <div style={{ padding: 16 }}>
+                <div style={{ marginBottom: 12, color: '#fff', fontWeight: 'bold' }}>Selecione até 3 poderes ativos</div>
+                {[0,1,2].map((slot) => {
+                  const currentId = selectedPoderIds[slot];
+                  const current = poderes.find((p) => p.id_produto === currentId) || null;
+                  const label = current ? (current.nome || `Poder ${current.id_produto}`) : 'Nenhum';
+                  return (
+                    <div key={slot} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
+                      <div style={{ width: 28, textAlign: 'right', color: '#bbb' }}>Slot {slot+1}:</div>
+                      <select
+                        value={currentId ?? ''}
+                        onChange={async (e) => {
+                          const val = e.target.value ? Number(e.target.value) : null;
+                          const nextIds = [...selectedPoderIds];
+                          nextIds[slot] = val;
+                          setSelectedPoderIds(nextIds);
+                          try {
+                            if (!usuarioId) return;
+                            if (slot === 0) await atualizarPoderAtivo1(usuarioId, val);
+                            else if (slot === 1) await atualizarPoderAtivo2(usuarioId, val);
+                            else await atualizarPoderAtivo3(usuarioId, val);
+                          } catch (err) {
+                            console.error('Falha ao atualizar poder ativo', err);
+                            alert('Não foi possível atualizar o poder ativo.');
+                          }
+                        }}
+                        style={{ padding: '8px 10px', borderRadius: 8, background: '#222', color: '#fff', border: '1px solid #777', minWidth: 220 }}
+                      >
+                        <option value="">Nenhum</option>
+                        {poderes.map((p) => (
+                          <option key={p.id_produto} value={p.id_produto}>{p.nome || `Poder ${p.id_produto}`}</option>
+                        ))}
+                      </select>
+                      <div style={{ width: 36, height: 36, borderRadius: 8, background: '#333', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {current ? ((current.id_produto === 5) ? '💣' : (current.id_produto === 11 ? '💖' : '✨')) : '—'}
+                      </div>
+                      <div style={{ color: '#bbb', fontSize: 12 }}>{label}</div>
+                    </div>
+                  );
+                })}
+                {poderes.length === 0 && (
+                  <div style={{ color: '#bbb' }}>Você ainda não possui poderes. Visite a aba Itens para comprar.</div>
+                )}
               </div>
             )}
 

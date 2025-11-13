@@ -10,10 +10,10 @@ export function initialBoard() {
   const board = Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(null));
   // B no topo (y=0), A embaixo (y=4)
   const studentsCols = [0, 1, 3, 4];
-  studentsCols.forEach((x) => { board[0][x] = { owner: 'B', type: 'student' }; });
-  board[0][2] = { owner: 'B', type: 'master' };
-  studentsCols.forEach((x) => { board[4][x] = { owner: 'A', type: 'student' }; });
-  board[4][2] = { owner: 'A', type: 'master' };
+  studentsCols.forEach((x) => { board[0][x] = { owner: 'B', type: 'student', initial: { y: 0, x } }; });
+  board[0][2] = { owner: 'B', type: 'master', initial: { y: 0, x: 2 } };
+  studentsCols.forEach((x) => { board[4][x] = { owner: 'A', type: 'student', initial: { y: 4, x } }; });
+  board[4][2] = { owner: 'A', type: 'master', initial: { y: 4, x: 2 } };
   return board;
 }
 
@@ -34,6 +34,9 @@ export function initState(seed) {
     selectedCardIndex: null, // 0 ou 1
     turnStartedAt: Date.now(),
     powersUsed: { A: [false, false, false], B: [false, false, false] },
+    // rastreia peças derrotadas para permitir "Heal" (apenas peões/estudantes)
+    graveyard: { A: { students: 0 }, B: { students: 0 } },
+    defeatedStack: { A: [], B: [] },
   };
   // inicia aleatório por cor da próxima carta do A/B para variar quem começa
   if (state.next?.A?.color === 'red') state.currentPlayer = 'B';
@@ -82,6 +85,13 @@ export function applyMove(state, from, to, cardIndex) {
   const target = next.board[to.y][to.x];
   if (target && target.type === 'master') {
     next.winner = piece.owner; // captura do mestre
+  }
+  // registra captura de peão do adversário no "graveyard"
+  if (target && target.type === 'student' && target.owner !== piece.owner) {
+    next.graveyard[target.owner].students += 1;
+    if (target.initial) {
+      next.defeatedStack[target.owner].push({ y: target.initial.y, x: target.initial.x });
+    }
   }
   next.board[to.y][to.x] = { ...piece };
   next.board[from.y][from.x] = null;
@@ -139,4 +149,59 @@ export function passTurn(state) {
   next.selectedCardIndex = null;
   next.turnStartedAt = Date.now();
   return next;
+}
+
+// Encontra posição para restaurar uma peça do jogador: tenta casa inicial
+// e, se ocupada, busca a casa livre mais próxima via BFS.
+export function findRestorePosition(board, owner) {
+  const startY = owner === 'A' ? 4 : 0;
+  const startCols = [0, 1, 3, 4];
+  // tenta casas iniciais primeiro
+  for (const x of startCols) {
+    if (!board[startY][x]) return { y: startY, x };
+  }
+  // BFS a partir das casas iniciais para encontrar célula livre mais próxima
+  const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+  const visited = Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(false));
+  const queue = [];
+  for (const x of startCols) {
+    visited[startY][x] = true;
+    queue.push({ y: startY, x });
+  }
+  while (queue.length) {
+    const p = queue.shift();
+    if (!board[p.y][p.x]) return p;
+    for (const [dy, dx] of dirs) {
+      const ny = p.y + dy;
+      const nx = p.x + dx;
+      if (!inBounds(ny, nx)) continue;
+      if (visited[ny][nx]) continue;
+      visited[ny][nx] = true;
+      queue.push({ y: ny, x: nx });
+    }
+  }
+  return null;
+}
+
+export function findRestorePositionFromInitial(board, initial) {
+  if (!initial) return null;
+  const { y: startY, x: startX } = initial;
+  if (!board[startY][startX]) return { y: startY, x: startX };
+  const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+  const visited = Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(false));
+  const queue = [{ y: startY, x: startX }];
+  visited[startY][startX] = true;
+  while (queue.length) {
+    const p = queue.shift();
+    if (!board[p.y][p.x]) return p;
+    for (const [dy, dx] of dirs) {
+      const ny = p.y + dy;
+      const nx = p.x + dx;
+      if (!inBounds(ny, nx)) continue;
+      if (visited[ny][nx]) continue;
+      visited[ny][nx] = true;
+      queue.push({ y: ny, x: nx });
+    }
+  }
+  return null;
 }
