@@ -319,8 +319,17 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
             const label = p?.nome || (p?.id ? `Poder ${p.id}` : 'Vazio');
             const ext = p?.extensao || 'png';
             const imgSrc = p?.imagem ? `/skins/${p.imagem}/${p.imagem}_poder.${ext}` : null; // opcional, caso haja imagem específica
+            const tooltip = p ? (
+              p.id === 5
+                ? 'Bomba: elimina instantaneamente um peão adversário (Não tem efeito no mestre)'
+                : isHeal
+                ? 'Heal: Revive o último peão eliminado para sua posição de origem ou mais próxima disponível (Não tem efeito no mestre)'
+                : isMystic
+                ? 'Troca: Possibilita trocar o posicionamento do mestre com algum dos peões'
+                : undefined
+            ) : undefined;
             return (
-              <div key={idx} onClick={() => {
+              <div key={idx} title={tooltip} onClick={() => {
                 if (!canUse) return;
                 setActivePowerIdx(idx);
                 // aplica imediatamente se for Heal
