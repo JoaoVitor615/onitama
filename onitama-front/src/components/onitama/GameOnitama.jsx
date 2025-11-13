@@ -14,6 +14,8 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
   const [validMoves, setValidMoves] = useState([]);
   const [remainingMs, setRemainingMs] = useState(TURN_MS);
   const lastTurnStartRef = useRef(state.turnStartedAt);
+  const [showTimeoutMsg, setShowTimeoutMsg] = useState(false);
+  const timeoutRef = useRef(null);
   const orientation = role === 'host' ? 'south' : 'north';
   const myPlayer = role === 'host' ? 'A' : 'B';
   const myPowers = useMemo(() => powers?.[myPlayer] || [null, null, null], [powers, myPlayer]);
@@ -55,6 +57,9 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
         // Evita repetir para o mesmo início de turno
         if (lastTurnStartRef.current !== state.turnStartedAt) return;
         // Efetua passagem de turno e emite estado (qualquer cliente pode emitir para garantir liveness)
+        // Sinaliza visualmente que o tempo esgotou
+        setShowTimeoutMsg(true);
+        setTimeout(() => setShowTimeoutMsg(false), 1800);
         const next = passTurn(state);
         lastTurnStartRef.current = next.turnStartedAt;
         setState(next);
@@ -64,6 +69,25 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
     }, 200);
     return () => clearInterval(interval);
   }, [state, roomCode]);
+
+  // Animação do banner de tempo esgotado (fade-in/out)
+  useEffect(() => {
+    if (!showTimeoutMsg || !timeoutRef.current) return;
+    const el = timeoutRef.current;
+    try {
+      el.animate([
+        { opacity: 0, transform: 'translateY(-8px)' },
+        { opacity: 1, transform: 'translateY(0)' }
+      ], { duration: 250, easing: 'ease-out', fill: 'forwards' });
+      const hide = setTimeout(() => {
+        el.animate([
+          { opacity: 1 },
+          { opacity: 0 }
+        ], { duration: 400, easing: 'ease-in', fill: 'forwards' });
+      }, 1400);
+      return () => clearTimeout(hide);
+    } catch (_) {}
+  }, [showTimeoutMsg]);
 
   const handleSelect = ({ y, x }) => {
     if (isBlocked) return;
@@ -225,6 +249,18 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
           </div>
         )}
       </div>
+      {showTimeoutMsg && (
+        <div ref={timeoutRef} style={{
+          background: 'rgba(255,90,90,0.85)',
+          color: '#fff',
+          fontWeight: 800,
+          border: '2px solid rgba(255,255,255,0.65)',
+          textShadow: '0 0 6px rgba(255,255,255,0.4)',
+          borderRadius: 10,
+          padding: '8px 12px',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.35)'
+        }}>Tempo de jogada esgotado!</div>
+      )}
       <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
         <Board
           board={state.board}
