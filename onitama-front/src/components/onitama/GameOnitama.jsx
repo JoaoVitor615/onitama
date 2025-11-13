@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { initState, getValidMoves, applyMove, passTurn, TURN_MS, findRestorePosition, findRestorePositionFromInitial } from '../../game/onitama/logic';
+import { initState, getValidMoves, applyMove, passTurn, TURN_MS, findRestorePosition, findRestorePositionFromInitial, TEMPLE_A, TEMPLE_B } from '../../game/onitama/logic';
 import { Board } from './Board';
 import { CardPanel } from './CardPanel';
 import { emitGameState, subscribeGameState } from '../../api/ws';
@@ -9,6 +9,7 @@ import { emitGameState, subscribeGameState } from '../../api/ws';
  */
 export default function GameOnitama({ seed = undefined, roomCode, role, names, skins, powers, scenario = null, blocked = false, onExit = null }) {
   const HEAL_POWER_ID = 11; // Heal identificado pelo id do produto
+  const MYSTIC_SWAP_ID = 12; // Troca Mística identificado pelo id do produto
   const [state, setState] = useState(() => initState(seed));
   const [validMoves, setValidMoves] = useState([]);
   const [remainingMs, setRemainingMs] = useState(TURN_MS);
@@ -76,6 +77,48 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
         if (piece && piece.owner !== myPlayer && piece.type === 'student') {
           // dispara animação de bomba nesta célula
           setBombTarget({ y, x });
+        }
+      }
+      // Troca Mística: selecionar um peão próprio (não Mestre) para trocar com o Mestre
+      if (power && power.id === MYSTIC_SWAP_ID) {
+        const piece = state.board[y][x];
+        if (piece && piece.owner === myPlayer && piece.type === 'student') {
+          const next = structuredClone(state);
+          // localizar Mestre do jogador atual
+          let masterPos = null;
+          for (let iy = 0; iy < next.board.length; iy++) {
+            for (let ix = 0; ix < next.board[iy].length; ix++) {
+              const p = next.board[iy][ix];
+              if (p && p.owner === myPlayer && p.type === 'master') {
+                masterPos = { y: iy, x: ix };
+                break;
+              }
+            }
+            if (masterPos) break;
+          }
+          if (!masterPos) return; // não deveria acontecer
+          // efetua a troca (swap de objetos)
+          const masterPiece = next.board[masterPos.y][masterPos.x];
+          const studentPiece = next.board[y][x];
+          next.board[masterPos.y][masterPos.x] = studentPiece;
+          next.board[y][x] = masterPiece;
+          // checagem de vitória por templo após o Mestre mover
+          const newMasterPos = { y, x };
+          if (myPlayer === 'A' && newMasterPos.y === TEMPLE_B.y && newMasterPos.x === TEMPLE_B.x) {
+            next.winner = 'A';
+          } else if (myPlayer === 'B' && newMasterPos.y === TEMPLE_A.y && newMasterPos.x === TEMPLE_A.x) {
+            next.winner = 'B';
+          }
+          // marca poder usado
+          const used = Array.isArray(next.powersUsed?.[myPlayer]) ? [...next.powersUsed[myPlayer]] : [false, false, false];
+          used[activePowerIdx] = true;
+          next.powersUsed = { ...next.powersUsed, [myPlayer]: used };
+          // passa o turno após uso do poder
+          const after = passTurn(next);
+          setActivePowerIdx(null);
+          setState(after);
+          setValidMoves([]);
+          if (roomCode) emitGameState(roomCode, after);
         }
       }
       return; // não prossegue com seleção normal
@@ -203,9 +246,20 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
             const used = state.powersUsed?.[myPlayer]?.[idx];
             const isActive = activePowerIdx === idx;
             const isHeal = p && (p.id === HEAL_POWER_ID);
+            const isMystic = p && (p.id === MYSTIC_SWAP_ID);
             const hasDefeated = (state.graveyard?.[myPlayer]?.students || 0) > 0;
+            // precisa ter ao menos um peão próprio no tabuleiro para usar Troca Mística
+            let hasMyStudent = false;
+            if (Array.isArray(state.board)) {
+              outer: for (let iy = 0; iy < state.board.length; iy++) {
+                for (let ix = 0; ix < state.board[iy].length; ix++) {
+                  const pc = state.board[iy][ix];
+                  if (pc && pc.owner === myPlayer && pc.type === 'student') { hasMyStudent = true; break outer; }
+                }
+              }
+            }
             const canUseBase = !isBlocked && state.currentPlayer === myPlayer && !used && p != null;
-            const canUse = canUseBase && (!isHeal || hasDefeated);
+            const canUse = canUseBase && (!isHeal || hasDefeated) && (!isMystic || hasMyStudent);
             const label = p?.nome || (p?.id ? `Poder ${p.id}` : 'Vazio');
             const ext = p?.extensao || 'png';
             const imgSrc = p?.imagem ? `/skins/${p.imagem}/${p.imagem}_poder.${ext}` : null; // opcional, caso haja imagem específica
@@ -227,17 +281,20 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
                 minHeight: '60px', display: 'flex', alignItems: 'center', gap: '8px'
               }}>
                 <div style={{ width: '36px', height: '36px', borderRadius: '6px', background: '#333', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {p ? (p.id === 5 ? '💣' : (isHeal ? '💖' : '✨')) : '—'}
+                  {p ? (p.id === 5 ? '💣' : (isHeal ? '💖' : (isMystic ? '🔄' : '✨'))) : '—'}
                 </div>
                 <div style={{ fontSize: '14px' }}>
                   <div style={{ fontWeight: 'bold' }}>{label}</div>
-                  <div style={{ color: '#bbb', fontSize: '12px' }}>{used ? 'Usado' : (canUse ? (isActive ? 'Selecionado' : 'Disponível') : (isHeal && !hasDefeated ? 'Sem peças a restaurar' : 'Indisponível'))}</div>
+                  <div style={{ color: '#bbb', fontSize: '12px' }}>{used ? 'Usado' : (canUse ? (isActive ? 'Selecionado' : 'Disponível') : (isHeal && !hasDefeated ? 'Sem peças a restaurar' : (isMystic && !hasMyStudent ? 'Sem peões disponíveis' : 'Indisponível')))}</div>
                 </div>
               </div>
             );
           })}
           {activePowerIdx != null && myPowers[activePowerIdx]?.id === 5 && (
             <div style={{ color: '#fff', fontSize: '12px' }}>Selecione uma peça inimiga para usar o poder.</div>
+          )}
+          {activePowerIdx != null && myPowers[activePowerIdx]?.id === MYSTIC_SWAP_ID && (
+            <div style={{ color: '#fff', fontSize: '12px' }}>Selecione um peão próprio para trocar com o Mestre.</div>
           )}
         </div>
       </div>

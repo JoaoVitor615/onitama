@@ -324,7 +324,7 @@ function Salas() {
                         ))}
                       </select>
                       <div style={{ width: 36, height: 36, borderRadius: 8, background: '#333', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        {current ? ((current.id_produto === 5) ? '💣' : (current.id_produto === 11 ? '💖' : '✨')) : '—'}
+                        {current ? ((current.id_produto === 5) ? '💣' : (current.id_produto === 11 ? '💖' : (current.id_produto === 12 ? '🔄' : '✨'))) : '—'}
                       </div>
                       <div style={{ color: '#bbb', fontSize: 12 }}>{label}</div>
                     </div>
