@@ -188,6 +188,7 @@ function Onitama() {
                 powers={powers}
                 scenario={scenario}
                 blocked={isWaiting}
+                onExit={handleSair}
               />
             );
           })()

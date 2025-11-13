@@ -29,3 +29,54 @@ label, a {
 a{
    margin-top: 4%;
 }
+
+/* ====== Animações de vitória/derrota ====== */
+@keyframes victoryType {
+  0% { opacity: 0; transform: translateY(8px); }
+  10% { opacity: 1; transform: translateY(0); }
+  85% { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(8px); }
+}
+
+@keyframes blink3 {
+  0%, 15% { opacity: 1; }
+  20% { opacity: 0; }
+  25% { opacity: 1; }
+  40% { opacity: 0; }
+  45% { opacity: 1; }
+  60% { opacity: 0; }
+  65% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+.victoryText { 
+  display: inline-block; 
+  font-size: 15rem;
+}
+.victory-letter {
+  display: inline-block;
+  opacity: 0;
+  
+  animation: victoryType 4s ease-in-out infinite;
+  animation-fill-mode: both;
+  font-family: 'Jersey 10', sans-serif;
+}
+
+.victory-letter span {
+  display: inline-block;
+  opacity: 0;
+  animation: victoryType 4s ease-in-out infinite;
+  animation-fill-mode: both;
+  font-family: 'Jersey 10', sans-serif;
+}
+
+.victory-excl {
+  display: inline-block;
+  animation: blink3 2s ease-in-out infinite;
+}
+
+.victory-space {
+  display: inline-block;
+  font-size: 5rem;
+  line-height: 1;
+}
