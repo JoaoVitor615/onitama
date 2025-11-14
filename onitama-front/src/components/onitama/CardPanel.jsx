@@ -67,7 +67,6 @@ export function CardPanel({ myCards, nextCard, selectedCardIndex, onSelectCard, 
       cursor: clickable ? 'pointer' : 'default', minWidth: '150px', opacity: clickable ? 1 : 0.7
     }} onClick={() => clickable && onSelectCard(idx)}>
       <div style={{ fontWeight: 'bold' }}>{card?.name}</div>
-      <div style={{ fontSize: '12px', color: '#333' }}>cor: {card?.color}</div>
       <MovesGrid card={card} orientation={orientation} owner={owner} theme={theme} />
     </div>
   );
