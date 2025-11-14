@@ -22,6 +22,8 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
   const myPowers = useMemo(() => powers?.[myPlayer] || [null, null, null], [powers, myPlayer]);
   const [activePowerIdx, setActivePowerIdx] = useState(null);
   const [bombTarget, setBombTarget] = useState(null);
+  const [showBombError, setShowBombError] = useState(false);
+  const bombErrorRef = useRef(null);
   const isGameOver = !!state?.winner;
   const isBlocked = blocked || isGameOver;
 
@@ -101,6 +103,25 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
     } catch (_) {}
   }, [showTimeoutMsg]);
 
+  // Feedback visual quando tentar usar míssil no Mestre
+  useEffect(() => {
+    if (!showBombError || !bombErrorRef.current) return;
+    try {
+      const el = bombErrorRef.current;
+      el.animate([
+        { opacity: 0, transform: 'scale(0.98)' },
+        { opacity: 1, transform: 'scale(1)' }
+      ], { duration: 200, easing: 'ease-out', fill: 'forwards' });
+      const hide = setTimeout(() => {
+        el.animate([
+          { opacity: 1 },
+          { opacity: 0 }
+        ], { duration: 400, easing: 'ease-in', fill: 'forwards' });
+      }, 1500);
+      return () => clearTimeout(hide);
+    } catch (_) {}
+  }, [showBombError]);
+
   const handleSelect = ({ y, x }) => {
     if (isBlocked) return;
     if (state.currentPlayer !== myPlayer) return; // só interage no próprio turno
@@ -110,11 +131,19 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
       // Bomba: requer seleção de peça inimiga estudante
       if (power && power.id === 5) {
         const piece = state.board[y][x];
-        if (piece && piece.owner !== myPlayer && piece.type === 'student') {
-          // dispara animação de bomba nesta célula
-          setBombTarget({ y, x });
+        if (piece && piece.owner !== myPlayer) {
+          if (piece.type === 'master') {
+            // erro: míssil não funciona no Mestre
+            setShowBombError(true);
+            setTimeout(() => setShowBombError(false), 1800);
+            return; // mantém poder ativo para nova seleção
+          }
+          if (piece.type === 'student') {
+            // dispara animação de bomba nesta célula
+            setBombTarget({ y, x });
+          }
         }
-      }
+        }
       // Troca Mística: selecionar um peão próprio (não Mestre) para trocar com o Mestre
       if (power && power.id === MYSTIC_SWAP_ID) {
         const piece = state.board[y][x];
@@ -279,6 +308,22 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
           padding: '8px 12px',
           boxShadow: '0 4px 16px rgba(0,0,0,0.35)'
         }}>Tempo de jogada esgotado!</div>
+      )}
+      {showBombError && (
+        <div ref={bombErrorRef} style={{
+          position: 'fixed',
+          top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+          zIndex: 2000,
+          background: 'linear-gradient(135deg, rgba(255,30,30,0.95), rgba(255,140,0,0.95))',
+          color: '#fff',
+          fontWeight: 900,
+          fontSize: '20px',
+          border: '3px solid rgba(255,255,255,0.75)',
+          textShadow: '0 1px 10px rgba(0,0,0,0.6)',
+          borderRadius: 12,
+          padding: '14px 18px',
+          boxShadow: '0 8px 28px rgba(0,0,0,0.45)'
+        }}>O MÍSSIL DEVE SER UTILIZADO APENAS EM PEÕES</div>
       )}
       <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
         <Board
