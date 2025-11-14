@@ -416,6 +416,7 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
         orientation={orientation}
         owner={myPlayer}
         canSelect={!isBlocked && state.currentPlayer === myPlayer}
+        scenario={scenario}
       />
 
       {/* Overlay de fim de jogo: vitória/derrota */}

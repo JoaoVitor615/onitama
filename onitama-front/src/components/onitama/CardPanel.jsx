@@ -10,11 +10,11 @@ function gridStyle() {
   };
 }
 
-function cellStyle(active, isCenter) {
+function cellStyle(active, isCenter, theme) {
   return {
     width: '14px', height: '14px', borderRadius: '3px',
-    background: active ? '#3c763d' : '#333',
-    border: isCenter ? '1px solid #777' : '1px solid #222',
+    background: active ? (theme?.active || '#3c763d') : '#333',
+    border: isCenter ? `1px solid ${theme?.borderDark || '#777'}` : '1px solid #222',
   };
 }
 
@@ -29,7 +29,7 @@ function orientForView(moves, orientation) {
   return moves;
 }
 
-function MovesGrid({ card, orientation, owner }) {
+function MovesGrid({ card, orientation, owner, theme }) {
   const base = transformMovesForOwner(card, owner);
   const display = orientForView(base, orientation);
   const set = new Set(display.map(([dy, dx]) => `${CENTER.y + dy}-${CENTER.x + dx}`));
@@ -40,23 +40,35 @@ function MovesGrid({ card, orientation, owner }) {
           const key = `${y}-${x}`;
           const active = set.has(key);
           const isCenter = y === CENTER.y && x === CENTER.x;
-          return <div key={key} style={cellStyle(active, isCenter)} />;
+          return <div key={key} style={cellStyle(active, isCenter, theme)} />;
         })
       ))}
     </div>
   );
 }
 
-export function CardPanel({ myCards, nextCard, selectedCardIndex, onSelectCard, orientation = 'south', owner = 'A', canSelect = true }) {
+function getCardTheme(scenario) {
+  const folder = (scenario?.folder || scenario?.base || '').toLowerCase();
+  if (folder.includes('gelo')) {
+    return { cardBg: '#d6eaff', borderDark: '#1e4b7a', active: '#2f6fb3' };
+  }
+  if (folder.includes('terra')) {
+    return { cardBg: '#e6c9a8', borderDark: '#6b3f1f', active: '#8b5a2b' };
+  }
+  return { cardBg: '#222', borderDark: '#555', active: '#3c763d' };
+}
+
+export function CardPanel({ myCards, nextCard, selectedCardIndex, onSelectCard, orientation = 'south', owner = 'A', canSelect = true, scenario = null }) {
+  const theme = getCardTheme(scenario);
   const renderCard = (card, idx, clickable = true) => (
     <div key={card?.name || idx} style={{
-      background: '#222', color: '#fff', borderRadius: '8px', padding: '8px',
-      border: selectedCardIndex === idx ? '2px solid #4a90e2' : '1px solid #555',
+      background: theme.cardBg, color: '#000', borderRadius: '8px', padding: '8px',
+      border: selectedCardIndex === idx ? `3px solid ${theme.borderDark}` : `1px solid ${theme.borderDark}`,
       cursor: clickable ? 'pointer' : 'default', minWidth: '150px', opacity: clickable ? 1 : 0.7
     }} onClick={() => clickable && onSelectCard(idx)}>
       <div style={{ fontWeight: 'bold' }}>{card?.name}</div>
-      <div style={{ fontSize: '12px', color: '#bbb' }}>cor: {card?.color}</div>
-      <MovesGrid card={card} orientation={orientation} owner={owner} />
+      <div style={{ fontSize: '12px', color: '#333' }}>cor: {card?.color}</div>
+      <MovesGrid card={card} orientation={orientation} owner={owner} theme={theme} />
     </div>
   );
 
