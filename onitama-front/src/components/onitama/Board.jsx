@@ -4,7 +4,7 @@ import { BOARD_SIZE } from '../../game/onitama/logic';
 /**
  * orientation: 'south' (padrão, sem rotação) ou 'north' (rotaciona 180°)
  */
-export function Board({ board, currentPlayer, selected, validMoves, onSelect, onMove, orientation = 'south', skins = {}, scenario = null, bombTarget = null, onBombDone = null, myPlayer = null }) {
+export function Board({ board, currentPlayer, selected, validMoves, onSelect, onMove, orientation = 'south', skins = {}, scenario = null, bombTarget = null, onBombDone = null, myPlayer = null, healPos = null, onHealEffectDone = null, swapEffect = null, onSwapEffectDone = null }) {
   const containerRef = useRef(null);
   const missileRef = useRef(null);
   const animatingRef = useRef(false);
@@ -13,6 +13,13 @@ export function Board({ board, currentPlayer, selected, validMoves, onSelect, on
   const [missileEnd, setMissileEnd] = useState({ x: 0, y: 0 });
   const [explosionVisible, setExplosionVisible] = useState(false);
   const [explosionPos, setExplosionPos] = useState({ x: 0, y: 0 });
+  // Heal animation state
+  const [healVisible, setHealVisible] = useState(false);
+  const [healViewportPos, setHealViewportPos] = useState({ x: 0, y: 0 });
+  // Swap animation state (for two positions)
+  const [swapVisible, setSwapVisible] = useState(false);
+  const [swapViewportA, setSwapViewportA] = useState({ x: 0, y: 0 });
+  const [swapViewportB, setSwapViewportB] = useState({ x: 0, y: 0 });
   const toCanonical = (y, x) => {
     if (orientation === 'north') return { y: BOARD_SIZE - 1 - y, x: BOARD_SIZE - 1 - x };
     return { y, x };
@@ -93,6 +100,55 @@ export function Board({ board, currentPlayer, selected, validMoves, onSelect, on
       }
     })();
   }, [bombVisible, missileStart, missileEnd, onBombDone]);
+
+  // Prepare viewport coordinates for Heal effect
+  useEffect(() => {
+    if (!healPos) { setHealVisible(false); return; }
+    const container = containerRef.current;
+    if (!container) return;
+    const cellEl = container.querySelector(`[data-cell="${healPos.y}-${healPos.x}"]`);
+    if (!cellEl) return;
+    const rr = cellEl.getBoundingClientRect();
+    const cx = rr.left + rr.width / 2;
+    const cy = rr.top + rr.height / 2;
+    setHealViewportPos({ x: cx, y: cy });
+    setHealVisible(true);
+  }, [healPos]);
+
+  // Animate Heal effect (pulse + hearts)
+  useEffect(() => {
+    if (!healVisible) return;
+    const timeout = setTimeout(() => {
+      setHealVisible(false);
+      onHealEffectDone && onHealEffectDone();
+    }, 1200);
+    return () => clearTimeout(timeout);
+  }, [healVisible, onHealEffectDone]);
+
+  // Prepare viewport coordinates for Swap effect (two positions)
+  useEffect(() => {
+    if (!swapEffect || !swapEffect.a || !swapEffect.b) { setSwapVisible(false); return; }
+    const container = containerRef.current;
+    if (!container) return;
+    const aEl = container.querySelector(`[data-cell="${swapEffect.a.y}-${swapEffect.a.x}"]`);
+    const bEl = container.querySelector(`[data-cell="${swapEffect.b.y}-${swapEffect.b.x}"]`);
+    if (!aEl || !bEl) return;
+    const ra = aEl.getBoundingClientRect();
+    const rb = bEl.getBoundingClientRect();
+    setSwapViewportA({ x: ra.left + ra.width / 2, y: ra.top + ra.height / 2 });
+    setSwapViewportB({ x: rb.left + rb.width / 2, y: rb.top + rb.height / 2 });
+    setSwapVisible(true);
+  }, [swapEffect]);
+
+  // Animate Swap effect (spin arrows)
+  useEffect(() => {
+    if (!swapVisible) return;
+    const timeout = setTimeout(() => {
+      setSwapVisible(false);
+      onSwapEffectDone && onSwapEffectDone();
+    }, 1000);
+    return () => clearTimeout(timeout);
+  }, [swapVisible, onSwapEffectDone]);
 
   const isTempleCanonical = (y, x) => (y === 0 && x === 2) || (y === BOARD_SIZE - 1 && x === 2);
 
@@ -203,6 +259,45 @@ export function Board({ board, currentPlayer, selected, validMoves, onSelect, on
             zIndex: 9999
           }}
         />
+      )}
+      {/* Heal effect overlay: pulse ring + rising hearts */}
+      {healVisible && (
+        <div style={{ position: 'fixed', left: `${healViewportPos.x}px`, top: `${healViewportPos.y}px`, transform: 'translate(-50%, -50%)', zIndex: 9999, pointerEvents: 'none' }}>
+          <div style={{ width: 88, height: 88, borderRadius: '50%', border: '3px solid rgba(120,255,180,0.85)', boxShadow: '0 0 16px rgba(120,255,180,0.65)', animation: 'healPulse 900ms ease-out forwards' }}></div>
+          <div style={{ position: 'absolute', left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}>
+            <div style={{ fontSize: 28, filter: 'drop-shadow(0 0 6px rgba(255,255,255,0.8))', animation: 'heartRise 950ms ease-out forwards' }}>💖</div>
+          </div>
+          <style>{`
+            @keyframes healPulse {
+              0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0.5; }
+              60% { transform: translate(-50%, -50%) scale(1.05); opacity: 1; }
+              100% { transform: translate(-50%, -50%) scale(1.2); opacity: 0; }
+            }
+            @keyframes heartRise {
+              0% { transform: translate(-50%, -50%) translateY(12px) scale(0.9); opacity: 0; }
+              50% { opacity: 1; }
+              100% { transform: translate(-50%, -50%) translateY(-26px) scale(1.1); opacity: 0; }
+            }
+          `}</style>
+        </div>
+      )}
+      {/* Swap effect overlay: spinning arrows at both positions */}
+      {swapVisible && (
+        <>
+          <div style={{ position: 'fixed', left: `${swapViewportA.x}px`, top: `${swapViewportA.y}px`, transform: 'translate(-50%, -50%)', zIndex: 9999, pointerEvents: 'none' }}>
+            <div style={{ fontSize: 30, animation: 'swapSpin 800ms ease-out forwards', filter: 'drop-shadow(0 0 6px rgba(255,255,255,0.75))' }}>🔄</div>
+          </div>
+          <div style={{ position: 'fixed', left: `${swapViewportB.x}px`, top: `${swapViewportB.y}px`, transform: 'translate(-50%, -50%)', zIndex: 9999, pointerEvents: 'none' }}>
+            <div style={{ fontSize: 30, animation: 'swapSpin 800ms ease-out forwards', filter: 'drop-shadow(0 0 6px rgba(255,255,255,0.75))' }}>🔄</div>
+          </div>
+          <style>{`
+            @keyframes swapSpin {
+              0% { transform: translate(-50%, -50%) rotate(0deg); opacity: 0; }
+              20% { opacity: 1; }
+              100% { transform: translate(-50%, -50%) rotate(360deg); opacity: 0; }
+            }
+          `}</style>
+        </>
       )}
     </div>
   );

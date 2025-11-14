@@ -24,6 +24,9 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
   const [bombTarget, setBombTarget] = useState(null);
   const [showBombError, setShowBombError] = useState(false);
   const bombErrorRef = useRef(null);
+  // estados para animações de poderes
+  const [healEffectPos, setHealEffectPos] = useState(null);
+  const [swapEffect, setSwapEffect] = useState(null);
   const isGameOver = !!state?.winner;
   const isBlocked = blocked || isGameOver;
 
@@ -180,6 +183,8 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
           next.powersUsed = { ...next.powersUsed, [myPlayer]: used };
           // passa o turno após uso do poder
           const after = passTurn(next);
+          // Dispara animação de Troca nas duas posições (novo Mestre e posição antiga do Mestre)
+          setSwapEffect({ a: { y: newMasterPos.y, x: newMasterPos.x }, b: { y: masterPos.y, x: masterPos.x } });
           setActivePowerIdx(null);
           setState(after);
           setValidMoves([]);
@@ -279,6 +284,8 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
     used[activePowerIdx] = true;
     next.powersUsed = { ...next.powersUsed, [myPlayer]: used };
     const after = passTurn(next);
+    // Dispara animação de Heal no tabuleiro na posição restaurada
+    setHealEffectPos({ y: pos.y, x: pos.x });
     setActivePowerIdx(null);
     setState(after);
     setValidMoves([]);
@@ -339,6 +346,10 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
           bombTarget={bombTarget}
           onBombDone={handleBombDone}
           myPlayer={myPlayer}
+          healPos={healEffectPos}
+          onHealEffectDone={() => setHealEffectPos(null)}
+          swapEffect={swapEffect}
+          onSwapEffectDone={() => setSwapEffect(null)}
         />
         {/* Painel de poderes (lado direito) */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', minWidth: '160px' }}>
