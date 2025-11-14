@@ -33,9 +33,15 @@ export default function PurchaseNotification() {
   const title = (() => {
     switch (data?.type) {
       case 'skin': return 'Skin adquirida!';
-      case 'cenario': return 'Cenário desbloqueado!';
-      case 'poder': return 'Poder conquistado!';
-      case 'moedas': return 'Moedas adicionadas!';
+      case 'cenario':
+      case 'scenario': return 'Cenário desbloqueado!';
+      case 'poder':
+      case 'power': return 'Poder conquistado!';
+      case 'moedas':
+      case 'coins': return 'Moedas adicionadas!';
+      case 'error':
+      case 'login_error': return 'Falha no login';
+      case 'already_owned': return 'Item já adquirido';
       default: return 'Compra realizada!';
     }
   })();

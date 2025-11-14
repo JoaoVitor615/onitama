@@ -1,138 +1,204 @@
-/* Estilos compartilhados para Loja e Itens */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+  background: none;
+  font-family: "Poppins", sans-serif;
+}
 
 .loja-fundo {
-  position: relative;
-  min-height: 100vh;
   width: 100vw;
-  overflow-x: hidden;
-  background: url('/background-img.png') center/cover no-repeat fixed;
-}
-
-.header-prin {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  display: grid;
-  grid-template-columns: 120px 1fr 180px;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  background: rgba(0,0,0,0.45);
-  border-bottom: 2px solid rgba(255,255,255,0.25);
-  backdrop-filter: blur(4px);
-}
-
-.btn-voltar {
-  border: none;
-  border-radius: 10px;
-  padding: 10px 14px;
-  font-weight: 800;
-  color: #fff;
-  background: #8b0000;
-  cursor: pointer;
-}
-
-.titulo-loja {
-  text-align: center;
-  color: #fff;
-  font-weight: 900;
-  letter-spacing: 2px;
-}
-
-.moedas-header {
+  height: 100vh;
+  background: url("/assets/backgroundloja.png") no-repeat center center;
+  background-size: cover;
+  background-attachment: fixed;
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
-  color: #fff;
-}
-
-.icone-moeda {
-  width: 24px;
-  height: 24px;
+  justify-content: flex-start;
 }
 
 .abas-container {
   display: flex;
-  gap: 10px;
-  padding: 12px 16px;
-  justify-content: center;
+  gap: 20px;
+  margin-top: 20px;
+  z-index: 10;
+  justify-content: flex-start;
+  align-items: flex-end;
+  width: 95%;
+  max-width: 1500px;
 }
 
 .aba {
-  padding: 10px 14px;
-  border-radius: 10px;
-  border: 2px solid rgba(255,255,255,0.4);
-  background: rgba(0,0,0,0.35);
-  color: #fff;
-  font-weight: 800;
+  font-family: "Press Start 2P", cursive;
+  background: #eaeaea;
+  border: 2px solid #d3a912;
+  border-bottom: none;
+  border-radius: 12px 12px 0 0;
+  padding: 10px 25px;
+  font-weight: 200;
+  font-size: 13px;
   cursor: pointer;
+  transition: all 0.3s ease;
+  color: #000;
 }
 
 .aba.ativa {
-  border: 3px solid #fff;
-  background: rgba(255,255,255,0.25);
+  background: #faf2c8;
+  border-bottom: 3px solid#d3a912;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.15);
+}
+
+.aba:hover {
+  background: #fae46a;
 }
 
 .painel-loja {
-  width: 92%;
-  max-width: 1100px;
-  margin: 18px auto;
-  padding: 16px;
-  border-radius: 12px;
-  background: rgba(255,255,255,0.15);
-  border: 3px solid rgba(255,255,255,0.35);
-  color: #fff;
+  width: 95%;
+  max-width: 1500px;
+  height: 800px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 3px solid #f0cb27;
+  border-radius: 0 0 15px 15px;
+  padding: 10px;
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.4);
+  position: relative;
+}
+
+.moedas {
+  position: absolute;
+  top: 10px;
+  right: 25px;
+  font-size: 20px;
+  color: #ffb800;
+  font-weight: bold;
+  background-color: #ffffff;
+  border-radius: 20px;
 }
 
 .grid-skins {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-}
-
-@media (max-width: 960px) {
-  .grid-skins { grid-template-columns: repeat(2, 1fr); }
-}
-
-@media (max-width: 640px) {
-  .grid-skins { grid-template-columns: 1fr; }
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-top: 10px;
 }
 
 .card-skin {
-  background: rgba(255,255,255,0.2);
-  border: 2px solid rgba(255,255,255,0.4);
-  border-radius: 12px;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  color: #fff;
+  height: 370px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+  text-align: center;
+  padding: 15px;
+  transition: transform 0.2s ease;
+}
+
+.card-skin:hover {
+  transform: translateY(-5px);
 }
 
 .imagem-skin {
-  width: 100%;
-  max-height: 160px;
+  width: 85%;
+  height: 220px;
   object-fit: contain;
+  display: block;
+  margin: 0 auto 15px auto;
+  position: relative;
+  top: 10px;
+}
+
+.nome-skin {
+  font-weight: 600;
+  margin-bottom: 6px;
 }
 
 .preco-container {
   display: flex;
+  justify-content: space-around;
   align-items: center;
-  justify-content: space-between;
+  background: #fafafa;
+  border-top: 1px solid #ddd;
+  padding-top: 10px;
+  margin-top: 8px;
 }
 
 .botao-comprar {
-  padding: 8px 12px;
-  border-radius: 8px;
+  background: #5dc25d;
+  color: white;
   border: none;
-  background: #5dbb63;
-  color: #fff;
-  font-weight: 800;
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-weight: bold;
   cursor: pointer;
+  transition: background 0.3s;
 }
 
-.botao-comprar:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
+.botao-comprar:hover {
+  background: #4aa64a;
+}
+.header-prin {
+  width: 95%;
+  max-width: 1500px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 40px;
+  margin-top: 25px;
+  position: relative;
+}
+
+.btn-voltar {
+  margin-top: 0 !important;
+  background-color: rgb(255, 255, 255);
+  color: rgb(230, 185, 39);
+  border: none;
+  padding: 10px 15px;
+  font-size: 12px;
+  font-weight: bold;
+  border-radius: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 45px;
+  font-family: "Press Start 2P", cursive;
+}
+
+.btn-voltar:hover {
+  background-color: #222;
+  transform: scale(1.05);
+}
+
+.titulo-loja {
+  font-family: "Press Start 2P", cursive;
+  font-size: 50 px;
+  color: black;
+  text-align: center;
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  position: relative;
+}
+
+.moedas-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  color: #ffb800;
+  font-weight: bold;
+  background-color: white;
+  border-radius: 25px;
+  padding: 8px 18px;
+  height: 45px;
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.2);
+}
+
+.icone-moeda {
+  margin-right: 5px;
 }

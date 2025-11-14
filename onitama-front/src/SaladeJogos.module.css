@@ -3,7 +3,7 @@
 .container {
   width: 100vw;
   height: 100vh;
-  background: url("/background-img.png") center/cover no-repeat;
+  background: url("/assets/backgrounsalas.gif") center/cover no-repeat;
   font-family: "Press Start 2P", cursive;
   color: #fff;
   display: flex;
@@ -248,4 +248,15 @@
 .popupCancelar {
   background: #aaa;
   color: #fff;
+}
+
+.popupCriar {
+  background: #d47929;
+  color: #fff;
+  transition: 0.2s;
+}
+
+.popupCriar:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 6px #d47929;
 }

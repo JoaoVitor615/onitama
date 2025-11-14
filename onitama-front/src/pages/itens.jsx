@@ -94,7 +94,8 @@ function Itens() {
     if (!produto?.id_produto) return;
     const tipo = Number(produto?.id_tipo_produto);
     if (tipo !== TIPO.PODER && compradosIds.has(produto.id_produto)) {
-      return alert('Você já possui este item.');
+      notifyPurchase({ type: 'already_owned', name: produto.nome });
+      return;
     }
     setLoadingId(produto.id_produto);
     try {
