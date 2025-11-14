@@ -1,7 +1,8 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "../components/Button";
 import styles from "../App.module.css";
 import { loginUsuario } from "../api/usuarios";
+import PurchaseNotification from "../components/ui/PurchaseNotification";
 
 function Home() {
   const navigate = useNavigate();
@@ -11,7 +12,10 @@ function Home() {
     const email = form.querySelector('input[type="text"]')?.value?.trim();
     const senha = form.querySelector('input[type="password"]')?.value || '';
     if (!email || !senha) {
-      alert('Preencha usuário (email) e senha.');
+      try {
+        const { notifyPurchase } = await import('../utils/notifyPurchase');
+        notifyPurchase({ type: 'login_invalido', name: 'Preencha usuário e senha.' });
+      } catch (_) {}
       return;
     }
     try {
@@ -21,7 +25,10 @@ function Home() {
       localStorage.setItem('usuario_hash', String(usuario.hash_id));
       navigate('/menu');
     } catch (err) {
-      alert(err?.message || 'Falha no login');
+      try {
+        const { notifyPurchase } = await import('../utils/notifyPurchase');
+        notifyPurchase({ type: 'login_invalido', name: err?.message || 'Usuário ou senha inválidos.' });
+      } catch (_) {}
     }
   };
 
@@ -32,6 +39,7 @@ function Home() {
         className={styles.bgImg}
         alt="Background"
       />
+      <PurchaseNotification />
       <div className={styles.cardlogin}>
         <img src="/onitama.png" alt="Onitama Logo" />
         <form className={styles.campos} onSubmit={handleSubmit}>
@@ -39,13 +47,15 @@ function Home() {
           <input type="text" placeholder="Insira seu usuário" />
           <label>Senha</label>
           <input type="password" placeholder="Insira sua senha" />
-          {/* O botão mantém a estilização; dentro do form ele submete */}
+          {/* Botão de envio do formulário */}
           <Button />
           <div className={styles.links}>
-            <Link to="/forgot-password" style={{ color: "green" }}>
+            <button type="button" onClick={() => navigate('/forgot-password')} style={{ background: 'transparent', border: 'none', color: 'green', cursor: 'pointer' }}>
               Esqueci a senha
-            </Link>
-            <Link to="/register">Cadastre-se</Link>
+            </button>
+            <button type="button" onClick={() => navigate('/register')} style={{ background: 'transparent', border: 'none', color: '#000', cursor: 'pointer' }}>
+              Cadastre-se
+            </button>
           </div>
         </form>
       </div>

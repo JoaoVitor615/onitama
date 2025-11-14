@@ -93,7 +93,10 @@ function Itens() {
     if (!produto?.id_produto) return;
     const tipo = Number(produto?.id_tipo_produto);
     if (tipo !== TIPO.PODER && compradosIds.has(produto.id_produto)) {
-      return alert('Você já possui este item.');
+      try {
+        notifyPurchase({ type: 'ja_adquirido', name: produto?.nome || 'Item' });
+      } catch (_) {}
+      return;
     }
     setLoadingId(produto.id_produto);
     try {
@@ -108,13 +111,13 @@ function Itens() {
         const novoMap = new Map(quantidadesPorProduto);
         novoMap.set(produto.id_produto, novoQtd);
         setQuantidadesPorProduto(novoMap);
-        notifyPurchase({ type: 'power', name: produto.nome, amount: 1 });
+        notifyPurchase({ type: 'poder', name: produto.nome, amount: 1 });
       } else if (tipo === TIPO.SKIN) {
         notifyPurchase({ type: 'skin', name: produto.nome });
       } else if (tipo === TIPO.MAPA) {
-        notifyPurchase({ type: 'scenario', name: produto.nome });
+        notifyPurchase({ type: 'cenario', name: produto.nome });
       } else {
-        notifyPurchase({ type: 'generic', name: produto?.nome || 'Item' });
+        notifyPurchase({ type: 'skin', name: produto?.nome || 'Item' });
       }
     } catch (err) {
       alert(err?.message || 'Falha ao processar compra');
