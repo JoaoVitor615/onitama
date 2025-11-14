@@ -110,13 +110,13 @@ function Itens() {
         const novoMap = new Map(quantidadesPorProduto);
         novoMap.set(produto.id_produto, novoQtd);
         setQuantidadesPorProduto(novoMap);
-        notifyPurchase({ type: 'power', name: produto.nome, amount: 1 });
+        notifyPurchase({ type: 'poder', name: produto.nome, amount: 1 });
       } else if (tipo === TIPO.SKIN) {
         notifyPurchase({ type: 'skin', name: produto.nome });
       } else if (tipo === TIPO.MAPA) {
-        notifyPurchase({ type: 'scenario', name: produto.nome });
+        notifyPurchase({ type: 'cenario', name: produto.nome });
       } else {
-        notifyPurchase({ type: 'generic', name: produto?.nome || 'Item' });
+        notifyPurchase({ type: 'skin', name: produto?.nome || 'Item' });
       }
     } catch (err) {
       alert(err?.message || 'Falha ao processar compra');

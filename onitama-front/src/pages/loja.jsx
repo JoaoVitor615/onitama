@@ -39,7 +39,7 @@ function Loja() {
       const novoTotal = (Number(moedas) || 0) + produto.quantidade;
       await atualizarMoedas(usuarioId, novoTotal);
       setMoedas(novoTotal);
-      notifyPurchase({ type: 'coins', amount: produto.quantidade });
+      notifyPurchase({ type: 'moedas', amount: produto.quantidade });
     } catch (err) {
       alert(err?.message || 'Falha ao processar compra');
     } finally {
