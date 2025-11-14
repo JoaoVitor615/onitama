@@ -10,8 +10,18 @@ export default function PurchaseNotification() {
       const detail = ev.detail || {};
       setData(detail);
       setVisible(true);
-      // auto-hide after 2s
-      setTimeout(() => setVisible(false), 2000);
+      // Duração variável conforme tipo
+      try {
+        const rawType = detail?.type;
+        const normalized = rawType === 'coins' ? 'moedas'
+          : rawType === 'power' ? 'poder'
+          : rawType === 'scenario' ? 'cenario'
+          : rawType;
+        const waitMs = (normalized === 'login_invalido' || normalized === 'login_error') ? 4000 : 2000;
+        setTimeout(() => setVisible(false), waitMs);
+      } catch (_) {
+        setTimeout(() => setVisible(false), 2000);
+      }
     };
     window.addEventListener('purchase', handler);
     return () => window.removeEventListener('purchase', handler);
@@ -65,7 +75,12 @@ export default function PurchaseNotification() {
       default: return 'Notificação';
     }
   })();
-  const desc = data?.name || (data?.amount ? `${data.amount} moedas` : '');
+  const desc = (() => {
+    if (normalizedType === 'login_invalido' || normalizedType === 'login_error') {
+      return 'Reveja as informações ou faça um novo cadastro';
+    }
+    return data?.name || (data?.amount ? `${data.amount} moedas` : '');
+  })();
 
   const visuals = (() => {
     switch (normalizedType) {
