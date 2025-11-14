@@ -66,40 +66,16 @@ export default function PurchaseNotification() {
   const title = (() => {
     switch (normalizedType) {
       case 'skin': return 'Skin adquirida!';
-      case 'cenario': return 'Cenário desbloqueado!';
-      case 'poder': return 'Poder conquistado!';
-      case 'moedas': return 'Moedas adicionadas!';
-      case 'login_invalido':
-      case 'login_error': return 'Login inválido!';
-      case 'ja_adquirido': return 'Item já adquirido';
-      default: return 'Notificação';
-    }
-  })();
-  const desc = (() => {
-    if (normalizedType === 'login_invalido' || normalizedType === 'login_error') {
-      return 'Reveja as informações ou faça um novo cadastro';
-    }
-    return data?.name || (data?.amount ? `${data.amount} moedas` : '');
-  })();
-
-  const visuals = (() => {
-    switch (normalizedType) {
-      case 'login_invalido':
-      case 'login_error':
-        return {
-          icon: '⚠️',
-          bg: 'linear-gradient(135deg, rgba(200,0,0,0.95), rgba(120,0,0,0.95))'
-        };
-      case 'ja_adquirido':
-        return {
-          icon: 'ℹ️',
-          bg: 'linear-gradient(135deg, rgba(255,196,0,0.95), rgba(255,140,0,0.95))'
-        };
-      default:
-        return {
-          icon: '✨',
-          bg: 'linear-gradient(135deg, rgba(255,140,0,0.95), rgba(255,30,30,0.95))'
-        };
+      case 'cenario':
+      case 'scenario': return 'Cenário desbloqueado!';
+      case 'poder':
+      case 'power': return 'Poder conquistado!';
+      case 'moedas':
+      case 'coins': return 'Moedas adicionadas!';
+      case 'error':
+      case 'login_error': return 'Falha no login';
+      case 'already_owned': return 'Item já adquirido';
+      default: return 'Compra realizada!';
     }
   })();
 

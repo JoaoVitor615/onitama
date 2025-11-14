@@ -4,6 +4,7 @@ import styles from "../App.module.css";
 import { carregarUsuarioPorHash, atualizarMoedas } from "../api/usuarios";
 import PurchaseNotification from "../components/ui/PurchaseNotification";
 import { notifyPurchase } from "../utils/notifyPurchase";
+import "./skins.css";
 
 const produtos = [
   { id: 1, imagem: "/icons/coin.png", preco: "4,99", quantidade: 150 },
@@ -88,31 +89,32 @@ function Loja() {
   });
 
   return (
-    <div className={styles.container}>
-      <img src="/background-img.png" className={styles.bgImg} alt="Background" />
-      {/* Top bar */}
-      <div style={{ position: 'absolute', top: 16, right: 16, zIndex: 1000, display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(0,0,0,0.4)', color: '#fff', padding: '8px 10px', borderRadius: 10 }}>
-        <img src="/icons/coin.png" alt="Moedas" style={{ width: 28, height: 28 }} />
-        <span style={{ fontWeight: 800, fontSize: 18 }}>{moedas}</span>
+    <div className="loja-fundo">
+      <PurchaseNotification />
+
+      <div className="header-prin">
+        <button className="btn-voltar" onClick={() => navigate('/menu')}>Voltar</button>
+        <h1 className="titulo-loja">LOJA COINS</h1>
+        <div className="moedas-header">
+          <img className="icone-moeda" src="/icons/coin.png" alt="Moedas" style={{ width: 24, height: 24 }} />
+          <span style={{ fontWeight: 800 }}>{moedas}</span>
+        </div>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18, zIndex: 999 }}>
-        <PurchaseNotification />
-        <h1 style={headerStyle}>LOJA COINS</h1>
-        <div style={gridStyle}>
+      <div className="painel-loja">
+        <div className="grid-skins">
           {produtos.map((p) => (
-            <div key={p.id} style={cardStyle}>
-              <img src={p.imagem} alt={`Produto ${p.id}`} style={{ width: '60%', maxWidth: 190, objectFit: 'contain' }} />
-              <div style={priceStyle}>{p.preco}</div>
-              <div style={amountStyle}>{p.quantidade} MOEDAS</div>
-              <button style={buyBtn(loadingId === p.id)} disabled={loadingId === p.id} onClick={() => comprar(p)}>
-                {loadingId === p.id ? 'PROCESSANDO...' : 'COMPRAR'}
-              </button>
+            <div key={p.id} className="card-skin">
+              <img src={p.imagem} alt={`Produto ${p.id}`} className="imagem-skin" />
+              <div className="preco-container">
+                <div>{p.preco}</div>
+                <div>{p.quantidade} MOEDAS</div>
+                <button className="botao-comprar" disabled={loadingId === p.id} onClick={() => comprar(p)}>
+                  {loadingId === p.id ? 'PROCESSANDO...' : 'COMPRAR'}
+                </button>
+              </div>
             </div>
           ))}
-        </div>
-        <div style={{ marginTop: 12 }}>
-          <button onClick={() => navigate('/menu')} style={{ background: '#8b0000', color: '#fff', border: 'none', padding: '8px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 900 }}>Voltar ao Menu</button>
         </div>
       </div>
     </div>

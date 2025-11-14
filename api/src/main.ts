@@ -17,7 +17,6 @@ async function bootstrap() {
   });
   // Adapter do Socket.IO para garantir CORS/coleta de sockets no mesmo servidor
   app.useWebSocketAdapter(new IoAdapter(app));
-  console.log(process.env.DATABASE_URL)
   const port = Number(process.env.PORT ?? 3000);
   await app.listen(port, '0.0.0.0');
 

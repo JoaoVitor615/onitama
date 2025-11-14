@@ -1,65 +1,68 @@
-import { useNavigate } from "react-router-dom";
-import { Button } from "../components/Button";
-import styles from "../App.module.css";
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { loginUsuario } from "../api/usuarios";
 import PurchaseNotification from "../components/ui/PurchaseNotification";
+import { notifyPurchase } from "../utils/notifyPurchase";
+import "./LoginPage.css";
 
 function Home() {
   const navigate = useNavigate();
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const form = e.currentTarget;
-    const email = form.querySelector('input[type="text"]')?.value?.trim();
-    const senha = form.querySelector('input[type="password"]')?.value || '';
-    if (!email || !senha) {
-      try {
-        const { notifyPurchase } = await import('../utils/notifyPurchase');
-        notifyPurchase({ type: 'login_invalido', name: 'Preencha usuário e senha.' });
-      } catch (_) {}
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+
+  const handleLogin = async () => {
+    const user = email.trim();
+    const pass = senha;
+    if (!user || !pass) {
+      alert("Preencha usuário (email) e senha.");
       return;
     }
     try {
-      const usuario = await loginUsuario(email, senha);
-      if (!usuario?.id_usuario || !usuario?.hash_id) throw new Error('Resposta inválida');
-      localStorage.setItem('usuario_id', String(usuario.id_usuario));
-      localStorage.setItem('usuario_hash', String(usuario.hash_id));
-      navigate('/menu');
+      const usuario = await loginUsuario(user, pass);
+      if (!usuario?.id_usuario || !usuario?.hash_id) throw new Error("Resposta inválida");
+      localStorage.setItem("usuario_id", String(usuario.id_usuario));
+      localStorage.setItem("usuario_hash", String(usuario.hash_id));
+      navigate("/menu");
     } catch (err) {
-      try {
-        const { notifyPurchase } = await import('../utils/notifyPurchase');
-        notifyPurchase({ type: 'login_invalido', name: err?.message || 'Usuário ou senha inválidos.' });
-      } catch (_) {}
+      notifyPurchase({ type: "login_error", name: "Credenciais inválidas, tente novamente ou cadastre-se" });
     }
   };
 
   return (
-    <div className={styles.container}>
-      <img
-        src="/background-img.png"
-        className={styles.bgImg}
-        alt="Background"
-      />
+    <>
       <PurchaseNotification />
-      <div className={styles.cardlogin}>
-        <img src="/onitama.png" alt="Onitama Logo" />
-        <form className={styles.campos} onSubmit={handleSubmit}>
-          <label>Usuário</label>
-          <input type="text" placeholder="Insira seu usuário" />
-          <label>Senha</label>
-          <input type="password" placeholder="Insira sua senha" />
-          {/* Botão de envio do formulário */}
-          <Button />
-          <div className={styles.links}>
-            <button type="button" onClick={() => navigate('/forgot-password')} style={{ background: 'transparent', border: 'none', color: 'green', cursor: 'pointer' }}>
-              Esqueci a senha
-            </button>
-            <button type="button" onClick={() => navigate('/register')} style={{ background: 'transparent', border: 'none', color: '#000', cursor: 'pointer' }}>
-              Cadastre-se
-            </button>
+      <div
+        className="login-container"
+        style={{ backgroundImage: `url(/assets/background-login.gif)` }}
+      >
+      <img src="/assets/onitama-logo-principal.png" alt="Logo Onitama" className="logo-img" />
+      <div className="login-content">
+        <div className="login-box">
+          <h1 className="login-title">Login</h1>
+          <input
+            type="text"
+            placeholder="Usuário"
+            className="login-input"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <input
+            type="password"
+            placeholder="Senha"
+            className="login-input"
+            value={senha}
+            onChange={(e) => setSenha(e.target.value)}
+          />
+
+          <button className="play-btn" onClick={handleLogin}>Play</button>
+
+          <div className="login-links">
+            <Link to="/forgot-password">Esqueci a senha</Link> | <Link to="/register">Cadastre-se</Link>
           </div>
-        </form>
+        </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
 
