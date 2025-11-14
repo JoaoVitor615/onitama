@@ -6,6 +6,7 @@ import { carregarUsuarioPorHash } from '../api/usuarios';
 import { gravarUsuarioProduto, listarUsuarioProdutosPorUsuario } from '../api/usuarioProduto';
 import PurchaseNotification from '../components/ui/PurchaseNotification';
 import { notifyPurchase } from '../utils/notifyPurchase';
+import './skins.css';
 
 const TIPO = {
   SKIN: 2,
@@ -130,93 +131,61 @@ function Itens() {
   ];
 
   return (
-    <div className={styles.container}>
-      <img src="/background-img.png" className={styles.bgImg} alt="Background" />
+    <div className="loja-fundo">
+      <PurchaseNotification />
 
-      <div style={{
-        position: 'absolute', top: 24, left: '50%', transform: 'translateX(-50%)',
-        width: '90%', maxWidth: 1000, minHeight: 540,
-        background: 'rgba(255,255,255,0.15)', border: '3px solid rgba(255,255,255,0.35)', borderRadius: 12,
-        padding: 16, color: '#fff', zIndex: 1000
-      }}>
-        <PurchaseNotification />
-        {/* Abas */}
-        <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
-          {tabs.map(t => (
-            <button
-              key={t.id}
-              onClick={() => setAba(t.id)}
-              style={{
-                padding: '10px 14px', borderRadius: 10,
-                border: Number(aba) === Number(t.id) ? '3px solid #fff' : '2px solid rgba(255,255,255,0.4)',
-                background: Number(aba) === Number(t.id) ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.3)',
-                color: '#fff', fontWeight: 800, cursor: 'pointer'
-              }}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
+      {/* Abas */}
+      <div className="abas-container">
+        {tabs.map(t => (
+          <button
+            key={t.id}
+            onClick={() => setAba(t.id)}
+            className={`aba ${Number(aba) === Number(t.id) ? 'ativa' : ''}`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
 
-        {/* Grid de produtos */}
+      {/* Painel + Grid */}
+      <div className="painel-loja">
         {filtrados.length === 0 ? (
-          <div style={{
-            padding: 20, textAlign: 'center', color: '#fff', opacity: 0.85
-          }}>
-            Nenhum item encontrado nesta aba.
-          </div>
+          <div style={{ padding: 20, textAlign: 'center' }}>Nenhum item encontrado nesta aba.</div>
         ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16 }}>
-          {filtrados.map(prod => (
-            <div key={prod.id_produto} style={{
-              background: 'rgba(255,255,255,0.2)', border: '2px solid rgba(255,255,255,0.4)', borderRadius: 12,
-              padding: 12, display: 'flex', flexDirection: 'column', gap: 10
-            }}>
-              <div style={{ fontWeight: 800 }}>{prod.nome}</div>
-              {prod.imagem ? (
-                <div style={{ height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <img
-                    src={getProdutoImagemSrc(prod)}
-                    alt={prod.nome}
-                    style={{
-                      width: 'auto',
-                      height: 'auto',
-                      maxWidth: '100%',
-                      maxHeight: 110,
-                      objectFit: 'contain'
-                    }}
-                  />
+          <div className="grid-skins">
+            {filtrados.map(prod => (
+              <div key={prod.id_produto} className="card-skin">
+                <div style={{ fontWeight: 800 }}>{prod.nome}</div>
+                {prod.imagem ? (
+                  <img src={getProdutoImagemSrc(prod)} alt={prod.nome} className="imagem-skin" />
+                ) : (
+                  <div style={{ height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.7 }}>
+                    <span>Sem imagem</span>
+                  </div>
+                )}
+
+                <div className="preco-container">
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <img src="/icons/coin.png" alt="Preço" style={{ width: 20, height: 20 }} />
+                    <b>{prod.preco ?? 0}</b>
+                  </span>
+                  <button
+                    onClick={() => comprar(prod)}
+                    disabled={loadingId === prod.id_produto}
+                    className="botao-comprar"
+                  >
+                    {loadingId === prod.id_produto ? '...' : (Number(prod.id_tipo_produto) === TIPO.PODER ? 'COMPRAR +1' : (compradosIds.has(prod.id_produto) ? 'COMPRADO' : 'COMPRAR'))}
+                  </button>
                 </div>
-              ) : (
-                <div style={{ height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.7 }}>
-                  <span>Sem imagem</span>
-                </div>
-              )}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <img src="/icons/coin.png" alt="Preço" style={{ width: 20, height: 20 }} />
-                  <b>{prod.preco ?? 0}</b>
-                </span>
-                <button
-                  onClick={() => comprar(prod)}
-                  disabled={loadingId === prod.id_produto}
-                  style={{
-                    padding: '8px 12px', borderRadius: 8, border: 'none',
-                    background: '#5dbb63', color: '#fff', fontWeight: 800,
-                    cursor: loadingId === prod.id_produto ? 'not-allowed' : 'pointer'
-                  }}
-                >
-                  {loadingId === prod.id_produto ? '...' : (Number(prod.id_tipo_produto) === TIPO.PODER ? 'COMPRAR +1' : (compradosIds.has(prod.id_produto) ? 'COMPRADO' : 'COMPRAR'))}
-                </button>
+
+                {Number(prod.id_tipo_produto) === TIPO.PODER ? (
+                  <div style={{ marginTop: 6, fontSize: 12, opacity: 0.9 }}>
+                    Você possui: <b>{quantidadesPorProduto.get(prod.id_produto) ?? 0}</b>
+                  </div>
+                ) : null}
               </div>
-              {Number(prod.id_tipo_produto) === TIPO.PODER ? (
-                <div style={{ marginTop: 6, fontSize: 12, opacity: 0.9 }}>
-                  Você possui: <b>{quantidadesPorProduto.get(prod.id_produto) ?? 0}</b>
-                </div>
-              ) : null}
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
         )}
       </div>
     </div>

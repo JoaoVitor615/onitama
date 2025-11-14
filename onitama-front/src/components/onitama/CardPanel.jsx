@@ -63,8 +63,7 @@ export function CardPanel({ myCards, nextCard, selectedCardIndex, onSelectCard, 
   const renderCard = (card, idx, clickable = true) => (
     <div key={card?.name || idx} style={{
       background: theme.cardBg, color: '#000', borderRadius: '8px', padding: '8px',
-      border: selectedCardIndex === idx ? `3px solid ${theme.borderDark}` : `1px solid ${theme.borderDark}`,
-      cursor: clickable ? 'pointer' : 'default', minWidth: '150px', opacity: clickable ? 1 : 0.7
+      border: selectedCardIndex === idx ? `3px solid ${theme.borderDark}` : `1px solid ${theme.borderDark}` ,     cursor: clickable ? 'pointer' : 'default', minWidth: '150px', opacity: clickable ? 1 : 0.7
     }} onClick={() => clickable && onSelectCard(idx)}>
       <div style={{ fontWeight: 'bold' }}>{card?.name}</div>
       <MovesGrid card={card} orientation={orientation} owner={owner} theme={theme} />
