@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { initState, getValidMoves, applyMove, passTurn, TURN_MS, findRestorePosition, findRestorePositionFromInitial, TEMPLE_A, TEMPLE_B } from '../../game/onitama/logic';
+import { initState, getValidMoves, applyMove, passTurn, TURN_MS, findRestorePosition, findRestorePositionFromInitial, TEMPLE_A, TEMPLE_B, BOARD_SIZE } from '../../game/onitama/logic';
 import { Board } from './Board';
 import { CardPanel } from './CardPanel';
 import { emitGameState, subscribeGameState } from '../../api/ws';
@@ -24,6 +24,10 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
   const [bombTarget, setBombTarget] = useState(null);
   const [showBombError, setShowBombError] = useState(false);
   const bombErrorRef = useRef(null);
+  const [healAt, setHealAt] = useState(null);
+  const [swapAt, setSwapAt] = useState(null);
+  const prevStateRef = useRef(null);
+  const lastBombTsRef = useRef(0);
   const isGameOver = !!state?.winner;
   const isBlocked = blocked || isGameOver;
 
@@ -41,9 +45,8 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
         const deadline = st.turnStartedAt + TURN_MS;
         setRemainingMs(Math.max(0, deadline - Date.now()));
       }
-      // ao receber estado, limpa power ativo e animação pendente
       setActivePowerIdx(null);
-      setBombTarget(null);
+      if (!st?.fx?.bombTarget) setBombTarget(null);
     });
     // Ao montar e ser host, envia estado inicial
     if (role === 'host') emitGameState(roomCode, state);
@@ -60,9 +63,11 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
         // Evita repetir para o mesmo início de turno
         if (lastTurnStartRef.current !== state.turnStartedAt) return;
         // Efetua passagem de turno e emite estado (qualquer cliente pode emitir para garantir liveness)
-        // Sinaliza visualmente que o tempo esgotou
-        setShowTimeoutMsg(true);
-        setTimeout(() => setShowTimeoutMsg(false), 1800);
+        // Sinaliza visualmente que o tempo esgotou APENAS para o jogador da vez no cliente correspondente
+        if (state.currentPlayer === myPlayer) {
+          setShowTimeoutMsg(true);
+          setTimeout(() => setShowTimeoutMsg(false), 1800);
+        }
         const next = passTurn(state);
         lastTurnStartRef.current = next.turnStartedAt;
         setState(next);
@@ -122,6 +127,99 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
     } catch (_) {}
   }, [showBombError]);
 
+  useEffect(() => {
+    const fx = state?.fx;
+    if (!fx || !fx.bombTarget) return;
+    const pos = fx.bombTarget;
+    const toCanon = (p) => (orientation === 'north') ? { y: BOARD_SIZE - 1 - p.y, x: BOARD_SIZE - 1 - p.x } : p;
+    const cpos = toCanon(pos);
+    lastBombTsRef.current = fx.bombTarget.ts || Date.now();
+    setBombTarget(cpos);
+  }, [state?.fx, orientation]);
+
+  useEffect(() => {
+    const prev = prevStateRef.current;
+    const curr = state;
+    if (!prev || !curr || !Array.isArray(prev.board) || !Array.isArray(curr.board)) { prevStateRef.current = curr; return; }
+    const n = curr.board.length;
+    const toCanon = (pos) => {
+      if (!pos) return pos;
+      return (orientation === 'north') ? { y: BOARD_SIZE - 1 - pos.y, x: BOARD_SIZE - 1 - pos.x } : pos;
+    };
+    const countStudents = (bd, owner) => {
+      let c = 0;
+      for (let y = 0; y < n; y++) {
+        for (let x = 0; x < n; x++) {
+          const p = bd[y][x];
+          if (p && p.owner === owner && p.type === 'student') c++;
+        }
+      }
+      return c;
+    };
+    const owner = prev.currentPlayer;
+    const other = owner === 'A' ? 'B' : 'A';
+    const prevOwnerCount = countStudents(prev.board, owner);
+    const currOwnerCount = countStudents(curr.board, owner);
+    const prevOtherCount = countStudents(prev.board, other);
+    const currOtherCount = countStudents(curr.board, other);
+    if (owner !== myPlayer) {
+    if (currOwnerCount === prevOwnerCount + 1) {
+      let pos = null;
+      for (let y = 0; y < n && !pos; y++) {
+        for (let x = 0; x < n; x++) {
+          const a = prev.board[y][x];
+          const b = curr.board[y][x];
+          if (!a && b && b.owner === owner && b.type === 'student') { pos = { y, x }; break; }
+        }
+      }
+      if (pos) {
+        const cpos = toCanon(pos);
+        setHealAt(cpos);
+        setTimeout(() => setHealAt(null), 1100);
+      }
+    } else {
+      let from = null;
+      let to = null;
+      for (let y = 0; y < n && !from; y++) {
+        for (let x = 0; x < n; x++) {
+          const a = prev.board[y][x];
+          const b = curr.board[y][x];
+          if (a && a.owner === owner && a.type === 'master' && b && b.owner === owner && b.type === 'student') { from = { y, x }; break; }
+        }
+      }
+      for (let y = 0; y < n && !to; y++) {
+        for (let x = 0; x < n; x++) {
+          const a = prev.board[y][x];
+          const b = curr.board[y][x];
+          if (a && a.owner === owner && a.type === 'student' && b && b.owner === owner && b.type === 'master') { to = { y, x }; break; }
+        }
+      }
+      if (from && to) {
+        const cFrom = toCanon(from);
+        const cTo = toCanon(to);
+        setSwapAt({ from: cFrom, to: cTo });
+        setTimeout(() => setSwapAt(null), 1200);
+      }
+    }
+      if (currOtherCount === prevOtherCount - 1) {
+        if ((Date.now() - lastBombTsRef.current) < 900) { prevStateRef.current = curr; return; }
+        let pos = null;
+        for (let y = 0; y < n && !pos; y++) {
+          for (let x = 0; x < n; x++) {
+            const a = prev.board[y][x];
+            const b = curr.board[y][x];
+            if (a && a.owner === other && a.type === 'student' && !b) { pos = { y, x }; break; }
+          }
+        }
+        if (pos) {
+          const cpos = toCanon(pos);
+          setBombTarget(cpos);
+        }
+      }
+    }
+    prevStateRef.current = curr;
+  }, [state, orientation, myPlayer]);
+
   const handleSelect = ({ y, x }) => {
     if (isBlocked) return;
     if (state.currentPlayer !== myPlayer) return; // só interage no próprio turno
@@ -139,8 +237,11 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
             return; // mantém poder ativo para nova seleção
           }
           if (piece.type === 'student') {
-            // dispara animação de bomba nesta célula
             setBombTarget({ y, x });
+            if (roomCode) {
+              const fx = { bombTarget: { y, x, owner: myPlayer, ts: Date.now() } };
+              emitGameState(roomCode, { ...state, fx });
+            }
           }
         }
         }
@@ -162,6 +263,8 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
             if (masterPos) break;
           }
           if (!masterPos) return; // não deveria acontecer
+          setSwapAt({ from: masterPos, to: { y, x } });
+          setTimeout(() => setSwapAt(null), 1200);
           // efetua a troca (swap de objetos)
           const masterPiece = next.board[masterPos.y][masterPos.x];
           const studentPiece = next.board[y][x];
@@ -270,6 +373,8 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
     const initial = stack[stack.length - 1];
     const pos = findRestorePositionFromInitial(state.board, initial) || findRestorePosition(state.board, myPlayer);
     if (!pos) { setActivePowerIdx(null); return; }
+    setHealAt(pos);
+    setTimeout(() => setHealAt(null), 1100);
     const next = structuredClone(state);
     next.board[pos.y][pos.x] = { owner: myPlayer, type: 'student' };
     next.graveyard[myPlayer].students = Math.max(0, (next.graveyard[myPlayer].students || 0) - 1);
@@ -339,6 +444,8 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
           bombTarget={bombTarget}
           onBombDone={handleBombDone}
           myPlayer={myPlayer}
+          healAt={healAt}
+          swapAt={swapAt}
         />
         {/* Painel de poderes (lado direito) */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', minWidth: '160px' }}>

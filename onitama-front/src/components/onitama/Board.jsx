@@ -4,7 +4,7 @@ import { BOARD_SIZE } from '../../game/onitama/logic';
 /**
  * orientation: 'south' (padrão, sem rotação) ou 'north' (rotaciona 180°)
  */
-export function Board({ board, currentPlayer, selected, validMoves, onSelect, onMove, orientation = 'south', skins = {}, scenario = null, bombTarget = null, onBombDone = null, myPlayer = null }) {
+export function Board({ board, currentPlayer, selected, validMoves, onSelect, onMove, orientation = 'south', skins = {}, scenario = null, bombTarget = null, onBombDone = null, myPlayer = null, healAt = null, swapAt = null }) {
   const containerRef = useRef(null);
   const missileRef = useRef(null);
   const animatingRef = useRef(false);
@@ -13,6 +13,13 @@ export function Board({ board, currentPlayer, selected, validMoves, onSelect, on
   const [missileEnd, setMissileEnd] = useState({ x: 0, y: 0 });
   const [explosionVisible, setExplosionVisible] = useState(false);
   const [explosionPos, setExplosionPos] = useState({ x: 0, y: 0 });
+  const [healVisible, setHealVisible] = useState(false);
+  const [healPos, setHealPos] = useState({ x: 0, y: 0 });
+  const [swapVisible, setSwapVisible] = useState(false);
+  const [swapPos, setSwapPos] = useState({ x1: 0, y1: 0, x2: 0, y2: 0 });
+  const healRef = useRef(null);
+  const swapRef1 = useRef(null);
+  const swapRef2 = useRef(null);
   const toCanonical = (y, x) => {
     if (orientation === 'north') return { y: BOARD_SIZE - 1 - y, x: BOARD_SIZE - 1 - x };
     return { y, x };
@@ -93,6 +100,65 @@ export function Board({ board, currentPlayer, selected, validMoves, onSelect, on
       }
     })();
   }, [bombVisible, missileStart, missileEnd, onBombDone]);
+
+  useEffect(() => {
+    if (!healAt) { setHealVisible(false); return; }
+    const container = containerRef.current;
+    if (!container) return;
+    const cellEl = container.querySelector(`[data-cell="${healAt.y}-${healAt.x}"]`);
+    if (!cellEl) return;
+    const rr = cellEl.getBoundingClientRect();
+    setHealPos({ x: rr.left + rr.width / 2, y: rr.top + rr.height / 2 });
+    setHealVisible(true);
+  }, [healAt]);
+
+  useEffect(() => {
+    if (!healVisible || !healRef.current) return;
+    try {
+      const el = healRef.current;
+      el.animate([
+        { opacity: 0, transform: 'translate(-50%, -50%) scale(0.6)' },
+        { opacity: 1, transform: 'translate(-50%, -50%) scale(1.05)' },
+        { opacity: 1, transform: 'translate(-50%, -50%) scale(1)' }
+      ], { duration: 600, easing: 'ease-out', fill: 'forwards' });
+      const hide = setTimeout(() => {
+        el.animate([
+          { opacity: 1, transform: 'translate(-50%, -50%) scale(1)' },
+          { opacity: 0, transform: 'translate(-50%, -50%) scale(0.8)' }
+        ], { duration: 350, easing: 'ease-in', fill: 'forwards' });
+        setTimeout(() => setHealVisible(false), 360);
+      }, 650);
+      return () => clearTimeout(hide);
+    } catch (_) {}
+  }, [healVisible]);
+
+  useEffect(() => {
+    if (!swapAt || !swapAt.from || !swapAt.to) { setSwapVisible(false); return; }
+    const container = containerRef.current;
+    if (!container) return;
+    const cellFrom = container.querySelector(`[data-cell="${swapAt.from.y}-${swapAt.from.x}"]`);
+    const cellTo = container.querySelector(`[data-cell="${swapAt.to.y}-${swapAt.to.x}"]`);
+    if (!cellFrom || !cellTo) return;
+    const rf = cellFrom.getBoundingClientRect();
+    const rt = cellTo.getBoundingClientRect();
+    setSwapPos({ x1: rf.left + rf.width / 2, y1: rf.top + rf.height / 2, x2: rt.left + rt.width / 2, y2: rt.top + rt.height / 2 });
+    setSwapVisible(true);
+  }, [swapAt]);
+
+  useEffect(() => {
+    if (!swapVisible) return;
+    try {
+      const run = (el) => el && el.animate([
+        { opacity: 0, transform: 'translate(-50%, -50%) rotate(-20deg) scale(0.7)' },
+        { opacity: 1, transform: 'translate(-50%, -50%) rotate(0deg) scale(1)' },
+        { opacity: 1, transform: 'translate(-50%, -50%) rotate(20deg) scale(1)' },
+      ], { duration: 700, easing: 'ease-out', direction: 'alternate', iterations: 2, fill: 'forwards' });
+      run(swapRef1.current);
+      run(swapRef2.current);
+      const hide = setTimeout(() => setSwapVisible(false), 1400);
+      return () => clearTimeout(hide);
+    } catch (_) {}
+  }, [swapVisible]);
 
   const isTempleCanonical = (y, x) => (y === 0 && x === 2) || (y === BOARD_SIZE - 1 && x === 2);
 
@@ -203,6 +269,39 @@ export function Board({ board, currentPlayer, selected, validMoves, onSelect, on
             zIndex: 9999
           }}
         />
+      )}
+      {healVisible && (
+        <div ref={healRef} style={{
+          position: 'fixed',
+          left: `${healPos.x}px`,
+          top: `${healPos.y}px`,
+          transform: 'translate(-50%, -50%)',
+          pointerEvents: 'none',
+          zIndex: 9999,
+          fontSize: 36
+        }}>💖</div>
+      )}
+      {swapVisible && (
+        <>
+          <div ref={swapRef1} style={{
+            position: 'fixed',
+            left: `${swapPos.x1}px`,
+            top: `${swapPos.y1}px`,
+            transform: 'translate(-50%, -50%)',
+            pointerEvents: 'none',
+            zIndex: 9999,
+            fontSize: 34
+          }}>🔄</div>
+          <div ref={swapRef2} style={{
+            position: 'fixed',
+            left: `${swapPos.x2}px`,
+            top: `${swapPos.y2}px`,
+            transform: 'translate(-50%, -50%)',
+            pointerEvents: 'none',
+            zIndex: 9999,
+            fontSize: 34
+          }}>🔄</div>
+        </>
       )}
     </div>
   );
