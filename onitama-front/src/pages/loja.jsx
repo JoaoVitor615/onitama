@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import styles from "../App.module.css";
 import { carregarUsuarioPorHash, atualizarMoedas } from "../api/usuarios";
+import PurchaseNotification from "../components/ui/PurchaseNotification";
+import { notifyPurchase } from "../utils/notifyPurchase";
 
 const produtos = [
   { id: 1, imagem: "/icons/coin.png", preco: "4,99", quantidade: 150 },
@@ -36,7 +38,7 @@ function Loja() {
       const novoTotal = (Number(moedas) || 0) + produto.quantidade;
       await atualizarMoedas(usuarioId, novoTotal);
       setMoedas(novoTotal);
-      alert(`Compra concluída! +${produto.quantidade} moedas adicionadas.`);
+      notifyPurchase({ type: 'coins', amount: produto.quantidade });
     } catch (err) {
       alert(err?.message || 'Falha ao processar compra');
     } finally {
@@ -95,6 +97,7 @@ function Loja() {
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18, zIndex: 999 }}>
+        <PurchaseNotification />
         <h1 style={headerStyle}>LOJA COINS</h1>
         <div style={gridStyle}>
           {produtos.map((p) => (

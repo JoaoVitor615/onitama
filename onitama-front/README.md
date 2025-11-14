@@ -35,3 +35,30 @@ Passos:
 Firewall no Windows:
 - Garanta que as portas `5173` (front) e `3000` (API) tenham regra de entrada liberada no Firewall do Windows.
 - Se necessário, crie regras específicas por porta ou permita `node.exe` nas regras de entrada.
+
+## Notificação interna de compras (overlay animado)
+
+Para substituir o pop-up do navegador por uma animação dentro do jogo:
+
+- O componente `PurchaseNotification` foi adicionado e já está integrado na página `src/pages/onitama.jsx`.
+- Dispare a notificação chamando `notifyPurchase(detail)` de `src/utils/notifyPurchase.js` após a confirmação de compra.
+
+Exemplos:
+
+```js
+import { notifyPurchase } from '@/utils/notifyPurchase';
+
+// Após atualizar moedas com sucesso
+notifyPurchase({ type: 'moedas', amount: 100 });
+
+// Após adquirir uma skin
+notifyPurchase({ type: 'skin', name: 'Samurai Azul' });
+
+// Após adquirir cenário
+notifyPurchase({ type: 'cenario', name: 'Gelo' });
+
+// Após adquirir poder
+notifyPurchase({ type: 'poder', name: 'Bomba' });
+```
+
+O overlay aparece no centro da tela por ~2s com animação e cores chamativas.

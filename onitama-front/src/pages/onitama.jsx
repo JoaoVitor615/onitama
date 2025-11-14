@@ -4,6 +4,7 @@ import { joinSala } from "../api/ws";
 import { getUsuarioId } from "../api/http";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import GameOnitama from "../components/onitama/GameOnitama";
+import PurchaseNotification from "../components/ui/PurchaseNotification";
 
 function Onitama() {
   const navigate = useNavigate();
@@ -111,6 +112,7 @@ function Onitama() {
     <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden',
       backgroundImage: fundoSrc ? `url(${fundoSrc})` : undefined,
       backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
+      <PurchaseNotification />
       {/* Botão sair no canto superior esquerdo */}
       <button
         onClick={handleSair}

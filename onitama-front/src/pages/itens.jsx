@@ -4,6 +4,8 @@ import { listarProdutos } from '../api/produtos';
 import { getUsuarioId, getUsuarioHash, setUsuarioId } from '../api/http';
 import { carregarUsuarioPorHash } from '../api/usuarios';
 import { gravarUsuarioProduto, listarUsuarioProdutosPorUsuario } from '../api/usuarioProduto';
+import PurchaseNotification from '../components/ui/PurchaseNotification';
+import { notifyPurchase } from '../utils/notifyPurchase';
 
 const TIPO = {
   SKIN: 2,
@@ -106,8 +108,14 @@ function Itens() {
         const novoMap = new Map(quantidadesPorProduto);
         novoMap.set(produto.id_produto, novoQtd);
         setQuantidadesPorProduto(novoMap);
+        notifyPurchase({ type: 'power', name: produto.nome, amount: 1 });
+      } else if (tipo === TIPO.SKIN) {
+        notifyPurchase({ type: 'skin', name: produto.nome });
+      } else if (tipo === TIPO.MAPA) {
+        notifyPurchase({ type: 'scenario', name: produto.nome });
+      } else {
+        notifyPurchase({ type: 'generic', name: produto?.nome || 'Item' });
       }
-      alert('Item comprado com sucesso!');
     } catch (err) {
       alert(err?.message || 'Falha ao processar compra');
     } finally {
@@ -131,6 +139,7 @@ function Itens() {
         background: 'rgba(255,255,255,0.15)', border: '3px solid rgba(255,255,255,0.35)', borderRadius: 12,
         padding: 16, color: '#fff', zIndex: 1000
       }}>
+        <PurchaseNotification />
         {/* Abas */}
         <div style={{ display: 'flex', gap: 12, marginBottom: 12 }}>
           {tabs.map(t => (
