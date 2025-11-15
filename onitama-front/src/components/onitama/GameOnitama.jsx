@@ -283,8 +283,6 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
           next.powersUsed = { ...next.powersUsed, [myPlayer]: used };
           // passa o turno após uso do poder
           const after = passTurn(next);
-          // Dispara animação de Troca nas duas posições (novo Mestre e posição antiga do Mestre)
-          setSwapEffect({ a: { y: newMasterPos.y, x: newMasterPos.x }, b: { y: masterPos.y, x: masterPos.x } });
           setActivePowerIdx(null);
           setState(after);
           setValidMoves([]);
@@ -386,8 +384,6 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
     used[activePowerIdx] = true;
     next.powersUsed = { ...next.powersUsed, [myPlayer]: used };
     const after = passTurn(next);
-    // Dispara animação de Heal no tabuleiro na posição restaurada
-    setHealEffectPos({ y: pos.y, x: pos.x });
     setActivePowerIdx(null);
     setState(after);
     setValidMoves([]);
