@@ -57,7 +57,7 @@ function Home() {
           <button className="play-btn" onClick={handleLogin}>Play</button>
 
           <div className="login-links">
-            <Link to="/forgot-password">Esqueci a senha</Link> | <Link to="/register">Cadastre-se</Link>
+            <Link to="/register">Cadastre-se</Link>
           </div>
         </div>
       </div>
