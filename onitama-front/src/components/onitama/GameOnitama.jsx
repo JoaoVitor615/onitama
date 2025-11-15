@@ -545,10 +545,18 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
       {/* Overlay de fim de jogo: vitória/derrota */}
       {isGameOver && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 5000, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Jersey 10', sans-serif" }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24 }}>
+          {state.winner === myPlayer && (
+            <>
+              <img src="/animations/fogos.gif" alt="Fogos" style={{ position: 'absolute', left: '6%', top: '12%', width: 360, maxWidth: '40vw', opacity: 0.9, zIndex: 0, pointerEvents: 'none' }} />
+              <img src="/animations/fogos.gif" alt="Fogos" style={{ position: 'absolute', right: '6%', top: '12%', width: 360, maxWidth: '40vw', opacity: 0.9, zIndex: 0, pointerEvents: 'none' }} />
+              <img src="/animations/fogos.gif" alt="Fogos" style={{ position: 'absolute', left: '6%', bottom: '12%', width: 360, maxWidth: '40vw', opacity: 0.9, zIndex: 0, pointerEvents: 'none' }} />
+              <img src="/animations/fogos.gif" alt="Fogos" style={{ position: 'absolute', right: '6%', bottom: '12%', width: 360, maxWidth: '40vw', opacity: 0.9, zIndex: 0, pointerEvents: 'none' }} />
+            </>
+          )}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24, position: 'relative', zIndex: 1 }}>
             {state.winner === myPlayer ? (
               <>
-                <img src="/assets/trofeu.png" alt="Troféu" style={{ width: 360, maxWidth: '60vw' }} />
+                <img src="/assets/trofeu.png" alt="Troféu" style={{ width: 360, maxWidth: '60vw', position: 'relative', zIndex: 1 }} />
                 <div className="victoryText" aria-label="YOU WIN!" style={{ color: '#ffd24d', textShadow: '0 0 12px rgba(255,210,77,0.6)', fontFamily: "'Jersey 10', sans-serif" }}>
                   {/* Texto com animação letra a letra e exclamação piscando */}
                   {(() => {
