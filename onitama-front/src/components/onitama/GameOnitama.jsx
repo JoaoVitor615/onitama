@@ -600,7 +600,7 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
               gap: 10
             }}>
               <img src="/icons/coin.png" alt="Moedas" style={{ width: (myPlayer === state.winner) ? 30 : 24, height: (myPlayer === state.winner) ? 30 : 24 }} />
-              <span>{myPlayer === state.winner ? 'PARABÉNS PELA VITÓRIA, VOCÊ GANHOU 100 MOEDAS!' : 'MAIS SORTE NA PRÓXIMA! GANHOU APENAS 20 MOEDAS'}</span>
+              <span>{myPlayer === state.winner ? 'PARABÉNS PELA VITÓRIA, VOCÊ GANHOU 100 MOEDAS! 🏆🏆' : 'MAIS SORTE NA PRÓXIMA! GANHOU APENAS 20 MOEDAS 😢'}</span>
             </div>
           )}
           {state.winner === myPlayer && (
