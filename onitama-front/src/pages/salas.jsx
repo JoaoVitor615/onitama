@@ -26,6 +26,7 @@ function Salas() {
   const [poderes, setPoderes] = useState([]);
   const [selectedPoderIds, setSelectedPoderIds] = useState([null, null, null]);
   const [pendingAction, setPendingAction] = useState(null); // { type: 'create' | 'enter', codigo?: string }
+  const [isEntering, setIsEntering] = useState(false); // bloqueio de tela ao entrar/criar
 
   const carregar = useCallback(async () => {
     try {
@@ -192,6 +193,7 @@ function Salas() {
   };
 
   const handleJogar = async () => {
+    setIsEntering(true);
     try {
       if (pendingAction?.type === 'create') {
         const s = await criarSala();
@@ -209,9 +211,11 @@ function Salas() {
       }
     } catch (e) {
       alert('Não foi possível iniciar a partida.');
+      setIsEntering(false);
     } finally {
       setShowModal(false);
       setPendingAction(null);
+      // Em caso de sucesso, a navegação troca de tela; em erro já desbloqueamos acima
     }
   };
 
@@ -344,6 +348,13 @@ function Salas() {
               <button onClick={() => { setShowModal(false); setPendingAction(null); }} style={{ padding: '10px 16px', border: '1px solid #777', background: '#222', color: '#fff' }}>Cancelar</button>
               <button onClick={handleJogar} style={{ padding: '10px 16px', border: '1px solid #0a8', background: '#0a8', color: '#fff' }}>Jogar</button>
             </div>
+          </div>
+        </div>
+      )}
+      {isEntering && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ color: '#fff', fontFamily: "Press Start 2P, system-ui", fontSize: 18, background: 'rgba(0,0,0,0.4)', padding: '16px 24px', boxShadow: '0 4px 16px rgba(0,0,0,0.5)' }}>
+            entrando na sala...
           </div>
         </div>
       )}
