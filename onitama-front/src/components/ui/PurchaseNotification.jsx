@@ -41,6 +41,14 @@ export default function PurchaseNotification() {
           try { new Audio('/sound/fx/ui/positivo_3.wav').play().catch(() => {}); } catch (_) {}
         });
       }
+      // Som positivo para skins, mapas (cenários) e poderes
+      if (normalized === 'skin' || normalized === 'cenario' || normalized === 'scenario' || normalized === 'poder' || normalized === 'power') {
+        const audio2 = new Audio('/ui/positivo_4.wav');
+        audio2.volume = 0.85;
+        audio2.play().catch(() => {
+          try { new Audio('/sound/fx/ui/positivo_4.wav').play().catch(() => {}); } catch (_) {}
+        });
+      }
     } catch (_) {}
   }, [visible]);
 
