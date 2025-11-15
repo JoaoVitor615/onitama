@@ -223,19 +223,18 @@ function Salas() {
     <div className={styles.container}>
       <div className={styles.header}>
         <h1 className={styles.titulo}>Salas de Jogo</h1>
-        <div style={{ display: 'flex', gap: 12 }}>
-          <button onClick={handleCriarSala}>Criar</button>
-          <button onClick={() => navigate('/menu')}>Menu</button>
-        </div>
       </div>
       <p className={styles.subtitulo}>Escolha uma sala para jogar</p>
+
+      <div className={styles.actionsTop}>
+        <button onClick={handleCriarSala}>Criar sala</button>
+      </div>
 
       <div className={styles.gridSalas}>
         {salas.length === 0 && !loading && (
           <div className={styles.cardSala}>
             <div className={styles.cardHeader}>
               <h3 className={styles.nomeSala}>Nenhuma sala disponível</h3>
-              <span className={`${styles.dificuldade} ${styles.facil}`}>Fácil</span>
             </div>
             <div className={styles.cardContent}>
               <span className={styles.lotacao}>0/2 jogadores</span>
@@ -253,7 +252,6 @@ function Salas() {
             <div className={styles.cardSala} key={codigo || idx}>
               <div className={styles.cardHeader}>
                 <h3 className={styles.nomeSala}>{nome}</h3>
-                <span className={`${styles.dificuldade} ${styles.facil}`}>Fácil</span>
               </div>
               <div className={styles.cardContent}>
                 <span className={styles.lotacao}>{jogadores}/{capacidade} jogadores</span>
@@ -262,6 +260,10 @@ function Salas() {
             </div>
           );
         })}
+      </div>
+
+      <div className={styles.actionsBottom}>
+        <button onClick={() => navigate('/menu')}>Menu</button>
       </div>
 
       {showModal && (
