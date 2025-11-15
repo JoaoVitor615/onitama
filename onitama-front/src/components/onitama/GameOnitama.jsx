@@ -130,11 +130,10 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
   useEffect(() => {
     const fx = state?.fx;
     if (!fx || !fx.bombTarget) return;
-    const pos = fx.bombTarget;
-    const toCanon = (p) => (orientation === 'north') ? { y: BOARD_SIZE - 1 - p.y, x: BOARD_SIZE - 1 - p.x } : p;
-    const cpos = toCanon(pos);
+    const pos = fx.bombTarget; // posição em coordenadas do tabuleiro (raw)
     lastBombTsRef.current = fx.bombTarget.ts || Date.now();
-    setBombTarget(cpos);
+    // Passa posição "raw" diretamente; Board faz o mapeamento visual por orientação
+    setBombTarget(pos);
   }, [state?.fx, orientation]);
 
   useEffect(() => {
@@ -202,7 +201,11 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
       }
     }
       if (currOtherCount === prevOtherCount - 1) {
-        if ((Date.now() - lastBombTsRef.current) < 900) { prevStateRef.current = curr; return; }
+        // Evita duplicar animação da bomba no cliente remoto:
+        // 1) Se o estado atual já traz fx.bombTarget (via WS), não reemitir via diff.
+        if (curr?.fx?.bombTarget) { prevStateRef.current = curr; return; }
+        // 2) Se houve evento de bomba recentemente, não reaplicar via diff.
+        if ((Date.now() - lastBombTsRef.current) < 3000) { prevStateRef.current = curr; return; }
         let pos = null;
         for (let y = 0; y < n && !pos; y++) {
           for (let x = 0; x < n; x++) {
@@ -212,8 +215,8 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
           }
         }
         if (pos) {
-          const cpos = toCanon(pos);
-          setBombTarget(cpos);
+          // Usa coordenadas "raw" diretamente para combinar com data-cell do Board
+          setBombTarget(pos);
         }
       }
     }
@@ -237,6 +240,7 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
             return; // mantém poder ativo para nova seleção
           }
           if (piece.type === 'student') {
+            try { new Audio('/poderes/bomba/bomba_click.mp3').play().catch(() => {}); } catch (_) {}
             setBombTarget({ y, x });
             if (roomCode) {
               const fx = { bombTarget: { y, x, owner: myPlayer, ts: Date.now() } };

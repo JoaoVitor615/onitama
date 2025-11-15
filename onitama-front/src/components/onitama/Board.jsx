@@ -64,6 +64,7 @@ export function Board({ board, currentPlayer, selected, validMoves, onSelect, on
           duration,
           complete: () => {
             console.log('[Bomba] animação concluída em', { x: endX, y: endY });
+            try { new Audio('/poderes/bomba/bomba_hit.mp3').play().catch(() => {}); } catch (_) {}
             setBombVisible(false);
             animatingRef.current = false;
             setExplosionPos({ x: endX, y: endY });
@@ -87,6 +88,7 @@ export function Board({ board, currentPlayer, selected, validMoves, onSelect, on
           ], { duration, easing: 'ease-in', fill: 'forwards' });
           anim.onfinish = () => {
             console.log('[Bomba] animação (WAAPI) concluída em', { x: endX, y: endY });
+            try { new Audio('/poderes/bomba/bomba_hit.mp3').play().catch(() => {}); } catch (_) {}
             setBombVisible(false);
             animatingRef.current = false;
             setExplosionPos({ x: endX, y: endY });
