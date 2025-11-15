@@ -264,24 +264,24 @@ function Salas() {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }}>
           <div style={{ width: 720, maxWidth: '90vw', borderRadius: 12, background: 'rgba(20,20,20,0.85)', border: '1px solid #666', color: '#fff', padding: 24 }}>
             <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-              <button onClick={() => setModalTab('skins')} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #777', background: modalTab === 'skins' ? '#444' : '#222', color: '#fff' }}>Skins</button>
-              <button onClick={() => setModalTab('mapas')} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #777', background: modalTab === 'mapas' ? '#444' : '#222', color: '#fff' }}>Cenários</button>
-              <button onClick={() => setModalTab('poderes')} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #777', background: modalTab === 'poderes' ? '#444' : '#222', color: '#fff' }}>Poderes</button>
+              <button onClick={() => setModalTab('skins')} style={{ padding: '8px 12px', border: '1px solid #777', background: modalTab === 'skins' ? '#444' : '#222', color: '#fff' }}>Skins</button>
+              <button onClick={() => setModalTab('mapas')} style={{ padding: '8px 12px', border: '1px solid #777', background: modalTab === 'mapas' ? '#444' : '#222', color: '#fff' }}>Cenários</button>
+              <button onClick={() => setModalTab('poderes')} style={{ padding: '8px 12px', border: '1px solid #777', background: modalTab === 'poderes' ? '#444' : '#222', color: '#fff' }}>Poderes</button>
             </div>
 
             {modalTab === 'skins' && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
-                <button onClick={() => changeSkinIndex(activeIndex - 1)} style={{ padding: 8, borderRadius: 8, border: '1px solid #777', background: '#222', color: '#fff' }}>{'<'}</button>
+                <button onClick={() => changeSkinIndex(activeIndex - 1)} style={{ padding: 8, border: '1px solid #777', background: '#222', color: '#fff' }}>{'<'}</button>
                 <div style={{ width: 280, height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.3)', borderRadius: 12 }}>
                   <img src={skinImageSrc} alt="Skin ativa" style={{ maxWidth: '100%', maxHeight: '100%' }} />
                 </div>
-                <button onClick={() => changeSkinIndex(activeIndex + 1)} style={{ padding: 8, borderRadius: 8, border: '1px solid #777', background: '#222', color: '#fff' }}>{'>'}</button>
+                <button onClick={() => changeSkinIndex(activeIndex + 1)} style={{ padding: 8, border: '1px solid #777', background: '#222', color: '#fff' }}>{'>'}</button>
               </div>
             )}
 
             {modalTab === 'mapas' && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
-                <button onClick={() => changeMapIndex(activeMapIndex - 1)} style={{ padding: 8, borderRadius: 8, border: '1px solid #777', background: '#222', color: '#fff' }}>{'<'}</button>
+                <button onClick={() => changeMapIndex(activeMapIndex - 1)} style={{ padding: 8, border: '1px solid #777', background: '#222', color: '#fff' }}>{'<'}</button>
                 <div style={{ width: 360, height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.3)', borderRadius: 12 }}>
                   {mapas.length ? (
                     <img src={mapImageSrc} alt="Cenário ativo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
@@ -289,7 +289,7 @@ function Salas() {
                     <span style={{ color: '#bbb' }}>Nenhum cenário disponível</span>
                   )}
                 </div>
-                <button onClick={() => changeMapIndex(activeMapIndex + 1)} style={{ padding: 8, borderRadius: 8, border: '1px solid #777', background: '#222', color: '#fff' }}>{'>'}</button>
+                <button onClick={() => changeMapIndex(activeMapIndex + 1)} style={{ padding: 8, border: '1px solid #777', background: '#222', color: '#fff' }}>{'>'}</button>
               </div>
             )}
 
@@ -341,8 +341,8 @@ function Salas() {
             )}
 
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 24 }}>
-              <button onClick={() => { setShowModal(false); setPendingAction(null); }} style={{ padding: '10px 16px', borderRadius: 8, border: '1px solid #777', background: '#222', color: '#fff' }}>Cancelar</button>
-              <button onClick={handleJogar} style={{ padding: '10px 16px', borderRadius: 8, border: '1px solid #0a8', background: '#0a8', color: '#fff' }}>Jogar</button>
+              <button onClick={() => { setShowModal(false); setPendingAction(null); }} style={{ padding: '10px 16px', border: '1px solid #777', background: '#222', color: '#fff' }}>Cancelar</button>
+              <button onClick={handleJogar} style={{ padding: '10px 16px', border: '1px solid #0a8', background: '#0a8', color: '#fff' }}>Jogar</button>
             </div>
           </div>
         </div>

@@ -560,7 +560,7 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
               <div style={{ fontSize: '9dvh', color: '#ff5a5a', textShadow: '0 0 10px rgba(255,90,90,0.5)', fontFamily: "'Jersey 10', sans-serif" }}>GAME OVER</div>
             )}
             <button onClick={() => { if (onExit) onExit(); }} style={{
-              background: '#8b0000', color: '#fff', border: 'none', padding: '12px 18px', borderRadius: 10,
+              background: '#8b0000', color: '#fff', border: 'none', padding: '12px 18px',
               cursor: 'pointer', fontSize: 18, fontWeight: 800
             }}>Sair da sala</button>
           </div>

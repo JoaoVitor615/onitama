@@ -90,13 +90,18 @@ button {
   font-size: 14px;
   font-family: "Press Start 2P", system-ui;
   border: 0;
-  border-radius: 0;
+  border-radius: 0 !important;
   -webkit-appearance: none;
   appearance: none;
   box-shadow: 0px 5px black, 0px -5px black, 5px 0px black, -5px 0px black,
               0px 10px #00000038, 5px 5px #00000038, -5px 5px #00000038,
               inset 0px 5px #ffffff36;
   cursor: pointer;
+}
+
+/* Remove qualquer arredondamento em elementos dentro de botões */
+button * {
+  border-radius: 0 !important;
 }
 
 button:active {

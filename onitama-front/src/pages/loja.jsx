@@ -83,7 +83,6 @@ function Loja() {
     color: '#000',
     border: 'none',
     padding: '10px 18px',
-    borderRadius: '8px',
     cursor: disabled ? 'not-allowed' : 'pointer',
     fontWeight: 900
   });
