@@ -26,6 +26,22 @@ export default function PurchaseNotification() {
         { opacity: 1, transform: 'translate(-50%, -50%) scale(1)' }
       ], { duration: 220, easing: 'ease-out', fill: 'forwards' });
     } catch (_) {}
+
+    // Som positivo ao comprar moedas
+    try {
+      const rawType = data?.type;
+      const normalized = rawType === 'coins' ? 'moedas'
+        : rawType === 'power' ? 'poder'
+        : rawType === 'scenario' ? 'cenario'
+        : rawType;
+      if (normalized === 'moedas' || normalized === 'coins') {
+        const audio = new Audio('/ui/positivo_3.wav');
+        audio.volume = 0.85;
+        audio.play().catch(() => {
+          try { new Audio('/sound/fx/ui/positivo_3.wav').play().catch(() => {}); } catch (_) {}
+        });
+      }
+    } catch (_) {}
   }, [visible]);
 
   if (!visible) return null;
