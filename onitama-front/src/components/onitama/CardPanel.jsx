@@ -1,0 +1,81 @@
+import React from 'react';
+
+const SIZE = 5;
+const CENTER = { y: 2, x: 2 };
+
+function gridStyle() {
+  return {
+    display: 'grid', gridTemplateColumns: `repeat(${SIZE}, 14px)`, gap: '3px',
+    marginTop: '8px', justifyContent: 'center'
+  };
+}
+
+function cellStyle(active, isCenter, theme) {
+  return {
+    width: '14px', height: '14px', borderRadius: '3px',
+    background: active ? (theme?.active || '#3c763d') : '#333',
+    border: isCenter ? `1px solid ${theme?.borderDark || '#777'}` : '1px solid #222',
+  };
+}
+
+function transformMovesForOwner(card, owner) {
+  if (!card?.moves) return [];
+  if (owner === 'A') return card.moves;
+  return card.moves.map(([dy, dx]) => [-dy, dx]);
+}
+
+function orientForView(moves, orientation) {
+  if (orientation === 'north') return moves.map(([dy, dx]) => [-dy, -dx]);
+  return moves;
+}
+
+function MovesGrid({ card, orientation, owner, theme }) {
+  const base = transformMovesForOwner(card, owner);
+  const display = orientForView(base, orientation);
+  const set = new Set(display.map(([dy, dx]) => `${CENTER.y + dy}-${CENTER.x + dx}`));
+  return (
+    <div style={gridStyle()}>
+      {Array.from({ length: SIZE }).map((_, y) => (
+        Array.from({ length: SIZE }).map((_, x) => {
+          const key = `${y}-${x}`;
+          const active = set.has(key);
+          const isCenter = y === CENTER.y && x === CENTER.x;
+          return <div key={key} style={cellStyle(active, isCenter, theme)} />;
+        })
+      ))}
+    </div>
+  );
+}
+
+function getCardTheme(scenario) {
+  const folder = (scenario?.folder || scenario?.base || '').toLowerCase();
+  if (folder.includes('gelo')) {
+    return { cardBg: '#d6eaff', borderDark: '#1e4b7a', active: '#2f6fb3' };
+  }
+  if (folder.includes('terra')) {
+    return { cardBg: '#e6c9a8', borderDark: '#6b3f1f', active: '#8b5a2b' };
+  }
+  return { cardBg: '#222', borderDark: '#555', active: '#3c763d' };
+}
+
+export function CardPanel({ myCards, nextCard, selectedCardIndex, onSelectCard, orientation = 'south', owner = 'A', canSelect = true, scenario = null }) {
+  const theme = getCardTheme(scenario);
+  const renderCard = (card, idx, clickable = true) => (
+    <div key={card?.name || idx} style={{
+      background: theme.cardBg, color: '#000', borderRadius: '8px', padding: '8px',
+      border: selectedCardIndex === idx ? `3px solid ${theme.borderDark}` : `1px solid ${theme.borderDark}` ,     cursor: clickable ? 'pointer' : 'default', minWidth: '150px', opacity: clickable ? 1 : 0.7
+    }} onClick={() => clickable && onSelectCard(idx)}>
+      <div style={{ fontWeight: 'bold' }}>{card?.name}</div>
+      <MovesGrid card={card} orientation={orientation} owner={owner} theme={theme} />
+    </div>
+  );
+
+  return (
+    <div style={{ display: 'flex', gap: '10px', alignItems: 'stretch', justifyContent: 'center', width: '100%' }}>
+      {renderCard(myCards?.[0], 0, canSelect)}
+      {renderCard(myCards?.[1], 1, canSelect)}
+      <div style={{ display: 'flex', alignItems: 'center', color: '#fff' }}>→</div>
+      {renderCard(nextCard, 'next', false)}
+    </div>
+  );
+}

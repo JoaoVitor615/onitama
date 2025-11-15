@@ -5,6 +5,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
@@ -28,6 +29,8 @@ model Usuario {
   poder_ativo1                           Int?
   poder_ativo2                           Int?
   poder_ativo3                           Int?
+  Sala                                   Sala[]
+  SalaJogador                            SalaJogador[]
   Produto_Usuario_cenario_ativoToProduto Produto?         @relation("Usuario_cenario_ativoToProduto", fields: [cenario_ativo], references: [id_produto])
   Produto_Usuario_poder_ativo1ToProduto  Produto?         @relation("Usuario_poder_ativo1ToProduto", fields: [poder_ativo1], references: [id_produto])
   Produto_Usuario_poder_ativo2ToProduto  Produto?         @relation("Usuario_poder_ativo2ToProduto", fields: [poder_ativo2], references: [id_produto])
@@ -45,6 +48,7 @@ model Produto {
   id_tipo_produto                        BigInt?
   imagem                                 String?
   audio                                  String?
+  extensao                               String?          @db.VarChar
   TipoProduto                            TipoProduto?     @relation(fields: [id_tipo_produto], references: [id_tipo_produto], onDelete: Cascade)
   Usuario_Usuario_cenario_ativoToProduto Usuario[]        @relation("Usuario_cenario_ativoToProduto")
   Usuario_Usuario_poder_ativo1ToProduto  Usuario[]        @relation("Usuario_poder_ativo1ToProduto")
@@ -59,6 +63,40 @@ model UsuarioProduto {
   id_usuario_produto Int      @id @default(autoincrement())
   id_usuario         Int?
   id_produto         Int?
+  quantidade         Int?
   Produto            Produto? @relation(fields: [id_produto], references: [id_produto], onDelete: NoAction)
   Usuario            Usuario? @relation(fields: [id_usuario], references: [id_usuario], onDelete: NoAction)
+}
+
+model Sala {
+  id_sala     Int           @id @default(autoincrement())
+  codigo      String        @unique @db.VarChar(32)
+  status      sala_status   @default(waiting)
+  id_host     Int
+  game_state  Json?
+  created_at  DateTime      @default(now()) @db.Timestamptz(6)
+  updated_at  DateTime      @default(now()) @db.Timestamptz(6)
+  Usuario     Usuario       @relation(fields: [id_host], references: [id_usuario], onUpdate: NoAction, map: "Sala_host_fkey")
+  SalaJogador SalaJogador[]
+
+  @@index([status])
+}
+
+model SalaJogador {
+  id_sala_jogador Int      @id @default(autoincrement())
+  id_sala         Int
+  id_usuario      Int
+  conectado       Boolean  @default(true)
+  joined_at       DateTime @default(now()) @db.Timestamptz(6)
+  Sala            Sala     @relation(fields: [id_sala], references: [id_sala], onDelete: Cascade, onUpdate: NoAction, map: "SalaJogador_sala_fkey")
+  Usuario         Usuario  @relation(fields: [id_usuario], references: [id_usuario], onDelete: Cascade, onUpdate: NoAction, map: "SalaJogador_usuario_fkey")
+
+  @@unique([id_sala, id_usuario], map: "SalaJogador_unique_member")
+}
+
+enum sala_status {
+  waiting
+  in_progress
+  finished
+  cancelled
 }

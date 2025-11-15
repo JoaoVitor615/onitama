@@ -8,4 +8,5 @@ export class ProdutoDTO implements Produto {
     id_tipo_produto: bigint | null;
     imagem: string | null;
     audio: string | null;
+    extensao: string | null;
 }

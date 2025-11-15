@@ -43,5 +43,17 @@ export class UsuarioRepository {
         })
     }
 
+    async CarregarPorEmail(email: string) {
+        return await this.prisma.usuario.findFirst({
+            where: { email }
+        });
+    }
+
+    async CarregarPorEmailSenha(email: string, senhaHash: string) {
+        return await this.prisma.usuario.findFirst({
+            where: { email, senha: senhaHash }
+        });
+    }
+
 
 }

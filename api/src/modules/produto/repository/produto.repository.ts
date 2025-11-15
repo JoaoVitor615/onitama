@@ -15,7 +15,12 @@ export class ProdutoRepository {
     }
 
         async CarregarTodos() {
-            return await this.prisma.produto.findMany();
+            const list = await this.prisma.produto.findMany();
+            // Converte BigInt (id_tipo_produto) para number para evitar erro de serialização
+            return list.map((p: any) => ({
+                ...p,
+                id_tipo_produto: p?.id_tipo_produto != null ? Number(p.id_tipo_produto) : null,
+            }));
         }
     
     

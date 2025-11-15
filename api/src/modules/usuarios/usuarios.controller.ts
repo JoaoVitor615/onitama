@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { UsuarioService } from './usuarios.service';
 import UsuarioDTO from './dto/usuario.dto';
+import LoginDTO from './dto/login.dto';
 
 @Controller('usuarios')
 export class UsuariosController {
@@ -25,6 +26,12 @@ export class UsuariosController {
   @Get('carregar-por-hash/:hash')
   async CarregarPorHash(@Param('hash') hash: string) {
     return await this.usuariosService.CarregarPorHash(hash);
+  }
+
+  @Post('login')
+  async Login(@Body() data: LoginDTO) {
+    console.log(data)
+    return await this.usuariosService.Login(data);
   }
 
 }

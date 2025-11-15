@@ -58,4 +58,19 @@ export class UsuarioProdutoRepository {
             }
         });
     }
+
+    async CarregarPorUsuarioEProduto(id_usuario: number, id_produto: number) {
+        return await this.prisma.usuarioProduto.findFirst({
+            where: {
+                id_usuario,
+                id_produto,
+            },
+        });
+    }
+
+    async CarregarProdutoPorId(produtoId: number) {
+        return await this.prisma.produto.findUnique({
+            where: { id_produto: produtoId },
+        });
+    }
 }
