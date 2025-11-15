@@ -130,6 +130,7 @@ export function Board({ board, currentPlayer, selected, validMoves, onSelect, on
 
   useEffect(() => {
     if (!healVisible || !healRef.current) return;
+    try { new Audio(encodeURI('/sound/fx/power ups/poder_heal.wav')).play().catch(() => {}); } catch (_) {}
     try {
       const el = healRef.current;
       el.animate([
@@ -163,6 +164,7 @@ export function Board({ board, currentPlayer, selected, validMoves, onSelect, on
 
   useEffect(() => {
     if (!swapVisible) return;
+    try { new Audio(encodeURI('/sound/fx/power ups/poder_swap.wav')).play().catch(() => {}); } catch (_) {}
     try {
       const run = (el) => el && el.animate([
         { opacity: 0, transform: 'translate(-50%, -50%) rotate(-20deg) scale(0.7)' },

@@ -17,6 +17,7 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
   const [showTimeoutMsg, setShowTimeoutMsg] = useState(false);
   const timeoutRef = useRef(null);
   const playedLoseSoundRef = useRef(false);
+  const playedWinSoundRef = useRef(false);
   const orientation = role === 'host' ? 'south' : 'north';
   const myPlayer = role === 'host' ? 'A' : 'B';
   const myPowers = useMemo(() => powers?.[myPlayer] || [null, null, null], [powers, myPlayer]);
@@ -86,6 +87,17 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
     }
     if (!state?.winner) {
       playedLoseSoundRef.current = false;
+    }
+  }, [state?.winner, myPlayer]);
+
+  // Som de vitória: toca apenas para o jogador vencedor
+  useEffect(() => {
+    if (state?.winner && myPlayer === state.winner && !playedWinSoundRef.current) {
+      playedWinSoundRef.current = true;
+      try { new Audio('/sound/fx/ui/som_vitoria.mp3').play().catch(() => {}); } catch (_) {}
+    }
+    if (!state?.winner) {
+      playedWinSoundRef.current = false;
     }
   }, [state?.winner, myPlayer]);
 
