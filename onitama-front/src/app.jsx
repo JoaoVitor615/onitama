@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Home from "./pages/home";
+import RegisterPage from "./pages/register";
 import Menu from "./pages/menu";
 import Loja from "./pages/loja";
 import Itens from "./pages/itens";
@@ -33,7 +34,7 @@ function App() {
         <Route path="/salas" element={<RequireAuth><Salas /></RequireAuth>} />
         {/* Adicione mais rotas conforme necessário */}
         <Route path="/forgot-password" element={<RequireAuth><ForgotPassword /></RequireAuth>} />
-        <Route path="/register" element={<RequireAuth><Register /></RequireAuth>} />
+        <Route path="/register" element={<RegisterPage />} />
         {/* Garantir que rotas do Godot não sejam interceptadas */}
       </Routes>
     </div>
@@ -50,13 +51,6 @@ function ForgotPassword() {
   );
 }
 
-function Register() {
-  return (
-    <div>
-      <h1>Cadastro</h1>
-      <p>Página de cadastro...</p>
-    </div>
-  );
-}
+// Mantido componente temporário de ForgotPassword
 
 export default App;
