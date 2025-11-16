@@ -117,7 +117,7 @@ function Onitama() {
   })();
 
   return (
-    <div style={{ position: 'relative', minHeight: '100vh', overflow: 'hidden',
+    <div style={{ position: 'relative', height: '100vh', overflow: 'hidden',
       backgroundImage: fundoSrc ? `url(${fundoSrc})` : undefined,
       backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat' }}>
       <PurchaseNotification />

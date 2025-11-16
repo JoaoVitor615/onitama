@@ -185,7 +185,7 @@ export function Board({ board, currentPlayer, selected, validMoves, onSelect, on
     display: 'grid',
     gridTemplateColumns: `repeat(${BOARD_SIZE}, 1fr)`,
     gap: '6px',
-    width: 'min(900px, 90vw, 88vh)',
+    width: 'min(900px, 90vw, calc(100vh - 300px))',
     backgroundImage: scenarioSrc ? `url(${scenarioSrc})` : undefined,
     backgroundSize: 'contain',
     backgroundRepeat: 'no-repeat',
