@@ -67,12 +67,13 @@ export default function PurchaseNotification() {
       case 'user_created': return 'Usuário criado!';
       case 'error':
       case 'login_error': return 'Falha no login';
+      case 'register_error': return 'Erro no cadastro';
       case 'already_owned': return 'Item já adquirido';
       default: return 'Compra realizada!';
     }
   })();
   const desc = data?.name || (data?.amount ? `${data.amount} moedas` : '');
-  const isLoginError = data?.type === 'login_error' || data?.type === 'error';
+  const isLoginError = data?.type === 'login_error' || data?.type === 'error' || data?.type === 'register_error';
   const isInsufficient = data?.type === 'insufficient_coins';
 
   return (
