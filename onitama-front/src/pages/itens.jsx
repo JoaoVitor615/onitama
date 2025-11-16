@@ -233,13 +233,22 @@ function Itens() {
                     <img src="/icons/coin.png" alt="Preço" style={{ width: 20, height: 20 }} />
                     <b>{prod.preco ?? 0}</b>
                   </span>
-                  <button
-                    onClick={() => comprar(prod)}
-                    disabled={loadingId === prod.id_produto}
-                    className="botao-comprar"
-                  >
-                    {loadingId === prod.id_produto ? '...' : (Number(prod.id_tipo_produto) === TIPO.PODER ? 'COMPRAR +1' : (compradosIds.has(prod.id_produto) ? 'COMPRADO' : 'COMPRAR'))}
-                  </button>
+                  {(() => {
+                    const owned = Number(prod.id_tipo_produto) !== TIPO.PODER && compradosIds.has(prod.id_produto);
+                    return (
+                      <button
+                        onClick={() => comprar(prod)}
+                        disabled={loadingId === prod.id_produto || owned}
+                        className={`botao-comprar ${owned ? 'purchased' : ''}`}
+                      >
+                        {loadingId === prod.id_produto
+                          ? '...'
+                          : (Number(prod.id_tipo_produto) === TIPO.PODER
+                              ? 'COMPRAR +1'
+                              : (owned ? 'COMPRADO' : 'COMPRAR'))}
+                      </button>
+                    );
+                  })()}
                 </div>
 
                 {Number(prod.id_tipo_produto) === TIPO.PODER ? (

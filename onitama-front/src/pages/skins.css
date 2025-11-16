@@ -158,6 +158,16 @@ body {
               inset 0px 5px #ffffff36;
 
 }
+
+/* Estado visual quando item já foi comprado (skins e mapas) */
+.botao-comprar.purchased {
+  background: #9e9e9e; /* cinza mais claro */
+  color: #fff;
+  cursor: not-allowed;
+  box-shadow: 0px 5px #4a4a4a, 0px -5px #4a4a4a, 5px 0px #4a4a4a, -5px 0px #4a4a4a,
+              0px 10px #00000038, 5px 5px #00000038, -5px 5px #00000038,
+              inset 0px 5px #ffffff36;
+}
 .header-prin {
   width: 95%;
   max-width: 1500px;
