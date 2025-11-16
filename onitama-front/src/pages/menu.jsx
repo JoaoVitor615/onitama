@@ -46,7 +46,7 @@ function Menu() {
         <div className="menu-buttons">
           <button className="menu-btn" onClick={() => navigate("/salas")}>SALAS</button>
           <button className="menu-btn" onClick={() => navigate("/loja")}>LOJA</button>
-          <button className="menu-btn" onClick={() => navigate("/itens")}>SKINS</button>
+          <button className="menu-btn" onClick={() => navigate("/itens")}>ITENS</button>
           <button className="menu-btn" onClick={() => alert("Em breve")}>COMO JOGAR</button>
         </div>
       </div>
