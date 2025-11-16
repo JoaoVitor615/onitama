@@ -35,7 +35,7 @@ function App() {
     if (!onGameplay) {
       cleanup = enableHoverSound();
       initBgMusic();
-      setBgTrack('/sound/fx/ui/japanese_soundtrack.mp3', { loop: true, volume: 0.2 });
+      setBgTrack('/sound/music/japanese_soundtrack.mp3', { loop: true, volume: 0.2 });
       playBgMusic();
     } else {
       initBgMusic();
