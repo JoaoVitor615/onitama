@@ -37,16 +37,6 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
   const rewardGrantedRef = useRef(false);
 
   const myCards = useMemo(() => state.hands[myPlayer], [state, myPlayer]);
-  const isCatSkin = useMemo(() => {
-    const s = skins?.[myPlayer];
-    const base = s?.base || s?.folder || '';
-    return String(base).toLowerCase() === 'gato';
-  }, [skins, myPlayer]);
-  const isDogSkin = useMemo(() => {
-    const s = skins?.[myPlayer];
-    const base = s?.base || s?.folder || '';
-    return String(base).toLowerCase() === 'cachorro';
-  }, [skins, myPlayer]);
 
   // sincronização via WS: recebe estado e inicializa com segurança
   useEffect(() => {
@@ -234,6 +224,18 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
     const currOwnerCount = countStudents(curr.board, owner);
     const prevOtherCount = countStudents(prev.board, other);
     const currOtherCount = countStudents(curr.board, other);
+    if (currOtherCount === prevOtherCount - 1) {
+      try {
+        const base = (skins?.[owner]?.base || skins?.[owner]?.folder || '').toLowerCase();
+        if (base === 'gato') {
+          new Audio('/sound/fx/dano/miado.ogg').play().catch(() => {});
+        } else if (base === 'cachorro') {
+          new Audio('/sound/fx/dano/latido.wav').play().catch(() => {});
+        } else {
+          new Audio('/sound/fx/soco/soco_4.wav').play().catch(() => {});
+        }
+      } catch (_) {}
+    }
     if (owner !== myPlayer) {
     if (currOwnerCount === prevOwnerCount + 1) {
       let pos = null;
@@ -294,7 +296,7 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
       }
     }
     prevStateRef.current = curr;
-  }, [state, orientation, myPlayer]);
+  }, [state, orientation, myPlayer, skins]);
 
   const handleSelect = ({ y, x }) => {
     if (isBlocked) return;
@@ -404,18 +406,6 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
     setState(next);
     setValidMoves([]);
     try { new Audio('/sound/fx/carta/carta_1.wav').play().catch(() => {}); } catch (_) {}
-    // reproduz som de "soco" apenas para captura de peão por movimento normal (exceto bomba)
-    if (willCaptureStudent) {
-      try {
-        if (isCatSkin) {
-          new Audio('/sound/fx/dano/miado.ogg').play().catch(() => {});
-        } else if (isDogSkin) {
-          new Audio('/sound/fx/dano/latido.wav').play().catch(() => {});
-        } else {
-          new Audio('/sound/fx/soco/soco_4.wav').play().catch(() => {});
-        }
-      } catch (_) {}
-    }
     if (roomCode) emitGameState(roomCode, next);
   };
 
@@ -429,13 +419,6 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
     if (!piece || piece.owner === myPlayer || piece.type !== 'student') { setBombTarget(null); return; }
     const next = structuredClone(state);
     next.board[y][x] = null; // elimina o peão inimigo
-    try {
-      if (isCatSkin) {
-        new Audio('/sound/fx/dano/miado.ogg').play().catch(() => {});
-      } else if (isDogSkin) {
-        new Audio('/sound/fx/dano/latido.wav').play().catch(() => {});
-      }
-    } catch (_) {}
     // registra em graveyard e pilha do dono da peça eliminada
     if (piece && piece.type === 'student') {
       next.graveyard[piece.owner].students += 1;
