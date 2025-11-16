@@ -183,7 +183,7 @@ function Itens() {
           backgroundColor: 'transparent'
         }}
       >
-        <img src={'/icons/seta.png'} alt="Voltar" style={{ width: 40, height: 40, border: 'none', display: 'block' }} />
+        <img src={'/icons/seta.png'} alt="Voltar" style={{ width: 80, height: 80, border: 'none', display: 'block' }} />
       </button>
 
       {/* Moedas do usuário no topo direito, mesmo estilo da /loja */}
@@ -229,17 +229,26 @@ function Itens() {
                 )}
 
                 <div className="preco-container">
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: 15 }}>
                     <img src="/icons/coin.png" alt="Preço" style={{ width: 20, height: 20 }} />
                     <b>{prod.preco ?? 0}</b>
                   </span>
-                  <button
-                    onClick={() => comprar(prod)}
-                    disabled={loadingId === prod.id_produto}
-                    className="botao-comprar"
-                  >
-                    {loadingId === prod.id_produto ? '...' : (Number(prod.id_tipo_produto) === TIPO.PODER ? 'COMPRAR +1' : (compradosIds.has(prod.id_produto) ? 'COMPRADO' : 'COMPRAR'))}
-                  </button>
+                  {(() => {
+                    const owned = Number(prod.id_tipo_produto) !== TIPO.PODER && compradosIds.has(prod.id_produto);
+                    return (
+                      <button
+                        onClick={() => comprar(prod)}
+                        disabled={loadingId === prod.id_produto || owned}
+                        className={`botao-comprar ${owned ? 'purchased' : ''}`}
+                      >
+                        {loadingId === prod.id_produto
+                          ? '...'
+                          : (Number(prod.id_tipo_produto) === TIPO.PODER
+                              ? 'COMPRAR +1'
+                              : (owned ? 'COMPRADO' : 'COMPRAR'))}
+                      </button>
+                    );
+                  })()}
                 </div>
 
                 {Number(prod.id_tipo_produto) === TIPO.PODER ? (

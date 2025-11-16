@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { cadastrarUsuario } from "../api/usuarios";
+import PurchaseNotification from "../components/ui/PurchaseNotification";
+import { notifyPurchase } from "../utils/notifyPurchase";
 import "./LoginPage.css";
 
 function RegisterPage() {
@@ -16,23 +18,20 @@ function RegisterPage() {
     const e = email.trim();
     const s = senha;
     const c = confirm;
-    if (!n || !e || !s || !c) { alert("Preencha todos os campos."); return; }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) { alert("E-mail inválido."); return; }
-    if (s.length < 4) { alert("A senha deve ter pelo menos 4 caracteres."); return; }
-    if (s !== c) { alert("As senhas não coincidem."); return; }
+    if (!n || !e || !s || !c) { notifyPurchase({ type: 'register_error', name: 'Preencha todos os campos.' }); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) { notifyPurchase({ type: 'register_error', name: 'E-mail inválido.' }); return; }
+    if (s.length < 4) { notifyPurchase({ type: 'register_error', name: 'A senha deve ter pelo menos 4 caracteres.' }); return; }
+    if (s !== c) { notifyPurchase({ type: 'register_error', name: 'As senhas não coincidem.' }); return; }
     try {
       setLoading(true);
       const novo = await cadastrarUsuario(n, e, s);
       // Sucesso: redireciona ao login e mostra notificação
       navigate("/");
       setTimeout(() => {
-        try {
-          const ev = new CustomEvent('purchase', { detail: { type: 'user_created', name: `Usuário ${n} criado` } });
-          window.dispatchEvent(ev);
-        } catch (_) {}
+        notifyPurchase({ type: 'user_created', name: `Usuário ${n} criado` });
       }, 60);
     } catch (err) {
-      alert(err?.message || "Falha ao cadastrar. Tente novamente.");
+      notifyPurchase({ type: 'register_error', name: err?.message || 'Falha ao cadastrar. Tente novamente.' });
     } finally {
       setLoading(false);
     }
@@ -40,6 +39,7 @@ function RegisterPage() {
 
   return (
     <>
+      <PurchaseNotification />
       <div className="login-container" style={{ backgroundImage: `url(/assets/background-login.gif)` }}>
         <img src="/assets/onitama-logo-principal.png" alt="Logo Onitama" className="logo-img" />
         <div className="login-content register-content">
