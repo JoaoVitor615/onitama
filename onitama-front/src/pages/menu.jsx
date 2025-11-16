@@ -51,8 +51,11 @@ function Menu() {
         </div>
       </div>
 
-      <div style={{ position: 'absolute', top: 16, right: 16, zIndex: 2, display: 'flex', alignItems: 'center', gap: 8, background: 'rgba(255,255,255,0.85)', color: '#000', padding: '8px 12px', borderRadius: 12 }}>
-        <span style={{ fontWeight: 900 }}>🪙 {moedas}</span>
+      <div style={{ position: 'absolute', top: 16, right: 16, zIndex: 2 }}>
+        <div className="moedas-header">
+          <img className="icone-moeda" src="/icons/coin.png" alt="Moedas" />
+          <span style={{ fontWeight: 800 }}>{moedas}</span>
+        </div>
       </div>
     </div>
   );

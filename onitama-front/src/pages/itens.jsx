@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import styles from '../App.module.css';
 import { listarProdutos } from '../api/produtos';
 import { getUsuarioId, getUsuarioHash, setUsuarioId } from '../api/http';
-import { carregarUsuarioPorHash } from '../api/usuarios';
+import { carregarUsuarioPorHash, atualizarMoedas } from '../api/usuarios';
 import { gravarUsuarioProduto, listarUsuarioProdutosPorUsuario } from '../api/usuarioProduto';
 import PurchaseNotification from '../components/ui/PurchaseNotification';
 import { notifyPurchase } from '../utils/notifyPurchase';
@@ -22,6 +22,7 @@ function Itens() {
   const [compradosIds, setCompradosIds] = useState(new Set());
   const [quantidadesPorProduto, setQuantidadesPorProduto] = useState(new Map());
   const [loadingId, setLoadingId] = useState(null);
+  const [moedas, setMoedas] = useState(0);
 
   useEffect(() => {
     async function carregar() {
@@ -44,6 +45,18 @@ function Itens() {
         } catch (_) {}
       }
     })();
+  }, []);
+
+  // Carrega quantidade de moedas do usuário para exibir no topo, estilo .moedas-header
+  useEffect(() => {
+    const hash = getUsuarioHash();
+    if (!hash) return;
+    carregarUsuarioPorHash(hash)
+      .then((usuario) => {
+        const valor = typeof usuario?.moedas === 'number' ? usuario.moedas : Number(usuario?.moedas || 0);
+        setMoedas(valor);
+      })
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -99,8 +112,23 @@ function Itens() {
       notifyPurchase({ type: 'already_owned', name: produto.nome });
       return;
     }
+    // Verifica saldo de moedas suficiente
+    const preco = Number(produto?.preco || 0);
+    const saldoAtual = Number(moedas || 0);
+    if (preco > 0 && saldoAtual < preco) {
+      notifyPurchase({ type: 'insufficient_coins' });
+      return;
+    }
     setLoadingId(produto.id_produto);
+    let descontou = false;
     try {
+      // Desconta moedas antes de gravar o item
+      if (preco > 0) {
+        const novoTotal = (saldoAtual - preco);
+        await atualizarMoedas(usuarioId, novoTotal);
+        setMoedas(novoTotal);
+        descontou = true;
+      }
       await gravarUsuarioProduto(usuarioId, produto.id_produto);
       const novo = new Set(compradosIds);
       novo.add(produto.id_produto);
@@ -121,6 +149,13 @@ function Itens() {
         notifyPurchase({ type: 'generic', name: produto?.nome || 'Item' });
       }
     } catch (err) {
+      // Se falhou em gravar o item após descontar, reverte moedas
+      if (descontou) {
+        try {
+          await atualizarMoedas(usuarioId, saldoAtual);
+          setMoedas(saldoAtual);
+        } catch (_) {}
+      }
       alert(err?.message || 'Falha ao processar compra');
     } finally {
       setLoadingId(null);
@@ -150,6 +185,14 @@ function Itens() {
       >
         <img src={'/icons/seta.png'} alt="Voltar" style={{ width: 40, height: 40, border: 'none', display: 'block' }} />
       </button>
+
+      {/* Moedas do usuário no topo direito, mesmo estilo da /loja */}
+      <div style={{ position: 'absolute', top: 16, right: 16, zIndex: 2 }}>
+        <div className="moedas-header">
+          <img className="icone-moeda" src="/icons/coin.png" alt="Moedas" />
+          <span style={{ fontWeight: 800 }}>{moedas}</span>
+        </div>
+      </div>
 
       {/* Abas */}
       <div className="abas-container">
