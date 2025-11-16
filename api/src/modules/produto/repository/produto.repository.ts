@@ -41,12 +41,34 @@ export class ProdutoRepository {
             })
         }
     
-        async CarregarPorNome(nome: string) {
-            return await this.prisma.produto.findFirst({
-                where: {
-                    nome: nome.toLowerCase()
-                }
-            })
-        }
+    async CarregarPorNome(nome: string) {
+        return await this.prisma.produto.findFirst({
+            where: {
+                nome: nome.toLowerCase()
+            }
+        })
+    }
+
+    async CarregarPorNomeETipo(nome: string, idTipo: number) {
+        // Busca por nome (lowercase, conforme padrão existente) e tipo de produto
+        const byLower = await this.prisma.produto.findFirst({
+            where: {
+                AND: [
+                    { nome: nome.toLowerCase() },
+                    { id_tipo_produto: BigInt(idTipo) },
+                ],
+            },
+        });
+        if (byLower) return byLower;
+        // Fallback: tenta com nome sem lowerCase caso base esteja com maiúsculas
+        return await this.prisma.produto.findFirst({
+            where: {
+                AND: [
+                    { nome },
+                    { id_tipo_produto: BigInt(idTipo) },
+                ],
+            },
+        });
+    }
     
 }
