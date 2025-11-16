@@ -102,7 +102,7 @@ function Loja() {
           backgroundColor: 'transparent'
         }}
       >
-        <img src={'/icons/seta.png'} alt="Voltar" style={{ width: 40, height: 40, border: 'none', display: 'block' }} />
+        <img src={'/icons/seta.png'} alt="Voltar" style={{ width: 80, height: 80, border: 'none', display: 'block' }} />
       </button>
 
       <div className="header-prin">
