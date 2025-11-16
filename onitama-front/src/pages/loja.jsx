@@ -91,8 +91,25 @@ function Loja() {
     <div className="loja-fundo">
       <PurchaseNotification />
 
+      {/* Botão de voltar no topo esquerdo (seta invertida), idêntico ao /itens */}
+      <button
+        onClick={() => navigate(-1)}
+        aria-label="Voltar"
+        style={{
+          position: 'fixed', top: 16, left: 16, zIndex: 3001,
+          background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+          outline: 'none', boxShadow: 'none', appearance: 'none', WebkitAppearance: 'none', MozAppearance: 'none',
+          backgroundColor: 'transparent'
+        }}
+      >
+        <img
+          src={'/assets/arrow-right.png'}
+          alt="Voltar"
+          style={{ width: 40, height: 40, transform: 'scaleX(-1)', border: 'none', display: 'block' }}
+        />
+      </button>
+
       <div className="header-prin">
-        <button className="btn-voltar" onClick={() => navigate('/menu')}>Voltar</button>
         <h1 className="titulo-loja">LOJA COINS</h1>
         <div className="moedas-header">
           <img className="icone-moeda" src="/icons/coin.png" alt="Moedas" style={{ width: 24, height: 24 }} />

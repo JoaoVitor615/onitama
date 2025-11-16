@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styles from '../App.module.css';
 import { listarProdutos } from '../api/produtos';
 import { getUsuarioId, getUsuarioHash, setUsuarioId } from '../api/http';
@@ -15,6 +16,7 @@ const TIPO = {
 };
 
 function Itens() {
+  const navigate = useNavigate();
   const [produtos, setProdutos] = useState([]);
   const [aba, setAba] = useState(TIPO.SKIN);
   const [compradosIds, setCompradosIds] = useState(new Set());
@@ -134,6 +136,24 @@ function Itens() {
   return (
     <div className="loja-fundo">
       <PurchaseNotification />
+
+      {/* Botão de voltar no topo esquerdo (seta invertida) */}
+      <button
+        onClick={() => navigate(-1)}
+        aria-label="Voltar"
+        style={{
+          position: 'fixed', top: 16, left: 16, zIndex: 3001,
+          background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+          outline: 'none', boxShadow: 'none', appearance: 'none', WebkitAppearance: 'none', MozAppearance: 'none',
+          backgroundColor: 'transparent'
+        }}
+      >
+        <img
+          src={'/assets/arrow-right.png'}
+          alt="Voltar"
+          style={{ width: 40, height: 40, transform: 'scaleX(-1)', border: 'none', display: 'block' }}
+        />
+      </button>
 
       {/* Abas */}
       <div className="abas-container">
