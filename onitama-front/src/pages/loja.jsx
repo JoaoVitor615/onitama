@@ -83,7 +83,6 @@ function Loja() {
     color: '#000',
     border: 'none',
     padding: '10px 18px',
-    borderRadius: '8px',
     cursor: disabled ? 'not-allowed' : 'pointer',
     fontWeight: 900
   });
@@ -92,8 +91,21 @@ function Loja() {
     <div className="loja-fundo">
       <PurchaseNotification />
 
+      {/* Botão de voltar no topo esquerdo */}
+      <button
+        onClick={() => navigate('/menu')}
+        aria-label="Voltar"
+        style={{
+          position: 'fixed', top: 16, left: 16, zIndex: 3001,
+          background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+          outline: 'none', boxShadow: 'none', appearance: 'none', WebkitAppearance: 'none', MozAppearance: 'none',
+          backgroundColor: 'transparent'
+        }}
+      >
+        <img src={'/icons/seta.png'} alt="Voltar" style={{ width: 40, height: 40, border: 'none', display: 'block' }} />
+      </button>
+
       <div className="header-prin">
-        <button className="btn-voltar" onClick={() => navigate('/menu')}>Voltar</button>
         <h1 className="titulo-loja">LOJA COINS</h1>
         <div className="moedas-header">
           <img className="icone-moeda" src="/icons/coin.png" alt="Moedas" style={{ width: 24, height: 24 }} />
@@ -101,18 +113,16 @@ function Loja() {
         </div>
       </div>
 
-      <div className="painel-loja">
-        <div className="grid-skins">
+      <div className="painel-moedas">
+        <div className="grid-moedas">
           {produtos.map((p) => (
-            <div key={p.id} className="card-skin">
+            <div key={p.id} className="card-moeda">
+              <div className="quantidade-destaque">{p.quantidade} MOEDAS</div>
               <img src={p.imagem} alt={`Produto ${p.id}`} className="imagem-skin" />
-              <div className="preco-container">
-                <div>{p.preco}</div>
-                <div>{p.quantidade} MOEDAS</div>
-                <button className="botao-comprar" disabled={loadingId === p.id} onClick={() => comprar(p)}>
-                  {loadingId === p.id ? 'PROCESSANDO...' : 'COMPRAR'}
-                </button>
-              </div>
+              <div className="preco-destaque">{p.preco}</div>
+              <button className="botao-comprar" disabled={loadingId === p.id} onClick={() => comprar(p)}>
+                {loadingId === p.id ? 'PROCESSANDO...' : 'COMPRAR'}
+              </button>
             </div>
           ))}
         </div>

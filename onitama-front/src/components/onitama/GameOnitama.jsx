@@ -3,6 +3,8 @@ import { initState, getValidMoves, applyMove, passTurn, TURN_MS, findRestorePosi
 import { Board } from './Board';
 import { CardPanel } from './CardPanel';
 import { emitGameState, subscribeGameState } from '../../api/ws';
+import { carregarUsuarioPorHash, atualizarMoedas } from '../../api/usuarios';
+import { getUsuarioHash } from '../../api/http';
 
 /**
  * GameOnitama: modo local (single-client) por enquanto; integração WS será feita depois.
@@ -17,6 +19,7 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
   const [showTimeoutMsg, setShowTimeoutMsg] = useState(false);
   const timeoutRef = useRef(null);
   const playedLoseSoundRef = useRef(false);
+  const playedWinSoundRef = useRef(false);
   const orientation = role === 'host' ? 'south' : 'north';
   const myPlayer = role === 'host' ? 'A' : 'B';
   const myPowers = useMemo(() => powers?.[myPlayer] || [null, null, null], [powers, myPlayer]);
@@ -30,6 +33,7 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
   const lastBombTsRef = useRef(0);
   const isGameOver = !!state?.winner;
   const isBlocked = blocked || isGameOver;
+  const rewardGrantedRef = useRef(false);
 
   const myCards = useMemo(() => state.hands[myPlayer], [state, myPlayer]);
 
@@ -89,6 +93,38 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
     }
   }, [state?.winner, myPlayer]);
 
+  // Som de vitória: toca apenas para o jogador vencedor
+  useEffect(() => {
+    if (state?.winner && myPlayer === state.winner && !playedWinSoundRef.current) {
+      playedWinSoundRef.current = true;
+      try { new Audio('/sound/fx/ui/som_vitoria.mp3').play().catch(() => {}); } catch (_) {}
+    }
+    if (!state?.winner) {
+      playedWinSoundRef.current = false;
+    }
+  }, [state?.winner, myPlayer]);
+
+  useEffect(() => {
+    if (!state?.winner || rewardGrantedRef.current) return;
+    rewardGrantedRef.current = true;
+    const gain = myPlayer === state.winner ? 100 : 20;
+    try {
+      const hash = getUsuarioHash();
+      if (!hash) { return; }
+      carregarUsuarioPorHash(hash)
+        .then((usuario) => {
+          const id = usuario?.id_usuario;
+          const current = typeof usuario?.moedas === 'number' ? usuario.moedas : Number(usuario?.moedas || 0);
+          const total = (Number(current) || 0) + gain;
+          if (!id) { return; }
+          atualizarMoedas(id, total).catch(() => {});
+        })
+        .catch(() => {});
+    } catch (_) {
+      // falha silenciosa; não bloqueia UI de pós-jogo
+    }
+  }, [state?.winner, myPlayer]);
+
   // Animação do banner de tempo esgotado (fade-in/out)
   useEffect(() => {
     if (!showTimeoutMsg || !timeoutRef.current) return;
@@ -130,11 +166,10 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
   useEffect(() => {
     const fx = state?.fx;
     if (!fx || !fx.bombTarget) return;
-    const pos = fx.bombTarget;
-    const toCanon = (p) => (orientation === 'north') ? { y: BOARD_SIZE - 1 - p.y, x: BOARD_SIZE - 1 - p.x } : p;
-    const cpos = toCanon(pos);
+    const pos = fx.bombTarget; // posição em coordenadas do tabuleiro (raw)
     lastBombTsRef.current = fx.bombTarget.ts || Date.now();
-    setBombTarget(cpos);
+    // Passa posição "raw" diretamente; Board faz o mapeamento visual por orientação
+    setBombTarget(pos);
   }, [state?.fx, orientation]);
 
   useEffect(() => {
@@ -202,7 +237,11 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
       }
     }
       if (currOtherCount === prevOtherCount - 1) {
-        if ((Date.now() - lastBombTsRef.current) < 900) { prevStateRef.current = curr; return; }
+        // Evita duplicar animação da bomba no cliente remoto:
+        // 1) Se o estado atual já traz fx.bombTarget (via WS), não reemitir via diff.
+        if (curr?.fx?.bombTarget) { prevStateRef.current = curr; return; }
+        // 2) Se houve evento de bomba recentemente, não reaplicar via diff.
+        if ((Date.now() - lastBombTsRef.current) < 3000) { prevStateRef.current = curr; return; }
         let pos = null;
         for (let y = 0; y < n && !pos; y++) {
           for (let x = 0; x < n; x++) {
@@ -212,8 +251,8 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
           }
         }
         if (pos) {
-          const cpos = toCanon(pos);
-          setBombTarget(cpos);
+          // Usa coordenadas "raw" diretamente para combinar com data-cell do Board
+          setBombTarget(pos);
         }
       }
     }
@@ -237,6 +276,7 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
             return; // mantém poder ativo para nova seleção
           }
           if (piece.type === 'student') {
+            try { new Audio('/poderes/bomba/bomba_click.mp3').play().catch(() => {}); } catch (_) {}
             setBombTarget({ y, x });
             if (roomCode) {
               const fx = { bombTarget: { y, x, owner: myPlayer, ts: Date.now() } };
@@ -270,6 +310,7 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
           const studentPiece = next.board[y][x];
           next.board[masterPos.y][masterPos.x] = studentPiece;
           next.board[y][x] = masterPiece;
+          try { new Audio('/sound/fx/carta/carta_1.wav').play().catch(() => {}); } catch (_) {}
           // checagem de vitória por templo após o Mestre mover
           const newMasterPos = { y, x };
           if (myPlayer === 'A' && newMasterPos.y === TEMPLE_B.y && newMasterPos.x === TEMPLE_B.x) {
@@ -325,6 +366,7 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
     const next = applyMove(state, state.selected, to, state.selectedCardIndex);
     setState(next);
     setValidMoves([]);
+    try { new Audio('/sound/fx/carta/carta_1.wav').play().catch(() => {}); } catch (_) {}
     // reproduz som de "soco" apenas para captura de peão por movimento normal (exceto bomba)
     if (willCaptureStudent) {
       try { new Audio('/sound/fx/soco/soco_4.wav').play().catch(() => {}); } catch (_) {}
@@ -529,10 +571,50 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
       {/* Overlay de fim de jogo: vitória/derrota */}
       {isGameOver && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 5000, background: 'rgba(0,0,0,0.75)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Jersey 10', sans-serif" }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24 }}>
+          {state.winner !== myPlayer && (
+            <div style={{
+              position: 'absolute', left: '50%', transform: 'translateX(-50%)', top: 'calc(50% - 120px)',
+              width: '100vw', height: 250,
+              background: 'rgba(165,0,0,0.35)',
+              borderTop: '3px solid rgba(165,0,0,0.7)',
+              borderBottom: '3px solid rgba(165,0,0,0.7)',
+              borderRadius: 8,
+              zIndex: 0,
+              pointerEvents: 'none'
+            }} />
+          )}
+          {state.winner && (
+            <div style={{
+              position: 'absolute', top: 90, left: '50%', transform: 'translateX(-50%)',
+              zIndex: 2,
+              background: (myPlayer === state.winner) ? 'rgba(165,0,0,0.5)' : 'rgba(165,0,0,0.4)',
+              color: '#FFD700',
+              border: '2px solid rgba(255,255,255,0.85)',
+              borderRadius: 12,
+              padding: (myPlayer === state.winner) ? '16px 22px' : '12px 18px',
+              textShadow: '0 1px 10px rgba(0,0,0,0.6)',
+              fontWeight: 'normal',
+              fontSize: (myPlayer === state.winner) ? 30 : 24,
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10
+            }}>
+              <img src="/icons/coin.png" alt="Moedas" style={{ width: (myPlayer === state.winner) ? 30 : 24, height: (myPlayer === state.winner) ? 30 : 24 }} />
+              <span>{myPlayer === state.winner ? 'PARABÉNS PELA VITÓRIA, VOCÊ GANHOU 100 MOEDAS! 🏆🏆' : 'MAIS SORTE NA PRÓXIMA! GANHOU APENAS 20 MOEDAS 😢'}</span>
+            </div>
+          )}
+          {state.winner === myPlayer && (
+            <>
+              <img src="/animations/fogos.gif" alt="Fogos" style={{ position: 'absolute', left: '6%', top: '12%', width: 360, maxWidth: '40vw', opacity: 0.9, zIndex: 0, pointerEvents: 'none' }} />
+              <img src="/animations/fogos.gif" alt="Fogos" style={{ position: 'absolute', right: '6%', top: '12%', width: 360, maxWidth: '40vw', opacity: 0.9, zIndex: 0, pointerEvents: 'none' }} />
+              <img src="/animations/fogos.gif" alt="Fogos" style={{ position: 'absolute', left: '6%', bottom: '12%', width: 360, maxWidth: '40vw', opacity: 0.9, zIndex: 0, pointerEvents: 'none' }} />
+              <img src="/animations/fogos.gif" alt="Fogos" style={{ position: 'absolute', right: '6%', bottom: '12%', width: 360, maxWidth: '40vw', opacity: 0.9, zIndex: 0, pointerEvents: 'none' }} />
+            </>
+          )}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 24, position: 'relative', zIndex: 1 }}>
             {state.winner === myPlayer ? (
               <>
-                <img src="/assets/trofeu.png" alt="Troféu" style={{ width: 360, maxWidth: '60vw' }} />
+                <img src="/assets/trofeu.png" alt="Troféu" style={{ width: 360, maxWidth: '60vw', position: 'relative', zIndex: 1 }} />
                 <div className="victoryText" aria-label="YOU WIN!" style={{ color: '#ffd24d', textShadow: '0 0 12px rgba(255,210,77,0.6)', fontFamily: "'Jersey 10', sans-serif" }}>
                   {/* Texto com animação letra a letra e exclamação piscando */}
                   {(() => {
@@ -557,11 +639,12 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
                 </div>
               </>
             ) : (
-              <div style={{ fontSize: '9dvh', color: '#ff5a5a', textShadow: '0 0 10px rgba(255,90,90,0.5)', fontFamily: "'Jersey 10', sans-serif" }}>GAME OVER</div>
+              <div style={{ fontSize: '9dvh', color: '#ff5a5a', textShadow: '0 0 10px rgba(255,90,90,0.5)', fontFamily: "'Jersey 10', sans-serif", position: 'relative', zIndex: 1 }}>GAME OVER</div>
             )}
             <button onClick={() => { if (onExit) onExit(); }} style={{
-              background: '#8b0000', color: '#fff', border: 'none', padding: '12px 18px', borderRadius: 10,
-              cursor: 'pointer', fontSize: 18, fontWeight: 800
+              background: '#8b0000', color: '#fff', border: 'none', padding: '12px 18px',
+              cursor: 'pointer', fontSize: 18, fontWeight: 800, position: 'relative', zIndex: 1,
+              boxShadow: '0 2px 0 #000'
             }}>Sair da sala</button>
           </div>
         </div>

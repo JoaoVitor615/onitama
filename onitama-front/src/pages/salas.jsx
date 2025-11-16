@@ -26,6 +26,7 @@ function Salas() {
   const [poderes, setPoderes] = useState([]);
   const [selectedPoderIds, setSelectedPoderIds] = useState([null, null, null]);
   const [pendingAction, setPendingAction] = useState(null); // { type: 'create' | 'enter', codigo?: string }
+  const [isEntering, setIsEntering] = useState(false); // bloqueio de tela ao entrar/criar
 
   const carregar = useCallback(async () => {
     try {
@@ -192,46 +193,60 @@ function Salas() {
   };
 
   const handleJogar = async () => {
+    setIsEntering(true);
     try {
       if (pendingAction?.type === 'create') {
         const s = await criarSala();
         await carregar();
         const codigo = s?.codigo || s?.data?.codigo;
         if (codigo) {
-          try { new Audio('/sound/fx/ui/positivo_6.wav').play().catch(() => {}); } catch (_) {}
+          try { new Audio('/sound/fx/ui/japanese_drum.mp3').play().catch(() => {}); } catch (_) {}
           navigate(`/onitama?codigo=${encodeURIComponent(codigo)}`);
         }
       } else if (pendingAction?.type === 'enter' && pendingAction.codigo) {
         await entrarSala({ codigo: pendingAction.codigo });
         await carregar();
-        try { new Audio('/sound/fx/ui/positivo_6.wav').play().catch(() => {}); } catch (_) {}
+        try { new Audio('/sound/fx/ui/japanese_drum.mp3').play().catch(() => {}); } catch (_) {}
         navigate(`/onitama?codigo=${encodeURIComponent(pendingAction.codigo)}`);
       }
     } catch (e) {
       alert('Não foi possível iniciar a partida.');
+      setIsEntering(false);
     } finally {
       setShowModal(false);
       setPendingAction(null);
+      // Em caso de sucesso, a navegação troca de tela; em erro já desbloqueamos acima
     }
   };
 
   return (
     <div className={styles.container}>
+      <button
+        onClick={() => navigate('/menu')}
+        aria-label="Voltar"
+        style={{
+          position: 'fixed', top: 16, left: 16, zIndex: 3001,
+          background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+          outline: 'none', boxShadow: 'none', appearance: 'none', WebkitAppearance: 'none', MozAppearance: 'none',
+          backgroundColor: 'transparent'
+        }}
+      >
+        <img src={'/icons/seta.png'} alt="Voltar" style={{ width: 40, height: 40, border: 'none', display: 'block' }} />
+      </button>
       <div className={styles.header}>
         <h1 className={styles.titulo}>Salas de Jogo</h1>
-        <div style={{ display: 'flex', gap: 12 }}>
-          <button onClick={handleCriarSala}>Criar</button>
-          <button onClick={() => navigate('/menu')}>Menu</button>
-        </div>
       </div>
       <p className={styles.subtitulo}>Escolha uma sala para jogar</p>
+
+      <div>
+        <button className={styles.salaBtn} onClick={handleCriarSala}>Criar sala</button>
+      </div>
 
       <div className={styles.gridSalas}>
         {salas.length === 0 && !loading && (
           <div className={styles.cardSala}>
             <div className={styles.cardHeader}>
               <h3 className={styles.nomeSala}>Nenhuma sala disponível</h3>
-              <span className={`${styles.dificuldade} ${styles.facil}`}>Fácil</span>
             </div>
             <div className={styles.cardContent}>
               <span className={styles.lotacao}>0/2 jogadores</span>
@@ -249,7 +264,6 @@ function Salas() {
             <div className={styles.cardSala} key={codigo || idx}>
               <div className={styles.cardHeader}>
                 <h3 className={styles.nomeSala}>{nome}</h3>
-                <span className={`${styles.dificuldade} ${styles.facil}`}>Fácil</span>
               </div>
               <div className={styles.cardContent}>
                 <span className={styles.lotacao}>{jogadores}/{capacidade} jogadores</span>
@@ -260,28 +274,32 @@ function Salas() {
         })}
       </div>
 
+      <div className={styles.actionsBottom}>
+        <button className={styles.salaBtn} onClick={() => navigate('/menu')}>Menu</button>
+      </div>
+
       {showModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }}>
-          <div style={{ width: 720, maxWidth: '90vw', borderRadius: 12, background: 'rgba(20,20,20,0.85)', border: '1px solid #666', color: '#fff', padding: 24 }}>
+          <div style={{ width: 860, maxWidth: '92vw', borderRadius: 12, background: 'rgba(20,20,20,0.85)', border: '1px solid #666', color: '#fff', padding: 28 }}>
             <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-              <button onClick={() => setModalTab('skins')} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #777', background: modalTab === 'skins' ? '#444' : '#222', color: '#fff' }}>Skins</button>
-              <button onClick={() => setModalTab('mapas')} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #777', background: modalTab === 'mapas' ? '#444' : '#222', color: '#fff' }}>Cenários</button>
-              <button onClick={() => setModalTab('poderes')} style={{ padding: '8px 12px', borderRadius: 8, border: '1px solid #777', background: modalTab === 'poderes' ? '#444' : '#222', color: '#fff' }}>Poderes</button>
+              <button onClick={() => setModalTab('skins')} style={{ padding: '8px 12px', border: '1px solid #777', background: modalTab === 'skins' ? '#444' : '#222', color: '#fff' }}>Skins</button>
+              <button onClick={() => setModalTab('mapas')} style={{ padding: '8px 12px', border: '1px solid #777', background: modalTab === 'mapas' ? '#444' : '#222', color: '#fff' }}>Cenários</button>
+              <button onClick={() => setModalTab('poderes')} style={{ padding: '8px 12px', border: '1px solid #777', background: modalTab === 'poderes' ? '#444' : '#222', color: '#fff' }}>Poderes</button>
             </div>
 
             {modalTab === 'skins' && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
-                <button onClick={() => changeSkinIndex(activeIndex - 1)} style={{ padding: 8, borderRadius: 8, border: '1px solid #777', background: '#222', color: '#fff' }}>{'<'}</button>
+                <button onClick={() => changeSkinIndex(activeIndex - 1)} style={{ padding: 8, border: '1px solid #777', background: '#222', color: '#fff' }}>{'<'}</button>
                 <div style={{ width: 280, height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.3)', borderRadius: 12 }}>
                   <img src={skinImageSrc} alt="Skin ativa" style={{ maxWidth: '100%', maxHeight: '100%' }} />
                 </div>
-                <button onClick={() => changeSkinIndex(activeIndex + 1)} style={{ padding: 8, borderRadius: 8, border: '1px solid #777', background: '#222', color: '#fff' }}>{'>'}</button>
+                <button onClick={() => changeSkinIndex(activeIndex + 1)} style={{ padding: 8, border: '1px solid #777', background: '#222', color: '#fff' }}>{'>'}</button>
               </div>
             )}
 
             {modalTab === 'mapas' && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
-                <button onClick={() => changeMapIndex(activeMapIndex - 1)} style={{ padding: 8, borderRadius: 8, border: '1px solid #777', background: '#222', color: '#fff' }}>{'<'}</button>
+                <button onClick={() => changeMapIndex(activeMapIndex - 1)} style={{ padding: 8, border: '1px solid #777', background: '#222', color: '#fff' }}>{'<'}</button>
                 <div style={{ width: 360, height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.3)', borderRadius: 12 }}>
                   {mapas.length ? (
                     <img src={mapImageSrc} alt="Cenário ativo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
@@ -289,20 +307,20 @@ function Salas() {
                     <span style={{ color: '#bbb' }}>Nenhum cenário disponível</span>
                   )}
                 </div>
-                <button onClick={() => changeMapIndex(activeMapIndex + 1)} style={{ padding: 8, borderRadius: 8, border: '1px solid #777', background: '#222', color: '#fff' }}>{'>'}</button>
+                <button onClick={() => changeMapIndex(activeMapIndex + 1)} style={{ padding: 8, border: '1px solid #777', background: '#222', color: '#fff' }}>{'>'}</button>
               </div>
             )}
 
             {modalTab === 'poderes' && (
-              <div style={{ padding: 16 }}>
-                <div style={{ marginBottom: 12, color: '#fff', fontWeight: 'bold' }}>Selecione até 3 poderes ativos</div>
+              <div style={{ padding: 20 }}>
+                <div style={{ marginBottom: 14, color: '#fff', fontWeight: 'bold', fontSize: 20 }}>Selecione até 3 poderes ativos</div>
                 {[0,1,2].map((slot) => {
                   const currentId = selectedPoderIds[slot];
                   const current = poderes.find((p) => p.id_produto === currentId) || null;
                   const label = current ? (current.nome || `Poder ${current.id_produto}`) : 'Nenhum';
                   return (
-                    <div key={slot} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
-                      <div style={{ width: 28, textAlign: 'right', color: '#bbb' }}>Slot {slot+1}:</div>
+                    <div key={slot} style={{ display: 'flex', alignItems: 'center', gap: 18, marginBottom: 14 }}>
+                      <div style={{ width: 120, minWidth: 120, textAlign: 'right', color: '#bbb', whiteSpace: 'nowrap', fontSize: 16 }}>-Slot {slot+1}</div>
                       <select
                         value={currentId ?? ''}
                         onChange={async (e) => {
@@ -320,17 +338,17 @@ function Salas() {
                             alert('Não foi possível atualizar o poder ativo.');
                           }
                         }}
-                        style={{ padding: '8px 10px', borderRadius: 8, background: '#222', color: '#fff', border: '1px solid #777', minWidth: 220 }}
+                        style={{ padding: '10px 12px', borderRadius: 8, background: '#222', color: '#fff', border: '1px solid #777', minWidth: 280 }}
                       >
                         <option value="">Nenhum</option>
                         {poderes.map((p) => (
                           <option key={p.id_produto} value={p.id_produto}>{p.nome || `Poder ${p.id_produto}`}</option>
                         ))}
                       </select>
-                      <div style={{ width: 36, height: 36, borderRadius: 8, background: '#333', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ width: 40, height: 40, borderRadius: 8, background: '#333', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: '0 0 auto' }}>
                         {current ? ((current.id_produto === 5) ? '💣' : (current.id_produto === 11 ? '💖' : (current.id_produto === 12 ? '🔄' : '✨'))) : '—'}
                       </div>
-                      <div style={{ color: '#bbb', fontSize: 12 }}>{label}</div>
+                      <div style={{ color: '#bbb', fontSize: 14, whiteSpace: 'nowrap' }}>{label}</div>
                     </div>
                   );
                 })}
@@ -341,9 +359,16 @@ function Salas() {
             )}
 
             <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 24 }}>
-              <button onClick={() => { setShowModal(false); setPendingAction(null); }} style={{ padding: '10px 16px', borderRadius: 8, border: '1px solid #777', background: '#222', color: '#fff' }}>Cancelar</button>
-              <button onClick={handleJogar} style={{ padding: '10px 16px', borderRadius: 8, border: '1px solid #0a8', background: '#0a8', color: '#fff' }}>Jogar</button>
+              <button onClick={() => { setShowModal(false); setPendingAction(null); }} style={{ padding: '10px 16px', border: '1px solid #777', background: '#222', color: '#fff' }}>Cancelar</button>
+              <button onClick={handleJogar} style={{ padding: '10px 16px', border: '1px solid #0a8', background: '#0a8', color: '#fff' }}>Jogar</button>
             </div>
+          </div>
+        </div>
+      )}
+      {isEntering && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999 }}>
+          <div style={{ color: '#fff', fontFamily: "Press Start 2P, system-ui", fontSize: 18, background: 'rgba(0,0,0,0.4)', padding: '16px 24px', boxShadow: '0 4px 16px rgba(0,0,0,0.5)' }}>
+            entrando na sala...
           </div>
         </div>
       )}

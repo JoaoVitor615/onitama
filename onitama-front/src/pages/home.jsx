@@ -14,7 +14,7 @@ function Home() {
     const user = email.trim();
     const pass = senha;
     if (!user || !pass) {
-      alert("Preencha usuário (email) e senha.");
+      notifyPurchase({ type: "login_error", name: "Preencha usuário (email) e senha." });
       return;
     }
     try {

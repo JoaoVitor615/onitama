@@ -11,6 +11,14 @@ export async function loginUsuario(email, senha) {
   });
 }
 
+export async function cadastrarUsuario(nome, email, senha) {
+  // Backend cria quando não há id_usuario; enviaremos apelido, email e senha
+  return httpFetch('/api/usuarios/gravar', {
+    method: 'POST',
+    body: JSON.stringify({ apelido: nome, email, senha }),
+  });
+}
+
 export async function atualizarMoedas(id_usuario, moedas) {
   return httpFetch('/api/usuarios/gravar', {
     method: 'POST',

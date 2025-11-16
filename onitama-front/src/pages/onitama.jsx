@@ -4,6 +4,7 @@ import { joinSala } from "../api/ws";
 import { getUsuarioId } from "../api/http";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import GameOnitama from "../components/onitama/GameOnitama";
+import { stopBgMusic, playBattleMusic, stopBattleMusic } from "../utils/bgMusic";
 import PurchaseNotification from "../components/ui/PurchaseNotification";
 
 function Onitama() {
@@ -17,6 +18,13 @@ function Onitama() {
   const [leaving, setLeaving] = useState(false);
   const usuarioId = useMemo(() => getUsuarioId(), []);
   const wsUrl = useMemo(() => (import.meta.env.VITE_WS_URL || "ws://127.0.0.1:8081"), []);
+
+  // Salvaguarda: garantir que a trilha esteja parada ao entrar na gameplay
+  useEffect(() => {
+    try { stopBgMusic(); } catch (_) {}
+    try { playBattleMusic('/sound/music/japan_battle_2.ogg', { loop: true, volume: 0.25 }); } catch (_) {}
+    return () => { try { stopBattleMusic(); } catch (_) {} };
+  }, []);
 
   // Carrega uma vez os dados da sala (sem polling) para estado inicial
   useEffect(() => {

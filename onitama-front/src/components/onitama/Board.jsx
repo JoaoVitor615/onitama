@@ -8,11 +8,13 @@ export function Board({ board, currentPlayer, selected, validMoves, onSelect, on
   const containerRef = useRef(null);
   const missileRef = useRef(null);
   const animatingRef = useRef(false);
+  const explosionPosRef = useRef({ x: 0, y: 0 });
   const [bombVisible, setBombVisible] = useState(false);
   const [missileStart, setMissileStart] = useState({ x: 0, y: -24 });
   const [missileEnd, setMissileEnd] = useState({ x: 0, y: 0 });
   const [explosionVisible, setExplosionVisible] = useState(false);
   const [explosionPos, setExplosionPos] = useState({ x: 0, y: 0 });
+  const [explosionSize, setExplosionSize] = useState(80);
   const [healVisible, setHealVisible] = useState(false);
   const [healPos, setHealPos] = useState({ x: 0, y: 0 });
   const [swapVisible, setSwapVisible] = useState(false);
@@ -33,12 +35,23 @@ export function Board({ board, currentPlayer, selected, validMoves, onSelect, on
     const cellEl = container.querySelector(`[data-cell="${bombTarget.y}-${bombTarget.x}"]`);
     if (!cellEl) { console.warn('[Bomba] célula alvo não encontrada', bombTarget); return; }
     const rr = cellEl.getBoundingClientRect();
-    const endX = rr.left + rr.width / 2; // coordenada de tela (viewport)
-    const endY = rr.top + rr.height / 2;  // coordenada de tela (viewport)
-    console.log('[Bomba] alvo (centro da peça em viewport):', { cell: `${bombTarget.y}-${bombTarget.x}`, endX, endY });
-    console.log('[Bomba] origem (topo da tela):', { x: endX, y: 0 });
-    setMissileStart({ x: endX, y: 0 });
-    setMissileEnd({ x: endX, y: endY });
+    const cr = container.getBoundingClientRect();
+    // Coordenadas no viewport (míssil começa do topo da tela)
+    const endXv = rr.left + rr.width / 2;
+    const endYv = rr.top + rr.height / 2;
+    // Coordenadas relativas ao container (explosão ancorada ao tabuleiro)
+    const endXc = (rr.left - cr.left) + rr.width / 2;
+    const endYc = (rr.top - cr.top) + rr.height / 2;
+    // guarda tamanho da célula para dimensionar a explosão proporcionalmente
+    setExplosionSize(Math.min(rr.width, rr.height) * 0.9);
+    console.log('[Bomba] alvo (viewport):', { cell: `${bombTarget.y}-${bombTarget.x}`, endX: endXv, endY: endYv });
+    console.log('[Bomba] alvo (container):', { endX: endXc, endY: endYc });
+    console.log('[Bomba] origem (topo da tela):', { x: endXv, y: 0 });
+    // Míssil ancorado ao viewport, vindo do topo da tela
+    setMissileStart({ x: endXv, y: 0 });
+    setMissileEnd({ x: endXv, y: endYv });
+    // Guarda alvo da explosão relativo ao container
+    explosionPosRef.current = { x: endXc, y: endYc };
     setBombVisible(true);
   }, [bombTarget]);
 
@@ -47,8 +60,9 @@ export function Board({ board, currentPlayer, selected, validMoves, onSelect, on
     if (!(bombVisible && missileRef.current)) return;
     if (animatingRef.current) return; // evita múltiplos disparos
     const duration = 2000;
-    const endY = missileEnd.y;
-    const endX = missileStart.x;
+    const endY = missileEnd.y; // viewport
+    const endX = missileStart.x; // viewport
+    const endC = explosionPosRef.current || { x: endX, y: endY };
     console.log('[Bomba] iniciar animação', { from: missileStart, to: missileEnd, duration });
     animatingRef.current = true;
     (async () => {
@@ -64,9 +78,10 @@ export function Board({ board, currentPlayer, selected, validMoves, onSelect, on
           duration,
           complete: () => {
             console.log('[Bomba] animação concluída em', { x: endX, y: endY });
+            try { new Audio('/poderes/bomba/bomba_hit.mp3').play().catch(() => {}); } catch (_) {}
             setBombVisible(false);
             animatingRef.current = false;
-            setExplosionPos({ x: endX, y: endY });
+            setExplosionPos({ x: endC.x, y: endC.y });
             setExplosionVisible(true);
             setTimeout(() => {
               setExplosionVisible(false);
@@ -87,9 +102,10 @@ export function Board({ board, currentPlayer, selected, validMoves, onSelect, on
           ], { duration, easing: 'ease-in', fill: 'forwards' });
           anim.onfinish = () => {
             console.log('[Bomba] animação (WAAPI) concluída em', { x: endX, y: endY });
+            try { new Audio('/poderes/bomba/bomba_hit.mp3').play().catch(() => {}); } catch (_) {}
             setBombVisible(false);
             animatingRef.current = false;
-            setExplosionPos({ x: endX, y: endY });
+            setExplosionPos({ x: endC.x, y: endC.y });
             setExplosionVisible(true);
             setTimeout(() => {
               setExplosionVisible(false);
@@ -114,6 +130,7 @@ export function Board({ board, currentPlayer, selected, validMoves, onSelect, on
 
   useEffect(() => {
     if (!healVisible || !healRef.current) return;
+    try { new Audio(encodeURI('/sound/fx/power ups/poder_heal.wav')).play().catch(() => {}); } catch (_) {}
     try {
       const el = healRef.current;
       el.animate([
@@ -147,6 +164,7 @@ export function Board({ board, currentPlayer, selected, validMoves, onSelect, on
 
   useEffect(() => {
     if (!swapVisible) return;
+    try { new Audio(encodeURI('/sound/fx/power ups/poder_swap.wav')).play().catch(() => {}); } catch (_) {}
     try {
       const run = (el) => el && el.animate([
         { opacity: 0, transform: 'translate(-50%, -50%) rotate(-20deg) scale(0.7)' },
@@ -259,12 +277,12 @@ export function Board({ board, currentPlayer, selected, validMoves, onSelect, on
           src="/animations/explosion.gif"
           alt="explosão"
           style={{
-            position: 'fixed',
+            position: 'absolute',
             left: `${explosionPos.x}px`,
             top: `${explosionPos.y}px`,
             transform: 'translate(-50%, -50%)',
-            width: 80,
-            height: 80,
+            width: `${explosionSize}px`,
+            height: `${explosionSize}px`,
             pointerEvents: 'none',
             zIndex: 9999
           }}

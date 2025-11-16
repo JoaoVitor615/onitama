@@ -12,14 +12,14 @@
   justify-content: flex-start;
   text-align: center;
   overflow: hidden;
-  padding-top: 40px;
+  padding-top: 90px;
 }
 
 /* ====== HEADER ====== */
 .header {
   width: 100%;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   padding: 15px 60px;
   position: absolute;
@@ -63,15 +63,16 @@
 }
 
 .titulo {
-  font-size: 18px;
+  font-size: 28px;
   text-shadow: 2px 2px 4px #000;
   letter-spacing: 2px;
 }
 
 .subtitulo {
-  font-size: 10px;
+  font-size: 16px;
   color: #fff;
-  margin-bottom: 60px;
+  margin-top: 4px;
+  margin-bottom: 30px;
   text-shadow: 1px 1px 2px #000;
 }
 
@@ -101,7 +102,7 @@
   justify-content: center;
   gap: 22px;
   max-width: 900px;
-  margin-top: 10px;
+  margin-top: 48px;
 }
 
 /* ====== CARD DAS SALAS ====== */
@@ -127,14 +128,15 @@
 
 .cardHeader {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
 }
 
 .nomeSala {
-  font-size: 11px;
+  font-size: 18px;
   font-weight: bold;
   color: #333;
+  text-align: center;
 }
 
 /* ====== CONTEÚDO DO CARD ====== */
@@ -154,17 +156,21 @@
 
 /* ====== BOTÃO ENTRAR / CRIAR ====== */
 .botaoEntrar {
-  background: none;
   border: none;
   font-family: "Press Start 2P", cursive;
-  color: #d47929;
-  font-size: 10px;
+  font-size: 12px;
   cursor: pointer;
-  transition: 0.2s;
+  color: #a8190f;
+  background: none;
+  transition: all 0.2s ease-in-out;
 }
 
 .botaoEntrar:hover {
-  text-shadow: 0 0 4px #d47929;
+  background: #e6be0d;
+  border-color: #e6be0d;
+  color: #ffffff;
+
+  box-shadow: 0 0 8px #00000046, 0 0 16px #00000056;
   transform: scale(1.1);
 }
 /* ===== POPUP ===== */
@@ -259,4 +265,35 @@
 .popupCriar:hover {
   transform: scale(1.05);
   box-shadow: 0 0 6px #d47929;
+}
+.actionsBottom {
+  display: flex;
+  justify-content: center;
+  margin-top: 30px;
+}
+
+.actionsTop {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+  margin-bottom: 12px;
+}
+
+.salaBtn {
+  font-family: "Press Start 2P", cursive;
+  font-size: 16px;
+  letter-spacing: 1px;
+  color: #ffffff;
+  background: #a8190f;
+  padding: 10px 40px;
+  margin: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 2px #000;
+} 
+
+.salaBtn:hover {
+  background: #a8190fb0;
+  transform: scale(1.05);
 }

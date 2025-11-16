@@ -33,6 +33,10 @@
   top: 50px;
 }
 
+.register-content {
+  top: 200px;
+}
+
 .login-box {
   background-color: rgba(255, 255, 255, 0.85);
   border-radius: 12px;
