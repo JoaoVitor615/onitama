@@ -34,7 +34,6 @@ body {
 .aba {
   font-family: "Press Start 2P", cursive;
   background: #eaeaea;
-  border: 2px solid #d3a912;
   border-bottom: none;
   border-radius: 12px 12px 0 0;
   padding: 10px 25px;
@@ -46,13 +45,14 @@ body {
 }
 
 .aba.ativa {
-  background: #faf2c8;
-  border-bottom: 3px solid#d3a912;
+  background: #bd1919;
+  color: #fff;
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.15);
 }
 
 .aba:hover {
-  background: #fae46a;
+  background: #bd19199a;
+  color: #fff;
 }
 
 .painel-loja {
