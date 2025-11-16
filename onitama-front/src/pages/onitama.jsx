@@ -4,7 +4,7 @@ import { joinSala } from "../api/ws";
 import { getUsuarioId } from "../api/http";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import GameOnitama from "../components/onitama/GameOnitama";
-import { stopBgMusic, playBattleMusic, stopBattleMusic } from "../utils/bgMusic";
+import { stopBgMusic, playBattleMusic, stopBattleMusic, stopVictoryAudio } from "../utils/bgMusic";
 import PurchaseNotification from "../components/ui/PurchaseNotification";
 
 function Onitama() {
@@ -91,6 +91,8 @@ function Onitama() {
     if (!codigoParam || leaving) return;
     try {
       setLeaving(true);
+      try { stopBattleMusic(); } catch (_) {}
+      try { stopVictoryAudio(); } catch (_) {}
       await sairSala({ codigo: codigoParam });
     } catch (e) {
       // silencia erro; navega mesmo assim
