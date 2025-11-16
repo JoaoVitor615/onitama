@@ -63,6 +63,7 @@ export default function PurchaseNotification() {
       case 'power': return 'Poder conquistado!';
       case 'moedas':
       case 'coins': return 'Moedas adicionadas!';
+      case 'user_created': return 'Usuário criado!';
       case 'error':
       case 'login_error': return 'Falha no login';
       case 'already_owned': return 'Item já adquirido';
