@@ -1,4 +1,6 @@
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { useEffect } from "react";
+import { enableHoverSound } from "./utils/hoverSound";
 import Home from "./pages/home";
 import RegisterPage from "./pages/register";
 import Menu from "./pages/menu";
@@ -23,6 +25,20 @@ function RequireAuth({ children }) {
 }
 
 function App() {
+  const location = useLocation();
+
+  useEffect(() => {
+    // Desabilita som de hover na tela de gameplay (/onitama)
+    const onGameplay = (location.pathname || "").startsWith("/onitama");
+    let cleanup;
+    if (!onGameplay) {
+      cleanup = enableHoverSound();
+    }
+    return () => {
+      if (cleanup) cleanup();
+    };
+  }, [location.pathname]);
+
   return (
     <div className="App">
       <Routes>
