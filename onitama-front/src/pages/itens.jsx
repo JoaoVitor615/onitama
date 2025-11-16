@@ -214,10 +214,14 @@ function Itens() {
         ) : (
           <div className="grid-skins">
             {filtrados.map(prod => (
-              <div key={prod.id_produto} className="card-skin">
+              <div
+                key={prod.id_produto}
+                className={`card-skin ${Number(prod.id_tipo_produto) === TIPO.PODER ? 'card-power' : ''}`}
+                title={Number(prod.id_tipo_produto) === TIPO.PODER ? (Number(prod.id_produto) === 5 ? 'Bomba: elimina instantaneamente um peão adversário (Não tem efeito no mestre)' : (Number(prod.id_produto) === 11 ? 'Heal: Revive o último peão eliminado para sua posição de origem ou mais próxima disponível (Não tem efeito no mestre)' : (Number(prod.id_produto) === 12 ? 'Troca: Possibilita trocar o posicionamento do mestre com algum dos peões' : undefined))) : undefined}
+              >
                 <div style={{ fontWeight: 800 }}>{prod.nome}</div>
                 {prod.imagem ? (
-                  <img src={getProdutoImagemSrc(prod)} alt={prod.nome} className="imagem-skin" />
+                  <img src={getProdutoImagemSrc(prod)} alt={prod.nome} className="imagem-skin" title={Number(prod.id_tipo_produto) === TIPO.PODER ? (Number(prod.id_produto) === 5 ? 'Bomba: elimina instantaneamente um peão adversário (Não tem efeito no mestre)' : (Number(prod.id_produto) === 11 ? 'Heal: Revive o último peão eliminado para sua posição de origem ou mais próxima disponível (Não tem efeito no mestre)' : (Number(prod.id_produto) === 12 ? 'Troca: Possibilita trocar o posicionamento do mestre com algum dos peões' : undefined))) : undefined} />
                 ) : (
                   <div style={{ height: 120, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: 0.7 }}>
                     <span>Sem imagem</span>
@@ -239,7 +243,7 @@ function Itens() {
                 </div>
 
                 {Number(prod.id_tipo_produto) === TIPO.PODER ? (
-                  <div style={{ marginTop: 6, fontSize: 12, opacity: 0.9 }}>
+                  <div style={{ marginTop: 12, fontSize: 16, opacity: 0.95 }}>
                     Você possui: <b>{quantidadesPorProduto.get(prod.id_produto) ?? 0}</b>
                   </div>
                 ) : null}
