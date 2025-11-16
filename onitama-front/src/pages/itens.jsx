@@ -92,6 +92,14 @@ function Itens() {
       return `/skins/${prod.imagem}/${prod.imagem}_mestre.${ext}`;
     }
     if (tipo === TIPO.PODER) {
+      // Loja: caso especial para o poder Bomba usar a imagem carta_missil.png
+      const nome = String(prod?.nome || '').toLowerCase();
+      const imagem = String(prod?.imagem || '').toLowerCase();
+      if (nome === 'bomba' || imagem.includes('bomba')) {
+        // Arquivo físico: public/assets/carta_missil.png
+        // Rota servida pelo frontend: /assets/carta_missil.png
+        return `/assets/carta_missil.png`;
+      }
       // Poderes: imagens em public/assets/<imagem>.<extensao>
       return `/assets/${prod.imagem}.${ext}`;
     }
