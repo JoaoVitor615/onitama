@@ -229,7 +229,7 @@ function Itens() {
                 )}
 
                 <div className="preco-container">
-                  <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, padding: 15 }}>
                     <img src="/icons/coin.png" alt="Preço" style={{ width: 20, height: 20 }} />
                     <b>{prod.preco ?? 0}</b>
                   </span>

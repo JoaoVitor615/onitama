@@ -59,11 +59,7 @@ body {
   width: 95%;
   max-width: 1500px;
   height: 560px;
-  background: rgba(255, 255, 255, 0.9);
-  border: 3px solid #f0cb27;
-  border-radius: 0 0 15px 15px;
   padding: 10px;
-  box-shadow: 0 0 30px rgba(0, 0, 0, 0.4);
   position: relative;
 }
 
@@ -86,11 +82,15 @@ body {
 }
 
 .card-skin {
+  font-family: "Press Start 2P", cursive;
   height: 370px;
-  background: white;
-  border-radius: 10px;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+  color: white;
+  background: rgba(255, 176, 176, 0.397);
+  box-shadow: 0px 5px #660e0e, 0px -5px #660e0e, 5px 0px #660e0e, -5px 0px #660e0e,
+              0px 10px #00000038, 5px 5px #00000038, -5px 5px #00000038,
+              inset 0px 5px #ffffff36;
   text-align: center;
+  text-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
   padding: 15px;
   transition: transform 0.2s ease;
 }
