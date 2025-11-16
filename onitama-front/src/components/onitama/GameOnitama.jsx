@@ -5,6 +5,7 @@ import { CardPanel } from './CardPanel';
 import { emitGameState, subscribeGameState } from '../../api/ws';
 import { carregarUsuarioPorHash, atualizarMoedas } from '../../api/usuarios';
 import { getUsuarioHash } from '../../api/http';
+import { stopBattleMusic } from '../../utils/bgMusic';
 
 /**
  * GameOnitama: modo local (single-client) por enquanto; integração WS será feita depois.
@@ -93,11 +94,24 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
     }
   }, [state?.winner, myPlayer]);
 
+  // Ao finalizar a partida, parar a música de batalha para todos
+  useEffect(() => {
+    if (state?.winner) {
+      try { stopBattleMusic(); } catch (_) {}
+    }
+  }, [state?.winner]);
+
   // Som de vitória: toca apenas para o jogador vencedor
   useEffect(() => {
     if (state?.winner && myPlayer === state.winner && !playedWinSoundRef.current) {
       playedWinSoundRef.current = true;
-      try { new Audio('/sound/fx/ui/som_vitoria.mp3').play().catch(() => {}); } catch (_) {}
+      try {
+        // Tocar dois sons simultaneamente na tela de vitória
+        const horn = new Audio('/sound/music/buzina.mp3');
+        const champions = new Audio('/sound/music/we-are-the-champions.mp3');
+        horn.play().catch(() => {});
+        champions.play().catch(() => {});
+      } catch (_) {}
     }
     if (!state?.winner) {
       playedWinSoundRef.current = false;
