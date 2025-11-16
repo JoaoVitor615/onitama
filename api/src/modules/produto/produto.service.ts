@@ -39,4 +39,8 @@ export class ProdutoService {
         return await this.produtoRepository.CarregarPorNome(nome);
     }
 
+    async CarregarPorNomeETipo(nome: string, idTipo: number) {
+        return await this.produtoRepository.CarregarPorNomeETipo(nome, idTipo);
+    }
+
 }
