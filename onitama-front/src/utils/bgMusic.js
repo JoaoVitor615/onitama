@@ -1,6 +1,8 @@
 let audio;
 let listenersAttached = false;
 let suppressed = false; // quando true, não deve tocar (ex.: gameplay)
+let battleAudio;
+let battleListenersAttached = false;
 
 function isGameplayRoute() {
   try {
@@ -90,4 +92,44 @@ export function setBgTrack(src, opts = {}) {
   if (typeof opts.loop === 'boolean') a.loop = opts.loop;
   if (typeof opts.volume === 'number') a.volume = Math.max(0, Math.min(1, opts.volume));
   if (opts.restart) a.currentTime = 0;
+}
+// ===== BATTLE MUSIC (gameplay) =====
+function getBattleAudio() {
+  if (!battleAudio) {
+    battleAudio = new Audio('/sound/music/japan_battle_2.ogg');
+    battleAudio.loop = true;
+    battleAudio.volume = 0.25;
+  }
+  return battleAudio;
+}
+
+export function playBattleMusic(src = '/sound/music/japan_battle_2.ogg', opts = {}) {
+  const b = getBattleAudio();
+  if (src) {
+    const absolute = new URL(src, window.location.origin).href;
+    if (b.src !== absolute) b.src = src;
+  }
+  if (typeof opts.loop === 'boolean') b.loop = opts.loop;
+  if (typeof opts.volume === 'number') b.volume = Math.max(0, Math.min(1, opts.volume));
+  if (opts.restart) b.currentTime = 0;
+
+  b.muted = false;
+
+  if (!battleListenersAttached) {
+    const resumeOnInteraction = () => {
+      b.play().catch(() => {});
+      document.removeEventListener('click', resumeOnInteraction);
+    };
+    document.addEventListener('click', resumeOnInteraction, { once: true });
+    battleListenersAttached = true;
+  }
+
+  b.play().catch(() => {});
+}
+
+export function stopBattleMusic() {
+  const b = getBattleAudio();
+  b.pause();
+  b.currentTime = 0;
+  b.muted = true;
 }
