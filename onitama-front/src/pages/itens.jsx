@@ -137,9 +137,9 @@ function Itens() {
     <div className="loja-fundo">
       <PurchaseNotification />
 
-      {/* Botão de voltar no topo esquerdo (seta invertida) */}
+      {/* Botão de voltar no topo esquerdo */}
       <button
-        onClick={() => navigate(-1)}
+        onClick={() => navigate('/menu')}
         aria-label="Voltar"
         style={{
           position: 'fixed', top: 16, left: 16, zIndex: 3001,
@@ -148,11 +148,7 @@ function Itens() {
           backgroundColor: 'transparent'
         }}
       >
-        <img
-          src={'/assets/arrow-right.png'}
-          alt="Voltar"
-          style={{ width: 40, height: 40, transform: 'scaleX(-1)', border: 'none', display: 'block' }}
-        />
+        <img src={'/icons/seta.png'} alt="Voltar" style={{ width: 40, height: 40, border: 'none', display: 'block' }} />
       </button>
 
       {/* Abas */}
