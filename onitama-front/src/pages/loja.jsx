@@ -120,15 +120,13 @@ function Loja() {
       <div className="painel-loja">
         <div className="grid-skins">
           {produtos.map((p) => (
-            <div key={p.id} className="card-skin">
+            <div key={p.id} className="card-skin card-loja">
+              <div className="quantidade-texto">{p.quantidade} MOEDAS</div>
               <img src={p.imagem} alt={`Produto ${p.id}`} className="imagem-skin" />
-              <div className="preco-container">
-                <div>{p.preco}</div>
-                <div>{p.quantidade} MOEDAS</div>
-                <button className="botao-comprar" disabled={loadingId === p.id} onClick={() => comprar(p)}>
-                  {loadingId === p.id ? 'PROCESSANDO...' : 'COMPRAR'}
-                </button>
-              </div>
+              <div className="preco-texto">{p.preco}</div>
+              <button className="botao-comprar" disabled={loadingId === p.id} onClick={() => comprar(p)}>
+                {loadingId === p.id ? 'PROCESSANDO...' : 'COMPRAR'}
+              </button>
             </div>
           ))}
         </div>

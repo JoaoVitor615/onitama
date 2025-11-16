@@ -71,6 +71,7 @@ export default function PurchaseNotification() {
     }
   })();
   const desc = data?.name || (data?.amount ? `${data.amount} moedas` : '');
+  const isLoginError = data?.type === 'login_error' || data?.type === 'error';
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 6000, pointerEvents: 'none' }}>
@@ -79,13 +80,13 @@ export default function PurchaseNotification() {
         background: 'linear-gradient(135deg, rgba(255,140,0,0.95), rgba(255,30,30,0.95))',
         color: '#fff', border: '2px solid rgba(255,255,255,0.8)',
         textShadow: '0 0 8px rgba(0,0,0,0.35)', boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
-        borderRadius: 14, padding: '14px 18px', minWidth: 260,
-        display: 'flex', alignItems: 'center', gap: 12
+        borderRadius: 14, padding: isLoginError ? '18px 24px' : '14px 18px', minWidth: isLoginError ? 340 : 260,
+        display: 'flex', alignItems: 'center', gap: isLoginError ? 14 : 12
       }}>
-        <div style={{ fontSize: 28 }}>✨</div>
+        <div style={{ fontSize: isLoginError ? 36 : 28 }}>✨</div>
         <div>
-          <div style={{ fontWeight: 900, fontSize: 18 }}>{title}</div>
-          {desc ? (<div style={{ fontSize: 13, opacity: 0.95 }}>{desc}</div>) : null}
+          <div style={{ fontWeight: 900, fontSize: isLoginError ? 22 : 18 }}>{title}</div>
+          {desc ? (<div style={{ fontSize: isLoginError ? 16 : 13, opacity: 0.95 }}>{desc}</div>) : null}
         </div>
       </div>
     </div>
