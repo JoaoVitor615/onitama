@@ -95,6 +95,10 @@ body {
   transition: transform 0.2s ease;
 }
 
+.card-power {
+  height: 480px;
+}
+
 .card-loja {
   display: flex;
   flex-direction: column;
