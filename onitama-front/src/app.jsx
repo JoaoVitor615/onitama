@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useEffect } from "react";
 import { enableHoverSound } from "./utils/hoverSound";
+import { initBgMusic, playBgMusic, stopBgMusic, setBgTrack } from "./utils/bgMusic";
 import Home from "./pages/home";
 import RegisterPage from "./pages/register";
 import Menu from "./pages/menu";
@@ -33,6 +34,12 @@ function App() {
     let cleanup;
     if (!onGameplay) {
       cleanup = enableHoverSound();
+      initBgMusic();
+      setBgTrack('/sound/fx/ui/japanese_soundtrack.mp3', { loop: true, volume: 0.2 });
+      playBgMusic();
+    } else {
+      initBgMusic();
+      stopBgMusic();
     }
     return () => {
       if (cleanup) cleanup();
