@@ -48,10 +48,14 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
     return String(base).toLowerCase() === 'cachorro';
   }, [skins, myPlayer]);
 
-  // sincronização via WS: recebe estado
+  // sincronização via WS: recebe estado e inicializa com segurança
   useEffect(() => {
     if (!roomCode) return;
+    const hasReceivedStateRef = { current: false };
+    const initialSentRef = { current: false };
+
     const off = subscribeGameState(roomCode, (st) => {
+      hasReceivedStateRef.current = true;
       setState(st);
       setValidMoves([]);
       // reseta contagem de tempo ao receber novo estado
@@ -63,9 +67,24 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
       setActivePowerIdx(null);
       if (!st?.fx?.bombTarget) setBombTarget(null);
     });
-    // Ao montar e ser host, envia estado inicial
-    if (role === 'host') emitGameState(roomCode, state);
-    return () => off && off();
+
+    // Somente o host deve inicializar a partida caso não haja estado existente.
+    // Aguarda breve período para receber possível estado do servidor (memória/BD);
+    // se nada for recebido, envia estado inicial uma única vez.
+    let initTimer;
+    if (role === 'host') {
+      initTimer = setTimeout(() => {
+        if (!hasReceivedStateRef.current && !initialSentRef.current) {
+          emitGameState(roomCode, state);
+          initialSentRef.current = true;
+        }
+      }, 800);
+    }
+
+    return () => {
+      off && off();
+      if (initTimer) clearTimeout(initTimer);
+    };
   }, [roomCode, role]);
 
   // Timer de turno: atualiza restante e aplica passagem quando expira
