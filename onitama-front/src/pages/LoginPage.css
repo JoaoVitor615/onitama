@@ -46,6 +46,16 @@
   min-width: 600px;
 }
 
+.login-content .login-box {
+  background-color: transparent;
+  box-shadow: none;
+}
+
+.register-content .login-box {
+  background-color: transparent;
+  box-shadow: none;
+}
+
 .login-title {
   font-size: 3rem;
   color: #000;
@@ -121,4 +131,11 @@
   inset: 0;
   background: rgba(0, 0, 0, 0.25);
   z-index: 0;
+}
+.login-content .login-title {
+  color: #FFD700;
+}
+
+.login-content .login-links a {
+  color: #FFD700;
 }
