@@ -472,7 +472,7 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
           boxShadow: '0 8px 28px rgba(0,0,0,0.45)'
         }}>O MÍSSIL DEVE SER UTILIZADO APENAS EM PEÕES</div>
       )}
-      <div style={{ display: 'flex', gap: '16px', alignItems: 'flex-start' }}>
+      <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}>
         <Board
           board={state.board}
           currentPlayer={state.currentPlayer}
@@ -490,8 +490,8 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
           swapAt={swapAt}
         />
         {/* Painel de poderes (lado direito) */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', minWidth: '160px' }}>
-          <div style={{ color: '#fff', fontWeight: 'bold' }}>Poderes</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', minWidth: '220px' }}>
+          <div style={{ color: '#fff', fontWeight: 'bold', fontSize: '16px' }}>Poderes</div>
           {myPowers.map((p, idx) => {
             const used = state.powersUsed?.[myPlayer]?.[idx];
             const isActive = activePowerIdx === idx;
@@ -534,26 +534,26 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
                   setTimeout(() => useHeal(), 0);
                 }
               }} style={{
-                background: '#222', color: '#fff', borderRadius: '8px', padding: '8px',
+                background: '#222', color: '#fff', borderRadius: '10px', padding: '10px',
                 border: isActive ? '2px solid #4a90e2' : '1px solid #555',
                 cursor: canUse ? 'pointer' : 'default', opacity: canUse ? 1 : 0.6,
-                minHeight: '60px', display: 'flex', alignItems: 'center', gap: '8px'
+                minHeight: '80px', display: 'flex', alignItems: 'center', gap: '10px'
               }}>
-                <div style={{ width: '36px', height: '36px', borderRadius: '6px', background: '#333', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ width: '48px', height: '48px', borderRadius: '8px', background: '#333', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>
                   {p ? (p.id === 5 ? '💣' : (isHeal ? '💖' : (isMystic ? '🔄' : '✨'))) : '—'}
                 </div>
-                <div style={{ fontSize: '14px' }}>
+                <div style={{ fontSize: '16px' }}>
                   <div style={{ fontWeight: 'bold' }}>{label}</div>
-                  <div style={{ color: '#bbb', fontSize: '12px' }}>{used ? 'Usado' : (canUse ? (isActive ? 'Selecionado' : 'Disponível') : (isHeal && !hasDefeated ? 'Sem peças a restaurar' : (isMystic && !hasMyStudent ? 'Sem peões disponíveis' : 'Indisponível')))}</div>
+                  <div style={{ color: '#bbb', fontSize: '13px' }}>{used ? 'Usado' : (canUse ? (isActive ? 'Selecionado' : 'Disponível') : (isHeal && !hasDefeated ? 'Sem peças a restaurar' : (isMystic && !hasMyStudent ? 'Sem peões disponíveis' : 'Indisponível')))}</div>
                 </div>
               </div>
             );
           })}
           {activePowerIdx != null && myPowers[activePowerIdx]?.id === 5 && (
-            <div style={{ color: '#fff', fontSize: '12px' }}>Selecione uma peça inimiga para usar o poder.</div>
+            <div style={{ color: '#fff', fontSize: '13px' }}>Selecione uma peça inimiga para usar o poder.</div>
           )}
           {activePowerIdx != null && myPowers[activePowerIdx]?.id === MYSTIC_SWAP_ID && (
-            <div style={{ color: '#fff', fontSize: '12px' }}>Selecione um peão próprio para trocar com o Mestre.</div>
+            <div style={{ color: '#fff', fontSize: '13px' }}>Selecione um peão próprio para trocar com o Mestre.</div>
           )}
         </div>
       </div>
