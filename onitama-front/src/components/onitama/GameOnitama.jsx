@@ -5,7 +5,7 @@ import { CardPanel } from './CardPanel';
 import { emitGameState, subscribeGameState } from '../../api/ws';
 import { carregarUsuarioPorHash, atualizarMoedas } from '../../api/usuarios';
 import { getUsuarioHash } from '../../api/http';
-import { stopBattleMusic } from '../../utils/bgMusic';
+import { stopBattleMusic, playVictoryAudio } from '../../utils/bgMusic';
 
 /**
  * GameOnitama: modo local (single-client) por enquanto; integração WS será feita depois.
@@ -38,10 +38,14 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
 
   const myCards = useMemo(() => state.hands[myPlayer], [state, myPlayer]);
 
-  // sincronização via WS: recebe estado
+  // sincronização via WS: recebe estado e inicializa com segurança
   useEffect(() => {
     if (!roomCode) return;
+    const hasReceivedStateRef = { current: false };
+    const initialSentRef = { current: false };
+
     const off = subscribeGameState(roomCode, (st) => {
+      hasReceivedStateRef.current = true;
       setState(st);
       setValidMoves([]);
       // reseta contagem de tempo ao receber novo estado
@@ -53,9 +57,24 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
       setActivePowerIdx(null);
       if (!st?.fx?.bombTarget) setBombTarget(null);
     });
-    // Ao montar e ser host, envia estado inicial
-    if (role === 'host') emitGameState(roomCode, state);
-    return () => off && off();
+
+    // Somente o host deve inicializar a partida caso não haja estado existente.
+    // Aguarda breve período para receber possível estado do servidor (memória/BD);
+    // se nada for recebido, envia estado inicial uma única vez.
+    let initTimer;
+    if (role === 'host') {
+      initTimer = setTimeout(() => {
+        if (!hasReceivedStateRef.current && !initialSentRef.current) {
+          emitGameState(roomCode, state);
+          initialSentRef.current = true;
+        }
+      }, 800);
+    }
+
+    return () => {
+      off && off();
+      if (initTimer) clearTimeout(initTimer);
+    };
   }, [roomCode, role]);
 
   // Timer de turno: atualiza restante e aplica passagem quando expira
@@ -105,13 +124,7 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
   useEffect(() => {
     if (state?.winner && myPlayer === state.winner && !playedWinSoundRef.current) {
       playedWinSoundRef.current = true;
-      try {
-        // Tocar dois sons simultaneamente na tela de vitória
-        const horn = new Audio('/sound/music/buzina.mp3');
-        const champions = new Audio('/sound/music/we-are-the-champions.mp3');
-        horn.play().catch(() => {});
-        champions.play().catch(() => {});
-      } catch (_) {}
+      try { playVictoryAudio(); } catch (_) {}
     }
     if (!state?.winner) {
       playedWinSoundRef.current = false;
@@ -211,6 +224,18 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
     const currOwnerCount = countStudents(curr.board, owner);
     const prevOtherCount = countStudents(prev.board, other);
     const currOtherCount = countStudents(curr.board, other);
+    if (currOtherCount === prevOtherCount - 1) {
+      try {
+        const base = (skins?.[owner]?.base || skins?.[owner]?.folder || '').toLowerCase();
+        if (base === 'gato') {
+          new Audio('/sound/fx/dano/miado.ogg').play().catch(() => {});
+        } else if (base === 'cachorro') {
+          new Audio('/sound/fx/dano/latido.wav').play().catch(() => {});
+        } else {
+          new Audio('/sound/fx/soco/soco_4.wav').play().catch(() => {});
+        }
+      } catch (_) {}
+    }
     if (owner !== myPlayer) {
     if (currOwnerCount === prevOwnerCount + 1) {
       let pos = null;
@@ -271,7 +296,7 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
       }
     }
     prevStateRef.current = curr;
-  }, [state, orientation, myPlayer]);
+  }, [state, orientation, myPlayer, skins]);
 
   const handleSelect = ({ y, x }) => {
     if (isBlocked) return;
@@ -381,10 +406,6 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
     setState(next);
     setValidMoves([]);
     try { new Audio('/sound/fx/carta/carta_1.wav').play().catch(() => {}); } catch (_) {}
-    // reproduz som de "soco" apenas para captura de peão por movimento normal (exceto bomba)
-    if (willCaptureStudent) {
-      try { new Audio('/sound/fx/soco/soco_4.wav').play().catch(() => {}); } catch (_) {}
-    }
     if (roomCode) emitGameState(roomCode, next);
   };
 

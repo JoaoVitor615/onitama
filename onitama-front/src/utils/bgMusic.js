@@ -3,6 +3,7 @@ let listenersAttached = false;
 let suppressed = false; // quando true, não deve tocar (ex.: gameplay)
 let battleAudio;
 let battleListenersAttached = false;
+let victoryAudios = null;
 
 function isGameplayRoute() {
   try {
@@ -132,4 +133,26 @@ export function stopBattleMusic() {
   b.pause();
   b.currentTime = 0;
   b.muted = true;
+}
+
+export function playVictoryAudio() {
+  try {
+    if (victoryAudios && Array.isArray(victoryAudios)) {
+      victoryAudios.forEach((a) => { try { a.pause(); a.currentTime = 0; a.muted = true; } catch (_) {} });
+    }
+    const horn = new Audio('/sound/music/buzina.mp3');
+    const champions = new Audio('/sound/music/we-are-the-champions.mp3');
+    victoryAudios = [horn, champions];
+    horn.play().catch(() => {});
+    champions.play().catch(() => {});
+  } catch (_) {}
+}
+
+export function stopVictoryAudio() {
+  try {
+    if (victoryAudios && Array.isArray(victoryAudios)) {
+      victoryAudios.forEach((a) => { try { a.pause(); a.currentTime = 0; a.muted = true; } catch (_) {} });
+    }
+  } catch (_) {}
+  victoryAudios = null;
 }
