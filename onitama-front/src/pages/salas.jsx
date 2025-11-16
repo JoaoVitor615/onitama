@@ -221,6 +221,18 @@ function Salas() {
 
   return (
     <div className={styles.container}>
+      <button
+        onClick={() => navigate('/menu')}
+        aria-label="Voltar"
+        style={{
+          position: 'fixed', top: 16, left: 16, zIndex: 3001,
+          background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+          outline: 'none', boxShadow: 'none', appearance: 'none', WebkitAppearance: 'none', MozAppearance: 'none',
+          backgroundColor: 'transparent'
+        }}
+      >
+        <img src={'/icons/seta.png'} alt="Voltar" style={{ width: 40, height: 40, border: 'none', display: 'block' }} />
+      </button>
       <div className={styles.header}>
         <h1 className={styles.titulo}>Salas de Jogo</h1>
       </div>
@@ -268,7 +280,7 @@ function Salas() {
 
       {showModal && (
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }}>
-          <div style={{ width: 720, maxWidth: '90vw', borderRadius: 12, background: 'rgba(20,20,20,0.85)', border: '1px solid #666', color: '#fff', padding: 24 }}>
+          <div style={{ width: 860, maxWidth: '92vw', borderRadius: 12, background: 'rgba(20,20,20,0.85)', border: '1px solid #666', color: '#fff', padding: 28 }}>
             <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
               <button onClick={() => setModalTab('skins')} style={{ padding: '8px 12px', border: '1px solid #777', background: modalTab === 'skins' ? '#444' : '#222', color: '#fff' }}>Skins</button>
               <button onClick={() => setModalTab('mapas')} style={{ padding: '8px 12px', border: '1px solid #777', background: modalTab === 'mapas' ? '#444' : '#222', color: '#fff' }}>Cenários</button>
@@ -300,15 +312,15 @@ function Salas() {
             )}
 
             {modalTab === 'poderes' && (
-              <div style={{ padding: 16 }}>
-                <div style={{ marginBottom: 12, color: '#fff', fontWeight: 'bold' }}>Selecione até 3 poderes ativos</div>
+              <div style={{ padding: 20 }}>
+                <div style={{ marginBottom: 14, color: '#fff', fontWeight: 'bold', fontSize: 20 }}>Selecione até 3 poderes ativos</div>
                 {[0,1,2].map((slot) => {
                   const currentId = selectedPoderIds[slot];
                   const current = poderes.find((p) => p.id_produto === currentId) || null;
                   const label = current ? (current.nome || `Poder ${current.id_produto}`) : 'Nenhum';
                   return (
-                    <div key={slot} style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
-                      <div style={{ width: 28, textAlign: 'right', color: '#bbb' }}>Slot {slot+1}:</div>
+                    <div key={slot} style={{ display: 'flex', alignItems: 'center', gap: 18, marginBottom: 14 }}>
+                      <div style={{ width: 120, minWidth: 120, textAlign: 'right', color: '#bbb', whiteSpace: 'nowrap', fontSize: 16 }}>-Slot {slot+1}</div>
                       <select
                         value={currentId ?? ''}
                         onChange={async (e) => {
@@ -326,17 +338,17 @@ function Salas() {
                             alert('Não foi possível atualizar o poder ativo.');
                           }
                         }}
-                        style={{ padding: '8px 10px', borderRadius: 8, background: '#222', color: '#fff', border: '1px solid #777', minWidth: 220 }}
+                        style={{ padding: '10px 12px', borderRadius: 8, background: '#222', color: '#fff', border: '1px solid #777', minWidth: 280 }}
                       >
                         <option value="">Nenhum</option>
                         {poderes.map((p) => (
                           <option key={p.id_produto} value={p.id_produto}>{p.nome || `Poder ${p.id_produto}`}</option>
                         ))}
                       </select>
-                      <div style={{ width: 36, height: 36, borderRadius: 8, background: '#333', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <div style={{ width: 40, height: 40, borderRadius: 8, background: '#333', display: 'flex', alignItems: 'center', justifyContent: 'center', flex: '0 0 auto' }}>
                         {current ? ((current.id_produto === 5) ? '💣' : (current.id_produto === 11 ? '💖' : (current.id_produto === 12 ? '🔄' : '✨'))) : '—'}
                       </div>
-                      <div style={{ color: '#bbb', fontSize: 12 }}>{label}</div>
+                      <div style={{ color: '#bbb', fontSize: 14, whiteSpace: 'nowrap' }}>{label}</div>
                     </div>
                   );
                 })}
