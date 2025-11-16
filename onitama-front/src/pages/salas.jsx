@@ -279,35 +279,44 @@ function Salas() {
       </div>
 
       {showModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 2000 }}>
-          <div style={{ width: 860, maxWidth: '92vw', borderRadius: 12, background: 'rgba(20,20,20,0.85)', border: '1px solid #666', color: '#fff', padding: 28 }}>
-            <div style={{ display: 'flex', gap: 12, marginBottom: 16 }}>
-              <button onClick={() => setModalTab('skins')} style={{ padding: '8px 12px', border: '1px solid #777', background: modalTab === 'skins' ? '#444' : '#222', color: '#fff' }}>Skins</button>
-              <button onClick={() => setModalTab('mapas')} style={{ padding: '8px 12px', border: '1px solid #777', background: modalTab === 'mapas' ? '#444' : '#222', color: '#fff' }}>Cenários</button>
-              <button onClick={() => setModalTab('poderes')} style={{ padding: '8px 12px', border: '1px solid #777', background: modalTab === 'poderes' ? '#444' : '#222', color: '#fff' }}>Poderes</button>
+        <div className={styles.crtModalOverlay}>
+          <div className={styles.crtModal}>
+            <div className={styles.crtTabs}>
+              <button
+                onClick={() => setModalTab('skins')}
+                className={[styles.crtTab, modalTab === 'skins' ? styles.crtTabActive : ''].join(' ')}
+              >Skins</button>
+              <button
+                onClick={() => setModalTab('mapas')}
+                className={[styles.crtTab, modalTab === 'mapas' ? styles.crtTabActive : ''].join(' ')}
+              >Cenários</button>
+              <button
+                onClick={() => setModalTab('poderes')}
+                className={[styles.crtTab, modalTab === 'poderes' ? styles.crtTabActive : ''].join(' ')}
+              >Poderes</button>
             </div>
 
             {modalTab === 'skins' && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
-                <button onClick={() => changeSkinIndex(activeIndex - 1)} style={{ padding: 8, border: '1px solid #777', background: '#222', color: '#fff' }}>{'<'}</button>
-                <div style={{ width: 280, height: 280, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.3)', borderRadius: 12 }}>
+                <button onClick={() => changeSkinIndex(activeIndex - 1)} className={styles.crtArrowBtn}>{'<'}</button>
+                <div className={styles.crtPreviewSkin}>
                   <img src={skinImageSrc} alt="Skin ativa" style={{ maxWidth: '100%', maxHeight: '100%' }} />
                 </div>
-                <button onClick={() => changeSkinIndex(activeIndex + 1)} style={{ padding: 8, border: '1px solid #777', background: '#222', color: '#fff' }}>{'>'}</button>
+                <button onClick={() => changeSkinIndex(activeIndex + 1)} className={styles.crtArrowBtn}>{'>'}</button>
               </div>
             )}
 
             {modalTab === 'mapas' && (
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
-                <button onClick={() => changeMapIndex(activeMapIndex - 1)} style={{ padding: 8, border: '1px solid #777', background: '#222', color: '#fff' }}>{'<'}</button>
-                <div style={{ width: 360, height: 240, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.3)', borderRadius: 12 }}>
+                <button onClick={() => changeMapIndex(activeMapIndex - 1)} className={styles.crtArrowBtn}>{'<'}</button>
+                <div className={styles.crtPreviewMap}>
                   {mapas.length ? (
                     <img src={mapImageSrc} alt="Cenário ativo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
                   ) : (
                     <span style={{ color: '#bbb' }}>Nenhum cenário disponível</span>
                   )}
                 </div>
-                <button onClick={() => changeMapIndex(activeMapIndex + 1)} style={{ padding: 8, border: '1px solid #777', background: '#222', color: '#fff' }}>{'>'}</button>
+                <button onClick={() => changeMapIndex(activeMapIndex + 1)} className={styles.crtArrowBtn}>{'>'}</button>
               </div>
             )}
 
@@ -338,7 +347,7 @@ function Salas() {
                             alert('Não foi possível atualizar o poder ativo.');
                           }
                         }}
-                        style={{ padding: '10px 12px', borderRadius: 8, background: '#222', color: '#fff', border: '1px solid #777', minWidth: 280 }}
+                        className={styles.crtSelect}
                       >
                         <option value="">Nenhum</option>
                         {poderes.map((p) => (
@@ -358,9 +367,9 @@ function Salas() {
               </div>
             )}
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 24 }}>
-              <button onClick={() => { setShowModal(false); setPendingAction(null); }} style={{ padding: '10px 16px', border: '1px solid #777', background: '#222', color: '#fff' }}>Cancelar</button>
-              <button onClick={handleJogar} style={{ padding: '10px 16px', border: '1px solid #0a8', background: '#0a8', color: '#fff' }}>Jogar</button>
+            <div className={styles.crtActions}>
+              <button onClick={() => { setShowModal(false); setPendingAction(null); }} className={styles.crtButton}>Cancelar</button>
+              <button onClick={handleJogar} className={[styles.crtButton, styles.crtButtonPrimary].join(' ')}>Jogar</button>
             </div>
           </div>
         </div>
