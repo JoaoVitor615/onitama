@@ -314,7 +314,6 @@
 .crtModal {
   width: 860px;
   max-width: 92vw;
-  border-radius: 10px;
   background-color: #222;
   border: 8px solid #444;
   padding: 25px;
@@ -350,6 +349,8 @@
   font-size: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
+  box-shadow: none;
+
 }
 
 .crtTab:hover {
@@ -396,6 +397,8 @@
   border: 3px solid #444;
   cursor: pointer;
   transition: all 0.2s ease;
+  box-shadow: none;
+
 }
 
 .crtArrowBtn:hover {
@@ -429,20 +432,27 @@
   font-size: 12px;
   cursor: pointer;
   transition: all 0.2s ease;
+  box-shadow: none;
 }
 
 .crtButton:hover {
   background-color: #333;
   border-color: #0f0;
   color: #0f0;
+  transform: translateY(-2px);
+
 }
 
 .crtButtonPrimary {
-  background-color: #0a8;
-  border-color: #0a8;
+  background-color: #00aa41;
+  border-color: #00aa41;
 }
 
 .crtButtonPrimary:hover {
-  background-color: #0c9;
-  border-color: #0c9;
+  transform: translateY(-2px);
+  background-color: #00d100;
+  border-color: #00d100;
+  color: white;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+  
 }
