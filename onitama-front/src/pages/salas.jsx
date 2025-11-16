@@ -226,8 +226,8 @@ function Salas() {
       </div>
       <p className={styles.subtitulo}>Escolha uma sala para jogar</p>
 
-      <div className={styles.actionsTop}>
-        <button onClick={handleCriarSala}>Criar sala</button>
+      <div>
+        <button className={styles.salaBtn} onClick={handleCriarSala}>Criar sala</button>
       </div>
 
       <div className={styles.gridSalas}>
@@ -263,7 +263,7 @@ function Salas() {
       </div>
 
       <div className={styles.actionsBottom}>
-        <button onClick={() => navigate('/menu')}>Menu</button>
+        <button className={styles.salaBtn} onClick={() => navigate('/menu')}>Menu</button>
       </div>
 
       {showModal && (

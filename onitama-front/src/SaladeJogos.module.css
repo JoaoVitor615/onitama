@@ -156,17 +156,21 @@
 
 /* ====== BOTÃO ENTRAR / CRIAR ====== */
 .botaoEntrar {
-  background: none;
   border: none;
   font-family: "Press Start 2P", cursive;
-  color: #d47929;
-  font-size: 10px;
+  font-size: 12px;
   cursor: pointer;
-  transition: 0.2s;
+  color: #a8190f;
+  background: none;
+  transition: all 0.2s ease-in-out;
 }
 
 .botaoEntrar:hover {
-  text-shadow: 0 0 4px #d47929;
+  background: #e6be0d;
+  border-color: #e6be0d;
+  color: #ffffff;
+
+  box-shadow: 0 0 8px #00000046, 0 0 16px #00000056;
   transform: scale(1.1);
 }
 /* ===== POPUP ===== */
@@ -268,22 +272,6 @@
   margin-top: 30px;
 }
 
-.actionsBottom button {
-  background: rgba(139, 0, 0, 0.7);
-  border: 2px solid rgba(255, 255, 255, 0.85);
-  border-radius: 10px;
-  padding: 12px 20px;
-  color: #fff;
-  font-family: "Press Start 2P", cursive;
-  font-size: 12px;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.actionsBottom button:hover {
-  background: rgba(139, 0, 0, 0.85);
-  transform: scale(1.05);
-}
 .actionsTop {
   display: flex;
   justify-content: center;
@@ -291,18 +279,21 @@
   margin-bottom: 12px;
 }
 
-.actionsTop button {
-  background: rgba(139, 0, 0, 0.7);
-  border: 2px solid rgba(255, 255, 255, 0.85);
-  border-radius: 10px;
-  padding: 12px 20px;
-  color: #fff;
+.salaBtn {
   font-family: "Press Start 2P", cursive;
-  font-size: 12px;
+  font-size: 16px;
+  letter-spacing: 1px;
+  color: #ffffff;
+  background: #a8190f;
+  padding: 10px 40px;
+  margin: 10px;
   cursor: pointer;
-  transition: 0.2s;
-}
+  transition: all 0.2s ease-in-out;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 2px #000;
+} 
 
-.actionsTop button:hover {
-  background: rgba(139, 0, 0, 0.85);
+.salaBtn:hover {
+  background: #a8190fb0;
+  transform: scale(1.05);
 }
