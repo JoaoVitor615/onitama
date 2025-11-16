@@ -136,18 +136,23 @@ body {
 }
 
 .botao-comprar {
-  background: #5dc25d;
+  background: #af1818;
   color: white;
   border: none;
   padding: 5px 12px;
   border-radius: 6px;
   font-weight: bold;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: all 0.3s;
 }
 
 .botao-comprar:hover {
   background: #4aa64a;
+  transform: scale(1.15);
+  box-shadow: 0px 5px #2d642d, 0px -5px #2d642d, 5px 0px #2d642d, -5px 0px #2d642d,
+              0px 10px #00000038, 5px 5px #00000038, -5px 5px #00000038,
+              inset 0px 5px #ffffff36;
+
 }
 .header-prin {
   width: 95%;
