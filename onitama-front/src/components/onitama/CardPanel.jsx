@@ -14,7 +14,8 @@ function cellStyle(active, isCenter, theme) {
   return {
     width: '22px', height: '22px', borderRadius: '4px',
     background: active ? (theme?.active || '#3c763d') : '#333',
-    border: isCenter ? `1px solid ${theme?.borderDark || '#777'}` : '1px solid #222',
+    border: isCenter ? '2px solid #a8190f' : '1px solid #222',
+    boxShadow: isCenter ? '0 0 0 2px #ff2b2b inset' : 'none',
   };
 }
 

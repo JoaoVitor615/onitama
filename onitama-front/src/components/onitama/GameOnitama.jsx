@@ -93,6 +93,7 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
           setTimeout(() => setShowTimeoutMsg(false), 1800);
         }
         const next = passTurn(state);
+        next.fx = { ...(state.fx || {}), timeout: { player: state.currentPlayer, ts: Date.now() } };
         lastTurnStartRef.current = next.turnStartedAt;
         setState(next);
         setValidMoves([]);
@@ -101,6 +102,15 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
     }, 200);
     return () => clearInterval(interval);
   }, [state, roomCode]);
+
+  useEffect(() => {
+    const to = state?.fx?.timeout;
+    if (!to || !to.ts) return;
+    if (to.player === myPlayer) {
+      setShowTimeoutMsg(true);
+      setTimeout(() => setShowTimeoutMsg(false), 1800);
+    }
+  }, [state?.fx?.timeout?.ts, myPlayer]);
 
   // Som de derrota: toca quando a partida termina e eu NÃO sou o vencedor
   useEffect(() => {
