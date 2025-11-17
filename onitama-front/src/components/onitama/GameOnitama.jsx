@@ -256,6 +256,10 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
           const idx = vitaoSoundIdxRef.current % arr.length;
           vitaoSoundIdxRef.current = (vitaoSoundIdxRef.current + 1) % arr.length;
           new Audio(arr[idx]).play().catch(() => {});
+        } else if (base === 'bobesponja') {
+          new Audio('/sound/fx/dano/bob_esponja.mp3').play().catch(() => {});
+        } else if (base === 'minions') {
+          new Audio('/sound/fx/dano/minions.mp3').play().catch(() => {});
         } else if (base === 'gato') {
           new Audio('/sound/fx/dano/miado.ogg').play().catch(() => {});
         } else if (base === 'cachorro') {
