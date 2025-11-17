@@ -35,11 +35,9 @@ export default function PurchaseNotification() {
         : rawType === 'scenario' ? 'cenario'
         : rawType;
       if (normalized === 'moedas' || normalized === 'coins') {
-        const audio = new Audio('/ui/positivo_3.wav');
-        audio.volume = 0.85;
-        audio.play().catch(() => {
-          try { new Audio('/sound/fx/ui/positivo_3.wav').play().catch(() => {}); } catch (_) {}
-        });
+        const audio = new Audio('/sound/fx/vitao/boa_velho.mp3');
+        audio.volume = 1.0;
+        audio.play().catch(() => {});
       }
       // Som positivo para skins, mapas (cenários) e poderes
       if (normalized === 'skin' || normalized === 'cenario' || normalized === 'scenario' || normalized === 'poder' || normalized === 'power') {

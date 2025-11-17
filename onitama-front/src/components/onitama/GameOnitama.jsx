@@ -32,6 +32,7 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
   const [swapAt, setSwapAt] = useState(null);
   const prevStateRef = useRef(null);
   const lastBombTsRef = useRef(0);
+  const vitaoSoundIdxRef = useRef(0);
   const isGameOver = !!state?.winner;
   const isBlocked = blocked || isGameOver;
   const rewardGrantedRef = useRef(false);
@@ -79,20 +80,19 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
 
   // Timer de turno: atualiza restante e aplica passagem quando expira
   useEffect(() => {
+    if (isBlocked) { setRemainingMs(TURN_MS); return; }
     const interval = setInterval(() => {
       const deadline = (state?.turnStartedAt || Date.now()) + TURN_MS;
       const rem = Math.max(0, deadline - Date.now());
       setRemainingMs(rem);
       if (rem === 0 && !state.winner) {
-        // Evita repetir para o mesmo início de turno
         if (lastTurnStartRef.current !== state.turnStartedAt) return;
-        // Efetua passagem de turno e emite estado (qualquer cliente pode emitir para garantir liveness)
-        // Sinaliza visualmente que o tempo esgotou APENAS para o jogador da vez no cliente correspondente
         if (state.currentPlayer === myPlayer) {
           setShowTimeoutMsg(true);
           setTimeout(() => setShowTimeoutMsg(false), 1800);
         }
         const next = passTurn(state);
+        next.fx = { ...(state.fx || {}), timeout: { player: state.currentPlayer, ts: Date.now() } };
         lastTurnStartRef.current = next.turnStartedAt;
         setState(next);
         setValidMoves([]);
@@ -100,7 +100,27 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
       }
     }, 200);
     return () => clearInterval(interval);
-  }, [state, roomCode]);
+  }, [state, roomCode, isBlocked]);
+
+  useEffect(() => {
+    const to = state?.fx?.timeout;
+    if (!to || !to.ts) return;
+    if (to.player === myPlayer) {
+      setShowTimeoutMsg(true);
+      setTimeout(() => setShowTimeoutMsg(false), 1800);
+    }
+  }, [state?.fx?.timeout?.ts, myPlayer]);
+
+  // Inicializa o cronômetro somente quando ambos estiverem prontos (não bloqueado)
+  useEffect(() => {
+    if (isBlocked) { setRemainingMs(TURN_MS); return; }
+    const next = { ...state, turnStartedAt: Date.now() };
+    lastTurnStartRef.current = next.turnStartedAt;
+    setState(next);
+    if (roomCode) emitGameState(roomCode, next);
+    // uma única inicialização por transição para "desbloqueado"
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isBlocked]);
 
   // Som de derrota: toca quando a partida termina e eu NÃO sou o vencedor
   useEffect(() => {
@@ -227,7 +247,20 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
     if (currOtherCount === prevOtherCount - 1) {
       try {
         const base = (skins?.[owner]?.base || skins?.[owner]?.folder || '').toLowerCase();
-        if (base === 'gato') {
+        if (base === 'vitao') {
+          const arr = [
+            '/sound/fx/vitao/vambora.mp3',
+            '/sound/fx/vitao/risada.mp3',
+            '/sound/fx/vitao/perdeu_velho.mp3',
+          ];
+          const idx = vitaoSoundIdxRef.current % arr.length;
+          vitaoSoundIdxRef.current = (vitaoSoundIdxRef.current + 1) % arr.length;
+          new Audio(arr[idx]).play().catch(() => {});
+        } else if (base === 'bobesponja') {
+          new Audio('/sound/fx/dano/bob_esponja.mp3').play().catch(() => {});
+        } else if (base === 'minions') {
+          new Audio('/sound/fx/dano/minions.mp3').play().catch(() => {});
+        } else if (base === 'gato') {
           new Audio('/sound/fx/dano/miado.ogg').play().catch(() => {});
         } else if (base === 'cachorro') {
           new Audio('/sound/fx/dano/latido.wav').play().catch(() => {});

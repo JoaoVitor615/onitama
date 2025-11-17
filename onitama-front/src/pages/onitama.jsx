@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useRef } from "react";
 import { carregarSalaPorCodigo, sairSala } from "../api/salas";
 import { joinSala } from "../api/ws";
 import { getUsuarioId } from "../api/http";
@@ -18,6 +19,7 @@ function Onitama() {
   const [leaving, setLeaving] = useState(false);
   const usuarioId = useMemo(() => getUsuarioId(), []);
   const wsUrl = useMemo(() => (import.meta.env.VITE_WS_URL || "ws://127.0.0.1:8081"), []);
+  const startSoundPlayedRef = useRef(false);
 
   // Salvaguarda: garantir que a trilha esteja parada ao entrar na gameplay
   useEffect(() => {
@@ -105,6 +107,16 @@ function Onitama() {
   // Determina se há dois jogadores conectados
   const connectedCount = Array.isArray(sala?.SalaJogador) ? (sala.SalaJogador.filter((j) => j?.conectado).length) : (sala?.presentes ?? 0);
   const isWaiting = connectedCount < 2;
+
+  useEffect(() => {
+    if (!isWaiting && !startSoundPlayedRef.current) {
+      startSoundPlayedRef.current = true;
+      try { new Audio('/sound/fx/vitao/vai_comecar.mp3').play().catch(() => {}); } catch (_) {}
+    }
+    if (isWaiting) {
+      startSoundPlayedRef.current = false;
+    }
+  }, [isWaiting]);
 
   // Background da tela de jogo baseado no cenário selecionado do usuário
   const fundoSrc = (() => {
