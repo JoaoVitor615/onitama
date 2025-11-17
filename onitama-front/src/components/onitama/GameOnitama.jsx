@@ -32,6 +32,7 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
   const [swapAt, setSwapAt] = useState(null);
   const prevStateRef = useRef(null);
   const lastBombTsRef = useRef(0);
+  const vitaoSoundIdxRef = useRef(0);
   const isGameOver = !!state?.winner;
   const isBlocked = blocked || isGameOver;
   const rewardGrantedRef = useRef(false);
@@ -237,7 +238,16 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
     if (currOtherCount === prevOtherCount - 1) {
       try {
         const base = (skins?.[owner]?.base || skins?.[owner]?.folder || '').toLowerCase();
-        if (base === 'gato') {
+        if (base === 'vitao') {
+          const arr = [
+            '/sound/fx/vitao/vambora.mp3',
+            '/sound/fx/vitao/risada.mp3',
+            '/sound/fx/vitao/perdeu_velho.mp3',
+          ];
+          const idx = vitaoSoundIdxRef.current % arr.length;
+          vitaoSoundIdxRef.current = (vitaoSoundIdxRef.current + 1) % arr.length;
+          new Audio(arr[idx]).play().catch(() => {});
+        } else if (base === 'gato') {
           new Audio('/sound/fx/dano/miado.ogg').play().catch(() => {});
         } else if (base === 'cachorro') {
           new Audio('/sound/fx/dano/latido.wav').play().catch(() => {});
