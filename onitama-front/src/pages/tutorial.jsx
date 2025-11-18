@@ -1,88 +1,102 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import React, { useState } from "react";
+import "./TutorialPage.css";
 
 function Tutorial() {
-  const navigate = useNavigate();
-  const { step } = useParams();
-  const idx = Number(step) || 1;
-  const imgRef = useRef(null);
-  const [box, setBox] = useState(null);
-  const [imgSize, setImgSize] = useState({ w: 0, h: 0 });
-  const imgSrc = useMemo(() => {
-    if (idx === 1) return '/assets/tutorial1.png';
-    if (idx === 2) return '/assets/tutorial2.png';
-    return '/assets/tutorial3.png';
-  }, [idx]);
+  const [slide, setSlide] = useState(0);
 
-  useEffect(() => {
-    function measure() {
-      const vw = window.innerWidth || document.documentElement.clientWidth;
-      const vh = window.innerHeight || document.documentElement.clientHeight;
-      const el = imgRef.current;
-      const iw = imgSize.w || (el ? el.naturalWidth : 0);
-      const ih = imgSize.h || (el ? el.naturalHeight : 0);
-      if (!vw || !vh || !iw || !ih) return;
-      const ar = iw / ih;
-      const varr = vw / vh;
-      let width, height, left, top;
-      if (varr > ar) {
-        height = vh;
-        width = vh * ar;
-        left = (vw - width) / 2;
-        top = 0;
-      } else {
-        width = vw;
-        height = vw / ar;
-        left = 0;
-        top = (vh - height) / 2;
-      }
-      setBox({ left, top, right: left + width, bottom: top + height, width, height });
-    }
-    measure();
-    window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
-  }, [imgSrc, imgSize.w, imgSize.h]);
+  const instrucoes = [
+    {
+      titulo: "O Objetivo do Jogo",
+      texto: `
+      No Onitama, dois mestres e seus alunos duelam em um tabuleiro 5x5.
+      Seu objetivo é derrotar o Mestre inimigo OU chegar com seu Mestre
+      no templo adversário.
+      `,
+      img: "/assets/tutorialtab.png",
+    },
+    {
+      titulo: "As Cartas de Movimento",
+      texto: `
+      O jogo usa 5 cartas por partida. Cada carta mostra
+      movimentos possíveis para uma peça.
+      Você e seu oponente compartilham essas cartas.
+      `,
+      img: "/assets/tutorial1.png",
+    },
+    {
+      titulo: "Como se Mover",
+      texto: `
+      Em seu turno, escolha uma carta para mover um aluno ou o mestre.
+      Depois de usar a carta, ela vai para o adversário, criando 
+      um ciclo estratégico de movimentos!
+      `,
+      img: "/assets/tutorial2.png",
+    },
+    {
+      titulo: "Condições de Vitória",
+      texto: `
+      Você vence de duas maneiras:
+      1) Capturar o Mestre inimigo (Vitória do Dragão).
+      2) Levar seu Mestre até o templo adversário (Vitória da Montanha).
+      `,
+      img: "/assets/tutorial3.png",
+    },
+  ];
 
-  function handleLoad() {
-    const el = imgRef.current;
-    if (!el) return;
-    const w = el.naturalWidth || 0;
-    const h = el.naturalHeight || 0;
-    if (w && h) setImgSize({ w, h });
-  }
+  const next = () => {
+    if (slide < instrucoes.length - 1) setSlide(slide + 1);
+  };
+
+  const prev = () => {
+    if (slide > 0) setSlide(slide - 1);
+  };
 
   return (
-    <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden', backgroundColor: '#000' }}>
-      <img ref={imgRef} src={imgSrc} alt="Tutorial" onLoad={handleLoad} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain' }} />
-      {idx === 1 && (
-        <button
-          onClick={() => navigate('/menu')}
-          aria-label="Voltar"
-          style={{ position: 'fixed', top: (box ? (box.top + 16) : 16), left: (box ? (box.left + 16) : 16), zIndex: 3001, background: 'none', border: 'none', padding: 0, cursor: 'pointer', outline: 'none', boxShadow: 'none', appearance: 'none', WebkitAppearance: 'none', MozAppearance: 'none', backgroundColor: 'transparent' }}
-        >
-          <img src={'/icons/seta.png'} alt="Voltar" style={{ width: 80, height: 80, border: 'none', display: 'block' }} />
-        </button>
-      )}
+    <div className="how-container">
+      <img src="/assets/comojogar.png" className="how-bg" alt="Background" />
 
-      {idx !== 1 && (
-        <button
-          onClick={() => navigate(`/tutorial/${idx - 1}`)}
-          aria-label="Anterior"
-          style={{ position: 'fixed', left: (box ? (box.left + 16) : 16), top: (box ? (box.top + (box.height / 2) - 40) : '50%'), zIndex: 3001, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
-        >
-          <img src={'/icons/seta.png'} alt="Anterior" style={{ width: 80, height: 80, border: 'none', display: 'block' }} />
-        </button>
-      )}
+      <div className="scroll-box">
+        <h1 className="how-title">COMO JOGAR</h1>
 
-      {idx !== 3 && (
-        <button
-          onClick={() => navigate(`/tutorial/${idx + 1}`)}
-          aria-label="Próximo"
-          style={{ position: 'fixed', left: (box ? (box.right - 16 - 80) : undefined), right: (box ? undefined : 16), top: (box ? (box.top + (box.height / 2) - 40) : '50%'), zIndex: 3001, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
-        >
-          <img src={'/icons/seta.png'} alt="Próximo" style={{ width: 80, height: 80, border: 'none', display: 'block', transform: 'rotate(180deg)' }} />
+        <div className="carousel">
+          <h2 className="carousel-title">{instrucoes[slide].titulo}</h2>
+          <p className="carousel-text">{instrucoes[slide].texto}</p>
+
+          {instrucoes[slide].img && (
+            <img
+              src={instrucoes[slide].img}
+              className="carousel-img"
+              alt="Ilustração do tutorial"
+            />
+          )}
+
+          <div className="carousel-buttons">
+            <button
+              className="carousel-btn"
+              onClick={prev}
+              disabled={slide === 0}
+            >
+              ◀ Anterior
+            </button>
+
+            <span className="slide-indicator">
+              {slide + 1} / {instrucoes.length}
+            </span>
+
+            <button
+              className="carousel-btn"
+              onClick={next}
+              disabled={slide === instrucoes.length - 1}
+            >
+              Próximo ▶
+            </button>
+          </div>
+        </div>
+
+        <button className="back-btn" onClick={() => window.history.back()}>
+          Voltar
         </button>
-      )}
+      </div>
     </div>
   );
 }
