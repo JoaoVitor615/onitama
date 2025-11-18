@@ -83,20 +83,20 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
     if (isBlocked) { setRemainingMs(TURN_MS); return; }
     const interval = setInterval(() => {
       const deadline = (state?.turnStartedAt || Date.now()) + TURN_MS;
-      const rem = Math.max(0, deadline - Date.now());
+      const rem = Math.min(TURN_MS, Math.max(0, deadline - Date.now()));
       setRemainingMs(rem);
       if (rem === 0 && !state.winner) {
         if (lastTurnStartRef.current !== state.turnStartedAt) return;
         if (state.currentPlayer === myPlayer) {
           setShowTimeoutMsg(true);
           setTimeout(() => setShowTimeoutMsg(false), 1800);
+          const next = passTurn(state);
+          next.fx = { ...(state.fx || {}), timeout: { player: state.currentPlayer, ts: Date.now() } };
+          lastTurnStartRef.current = next.turnStartedAt;
+          setState(next);
+          setValidMoves([]);
+          if (roomCode) emitGameState(roomCode, next);
         }
-        const next = passTurn(state);
-        next.fx = { ...(state.fx || {}), timeout: { player: state.currentPlayer, ts: Date.now() } };
-        lastTurnStartRef.current = next.turnStartedAt;
-        setState(next);
-        setValidMoves([]);
-        if (roomCode) emitGameState(roomCode, next);
       }
     }, 200);
     return () => clearInterval(interval);
@@ -114,11 +114,12 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
   // Inicializa o cronômetro somente quando ambos estiverem prontos (não bloqueado)
   useEffect(() => {
     if (isBlocked) { setRemainingMs(TURN_MS); return; }
+    if (role !== 'host') return;
     const next = { ...state, turnStartedAt: Date.now() };
     lastTurnStartRef.current = next.turnStartedAt;
     setState(next);
     if (roomCode) emitGameState(roomCode, next);
-    // uma única inicialização por transição para "desbloqueado"
+    // uma única inicialização por transição para "desbloqueado" no host
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isBlocked]);
 
@@ -461,6 +462,7 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
         next.defeatedStack[piece.owner].push({ y: piece.initial.y, x: piece.initial.x });
       }
     }
+    next.fx = { ...(next.fx || {}), bombTarget: null };
     // marca poder usado
     const used = Array.isArray(next.powersUsed?.[myPlayer]) ? [...next.powersUsed[myPlayer]] : [false, false, false];
     used[activePowerIdx] = true;
