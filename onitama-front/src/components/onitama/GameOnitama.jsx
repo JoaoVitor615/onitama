@@ -260,6 +260,8 @@ export default function GameOnitama({ seed = undefined, roomCode, role, names, s
           new Audio('/sound/fx/dano/bob_esponja.mp3').play().catch(() => {});
         } else if (base === 'minions') {
           new Audio('/sound/fx/dano/minions.mp3').play().catch(() => {});
+        } else if (base === 'shrek') {
+          new Audio('/sound/fx/dano/shrek.mp3').play().catch(() => {});
         } else if (base === 'gato') {
           new Audio('/sound/fx/dano/miado.ogg').play().catch(() => {});
         } else if (base === 'cachorro') {

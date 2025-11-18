@@ -1,93 +1,81 @@
 @import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
 
 .login-container {
-  position: relative;
+  position: fixed;
+  inset: 0;
   width: 100vw;
   height: 100vh;
+
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+
   display: flex;
+  flex-direction: column;
   justify-content: center;
   align-items: center;
+
   overflow: hidden;
   font-family: "Poppins", sans-serif;
 }
 
 .logo-img {
-  position: absolute;
-  top: -170px;
-  left: 50%;
-  transform: translateX(-50%);
-  height: 650px;
-  width: 650px;
-  z-index: 1;
+  height: 50vh;
+  width: auto;
+  margin-bottom: 1px;
+  z-index: 2;
+  position: relative;
+  top: 0;
 }
 
 .login-content {
-  z-index: 2;
   display: flex;
   flex-direction: column;
   align-items: center;
-  position: relative;
-  top: 70px;
-}
-
-.register-content {
-  top: 110px;
+  z-index: 2;
 }
 
 .login-box {
-  background-color: rgba(255, 255, 255, 0.85);
-  border-radius: 12px;
-  padding: 60px 80px;
-  text-align: center;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
-  min-width: 600px;
-}
-
-.login-content .login-box {
-  background-color: transparent;
-  box-shadow: none;
-}
-
-.register-content .login-box {
-  background-color: transparent;
-  box-shadow: none;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .login-title {
-  font-size: 3rem;
-  color: #000;
-  margin-bottom: 20px;
+  font-size: 1.5rem;
+  color: #ffd700;
+  margin: 0 0 10px 0;
   font-family: "Press Start 2P", cursive;
 }
 
 .login-input {
   font-family: "Press Start 2P", cursive;
-  display: block;
-  width: 100%;
-  margin: 10px 0;
-  padding: 16px;
+  width: 320px;
+  padding: 10px;
   border-radius: 12px;
-  border: 1px solid #4c4c4cea;
-  font-size: 1.2rem;
+  border: 1px solid #4c4c4c;
+  font-size: 1rem;
+  margin-bottom: 10px;
 }
 
 .play-btn {
   font-family: "Press Start 2P", cursive;
-  font-size: 28px;
+  font-size: 18px;
   letter-spacing: 1px;
   color: #ffffff;
   background: rgba(255, 255, 255, 0.08);
   border: 2px solid #ffffff;
   border-radius: 8px;
   padding: 16px 60px;
-  margin-top: 14px;
   cursor: pointer;
-  transition: all 0.2s ease-in-out;
+  transition: 0.2s;
   text-transform: uppercase;
   text-shadow: 1px 1px 2px #000;
+  margin-top: 10px;
 }
 
 .play-btn:hover {
@@ -98,44 +86,67 @@
 }
 
 .login-links {
-  margin-top: 15px;
-  display: flex;
-  justify-content: center;
-  gap: 8px;
+  margin-top: 12px;
 }
 
 .login-links a {
-  color: #000000;
-  text-decoration: none;
-  font-family: "Press Start 2P", cursive;
-  transition: 0.2s;
   font-size: 18px;
+  font-family: "Press Start 2P", cursive;
+  color: #ffd700;
 }
 
-.login-links a:hover {
-  color: #d47929;
-  text-shadow: 0 0 4px #ffb45f;
+.login-box-register {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+.login-input-r {
+  font-family: "Press Start 2P", cursive;
+  width: 300px;
+  padding: 6px;
+  border-radius: 12px;
+  border: 1px solid #4c4c4c;
+  font-size: 0.7rem;
+  margin-bottom: 8px;
 }
 
-.login-character {
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  height: 200px;
-  z-index: 1;
+.play-btn-r {
+  font-family: "Press Start 2P", cursive;
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid #ffffff;
+  border-radius: 8px;
+  padding: 16px 60px;
+  cursor: pointer;
+  transition: 0.2s;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 2px #000;
+  margin-top: 10px;
 }
 
-.login-container::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.25);
-  z-index: 0;
-}
-.login-content .login-title {
-  color: #FFD700;
+.play-btn-r:hover {
+  background: #d47929;
+  border-color: #ffb45f;
+  box-shadow: 0 0 8px #ffb45f, 0 0 16px #d47929;
+  transform: scale(1.05);
 }
 
-.login-content .login-links a {
-  color: #FFD700;
+.login-links-r {
+  margin-top: 12px;
+}
+
+.login-links-r a {
+  font-size: 12px;
+  font-family: "Press Start 2P", cursive;
+  color: #ffd700;
+}
+.logo-img-r {
+  height: 210px;
+  width: auto;
+  margin-bottom: 1px;
+  z-index: 2;
+  position: relative;
 }
