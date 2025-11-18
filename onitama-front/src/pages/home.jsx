@@ -35,32 +35,32 @@ function Home() {
         className="login-container"
         style={{ backgroundImage: `url(/assets/background-login.gif)` }}
       >
-      <img src="/assets/onitama-logo-principal.png" alt="Logo Onitama" className="logo-img" />
-      <div className="login-content">
-        <div className="login-box">
-          <h1 className="login-title">Login</h1>
-          <input
-            type="text"
-            placeholder="Usuário"
-            className="login-input"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-          <input
-            type="password"
-            placeholder="Senha"
-            className="login-input"
-            value={senha}
-            onChange={(e) => setSenha(e.target.value)}
-          />
+        <div className="login-content">
+          <img src="/assets/onitama-logo-principal.png" alt="Logo Onitama" className="logo-img" />
+          <div className="login-box">
+            <h1 className="login-title">Login</h1>
+            <input
+              type="text"
+              placeholder="Insira seu email"
+              className="login-input"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <input
+              type="password"
+              placeholder="Insira sua senha"
+              className="login-input"
+              value={senha}
+              onChange={(e) => setSenha(e.target.value)}
+            />
 
-          <button className="play-btn" onClick={handleLogin}>Play</button>
+            <button className="play-btn" onClick={handleLogin}>Play</button>
 
-          <div className="login-links">
-            <Link to="/register">Cadastre-se</Link>
+            <div className="login-links">
+              <Link to="/register">Cadastre-se</Link>
+            </div>
           </div>
         </div>
-      </div>
       </div>
     </>
   );
